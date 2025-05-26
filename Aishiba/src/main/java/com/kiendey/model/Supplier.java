@@ -37,4 +37,15 @@ public class Supplier extends AbstractEntity<String>{
 
     @OneToMany (mappedBy = "supplier")
     List<Toy> toys = new ArrayList<>();
+
+    @Column(name = "is_deleted")
+    boolean isDeleted ; // Trạng thái xóa mềm, mặc định là false (không bị xóa)
+
+    // Phương thức mới để định dạng mã nhà cung cấp
+    public String getFormattedSupplierCode() {
+        if (this.getId() != null && this.getId().length() >= 8) {
+            return "NCC" + this.getId().substring(0, 4).toUpperCase();
+        }
+        return "NCC-N/A"; // Hoặc một giá trị mặc định khác nếu id không hợp lệ
+    }
 }

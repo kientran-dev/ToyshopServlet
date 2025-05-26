@@ -34,9 +34,6 @@ public class Toy {
     @Column(name = "description", columnDefinition = "TEXT")
     String description;
 
-    @Column(name = "material")
-    String material;
-
     @Column(name = "origin")
     String origin;
 
@@ -66,4 +63,6 @@ public class Toy {
     @UpdateTimestamp
     LocalDateTime updatedAt;
 
+    @Column(name = "is_deleted")
+    boolean isDeleted ; // Trạng thái xóa mềm, mặc định là false (không bị xóa)
 }

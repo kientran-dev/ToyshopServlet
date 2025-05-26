@@ -1,7 +1,10 @@
 package com.kiendey.servlet.test;
 
+import com.kiendey.dao.ToyDAO;
+import com.kiendey.dao.impl.ToyDAOImpl;
 import com.kiendey.model.Permission;
 import com.kiendey.model.Role;
+import com.kiendey.model.Toy;
 import com.kiendey.model.User;
 import com.kiendey.utils.PasswordUtil;
 import jakarta.persistence.EntityManager;
@@ -13,93 +16,33 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import javax.xml.transform.Result;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @WebServlet("/init")
 public class InitServlet extends HttpServlet {
     private EntityManagerFactory emf;
 
-    @Override
-    public void init() throws ServletException {
-        // Khởi tạo EntityManagerFactory khi servlet được tạo
-        this.emf = Persistence.createEntityManagerFactory("myPersistenceUnit");
-    }
+
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try (EntityManager em = emf.createEntityManager()) {
-            em.getTransaction().begin();
+        PrintWriter out = resp.getWriter();
+        resp.setContentType("text/html;charset=UTF-8");
 
-            // Tạo Permission
-            Permission viewPermission = new Permission();
-            viewPermission.setName("VIEW");
-            viewPermission.setDescription("Permission to view content");
-
-            // Kiểm tra permission
-            Permission existingPermission = em.createQuery("SELECT p FROM Permission p WHERE p.name = :name", Permission.class)
-                    .setParameter("name", "VIEW")
-                    .getResultList()
-                    .stream()
-                    .findFirst()
-                    .orElse(null);
-
-            if (existingPermission == null) {
-                em.persist(viewPermission);
-            } else {
-                viewPermission = existingPermission;
-            }
-
-            // Tạo Role với Permission
-            Role userRole = new Role();
-            userRole.setName("User");
-            userRole.setDescription("Regular user role");
-
-            // Kiểm tra role
-            Role existingRole = em.createQuery("SELECT r FROM Role r WHERE r.name = :name", Role.class)
-                    .setParameter("name", "User")
-                    .getResultList()
-                    .stream()
-                    .findFirst()
-                    .orElse(null);
-
-
-            // Kiểm tra xem User đã tồn tại hay chưa
-            User existingUser = em.createQuery("SELECT u FROM User u WHERE u.id = :id", User.class)
-                    .setParameter("id", "Kien01")
-                    .getResultList()
-                    .stream()
-                    .findFirst()
-                    .orElse(null);
-
-            User user;
-            if (existingUser == null) {
-                // Nếu chưa tồn tại, tạo mới
-                user = new User();
-                //ID tự sinh UUID
-                user.setName("Kien01");
-                user.setRole(userRole);
-                String plainPassword = "password123";
-                String hashedPassword = PasswordUtil.hashPassword(plainPassword);
-                user.setPassword(hashedPassword);
-
-                em.merge(user);
-            } else {
-                // Nếu đã tồn tại, cập nhật
-                user = existingUser;
-                user.setName("Test User");
-                user.setRole(userRole);
-                // Không cần gọi merge ở đây vì đối tượng đã được quản lý
-            }
-
-
-            em.getTransaction().commit();
-            resp.getWriter().write("Complete user data created successfully!");
+        try {
+            ToyDAOImpl toyDAO = new ToyDAOImpl();
+            List<Toy> toys = toyDAO.getAllToys();
+            out.println("<html>Laay thanh cong<body>");
         } catch (Exception e) {
-            e.printStackTrace();
-            resp.getWriter().write("Error: " + e.getMessage());
+            out.println("<html>Khong the lay du lieu <body>");
         }
+
+
     }
 
 

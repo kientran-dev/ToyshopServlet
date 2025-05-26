@@ -44,4 +44,7 @@ public class User extends AbstractEntity<String> {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false)
     Role role;
+
+    @Column(name = "is_deleted")
+    boolean isDeleted ; // Trạng thái xóa mềm, mặc định là false (không bị xóa)
 }

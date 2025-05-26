@@ -5,6 +5,9 @@ import com.kiendey.model.Supplier;
 import com.kiendey.utils.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
+
+import java.util.Collections;
 import java.util.List;
 
 public class SupplierDAOImpl implements SupplierDAO {
@@ -87,6 +90,32 @@ public class SupplierDAOImpl implements SupplierDAO {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    // Triển khai phương thức lấy nhà cung cấp theo trang
+    @Override
+    public List<Supplier> getSuppliersByPage(int pageNumber, int pageSize) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Sắp xếp theo tên để đảm bảo thứ tự nhất quán giữa các trang
+            Query<Supplier> query = session.createQuery("FROM Supplier s ORDER BY s.name ASC", Supplier.class);
+            query.setFirstResult((pageNumber - 1) * pageSize);
+            query.setMaxResults(pageSize);
+            return query.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList(); // Trả về danh sách rỗng nếu có lỗi
+        }
+    }
+
+    // Triển khai phương thức đếm tổng số nhà cung cấp
+    @Override
+    public long getTotalSupplierCount() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("SELECT COUNT(s.id) FROM Supplier s", Long.class).uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0L; // Trả về 0 nếu có lỗi
         }
     }
 }

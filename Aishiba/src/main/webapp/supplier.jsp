@@ -1,4 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%-- Thêm dòng này --%>
+
 <style>
     .card {
         border-radius: 16px !important;
@@ -118,6 +120,43 @@
         box-shadow: 0 0 0 2px #e0e7ef;
         transition: box-shadow 0.2s;
     }
+    .pagination-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .pagination-container .page-item {
+        margin: 0 5px;
+    }
+
+    .pagination-container .page-link {
+        padding: 8px 12px;
+        text-decoration: none;
+        color: #0d6efd; /* Bootstrap primary color */
+        border: 1px solid #dee2e6; /* Bootstrap border color */
+        border-radius: 4px;
+        transition: background-color 0.2s, color 0.2s;
+    }
+
+    .pagination-container .page-link:hover {
+        background-color: #e9ecef; /* Bootstrap hover color */
+    }
+
+    .pagination-container .page-item.active .page-link {
+        background-color: #0d6efd;
+        color: white;
+        border-color: #0d6efd;
+    }
+
+    .pagination-container .page-item.disabled .page-link {
+        color: #6c757d; /* Bootstrap disabled color */
+        pointer-events: none;
+        background-color: #fff;
+        border-color: #dee2e6;
+    }
 </style>
 </head>
 <body>
@@ -187,13 +226,6 @@
                             <input type="text" class="form-control" id="searchSupplierInput" placeholder="Tìm kiếm theo mã, tên, SĐT..." oninput="filterSuppliers()">
                         </div>
                     </div>
-                    <div class="col-md-3">
-                        <select class="form-select" id="filterStatus" title="Lọc theo trạng thái" onchange="filterSuppliers()">
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="Đang hợp tác">Đang hợp tác</option>
-                            <option value="Ngừng hợp tác">Ngừng hợp tác</option>
-                        </select>
-                    </div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle rounded-4 overflow-hidden">
@@ -210,69 +242,101 @@
                             <th>Số điện thoại</th>
                             <th>Email</th>
                             <th>Địa chỉ</th>
-                            <th class="text-center">Trạng thái</th>
                             <th>Ghi chú</th>
                         </tr>
                         </thead>
                         <tbody id="supplierTableBody">
-                        <tr>
-                            <td><input type="checkbox" class="form-check-input supplier-checkbox" title="Chọn nhà cung cấp này" onclick="event.stopPropagation();"></td>
-                            <td><i class="bi bi-star star-outline" onclick="toggleSupplierStar(this, event)"></i></td>
-                            <td>NCC001</td>
-                            <td>Công ty ABC</td>
-                            <td>0901234567</td>
-                            <td>abc@company.com</td>
-                            <td>123 Đường A, Quận B</td>
-                            <td class="text-center"><span class="badge bg-success">Đang hợp tác</span></td>
-                            <td>Chuyên đồ chơi trẻ em</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox" class="form-check-input supplier-checkbox" title="Chọn nhà cung cấp này" onclick="event.stopPropagation();"></td>
-                            <td><i class="bi bi-star star-outline" onclick="toggleSupplierStar(this, event)"></i></td>
-                            <td>NCC002</td>
-                            <td>Công ty XYZ</td>
-                            <td>0912345678</td>
-                            <td>xyz@company.com</td>
-                            <td>456 Đường C, Quận D</td>
-                            <td class="text-center"><span class="badge bg-success">Đang hợp tác</span></td>
-                            <td>Nhà cung cấp xe trẻ em</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox" class="form-check-input supplier-checkbox" title="Chọn nhà cung cấp này" onclick="event.stopPropagation();"></td>
-                            <td><i class="bi bi-star star-outline" onclick="toggleSupplierStar(this, event)"></i></td>
-                            <td>NCC003</td>
-                            <td>Thiên Long</td>
-                            <td>0987654321</td>
-                            <td>thienlong@company.com</td>
-                            <td>789 Đường E, Quận F</td>
-                            <td class="text-center"><span class="badge bg-danger">Ngừng hợp tác</span></td>
-                            <td>Chuyên văn phòng phẩm</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox" class="form-check-input supplier-checkbox" title="Chọn nhà cung cấp này" onclick="event.stopPropagation();"></td>
-                            <td><i class="bi bi-star star-outline" onclick="toggleSupplierStar(this, event)"></i></td>
-                            <td>NCC004</td>
-                            <td>Đại Dương Xanh</td>
-                            <td>0977123456</td>
-                            <td>daiduong@company.com</td>
-                            <td>321 Đường G, Quận H</td>
-                            <td class="text-center"><span class="badge bg-success">Đang hợp tác</span></td>
-                            <td>Đồ chơi biển</td>
-                        </tr>
-                        <tr>
-                            <td><input type="checkbox" class="form-check-input supplier-checkbox" title="Chọn nhà cung cấp này" onclick="event.stopPropagation();"></td>
-                            <td><i class="bi bi-star star-outline" onclick="toggleSupplierStar(this, event)"></i></td>
-                            <td>NCC005</td>
-                            <td>Phương Nam</td>
-                            <td>0933123456</td>
-                            <td>phuongnam@company.com</td>
-                            <td>654 Đường I, Quận J</td>
-                            <td class="text-center"><span class="badge bg-success">Đang hợp tác</span></td>
-                            <td>Đối tác lâu năm</td>
-                        </tr>
+                        <%-- Kiểm tra nếu supplierList không rỗng --%>
+                        <c:if test="${not empty supplierList}">
+                            <%-- Duyệt qua danh sách nhà cung cấp và hiển thị --%>
+                            <c:forEach var="supplier" items="${supplierList}" varStatus="loop">
+                                <tr>
+                                    <td><input type="checkbox" class="form-check-input supplier-checkbox" title="Chọn nhà cung cấp này" onclick="event.stopPropagation();"></td>
+                                    <td><i class="bi bi-star star-outline" onclick="toggleSupplierStar(this, event)"></i></td>
+                                    <td style="color: #0D6EFD"><c:out value="${supplier.formattedSupplierCode}" /></td> <%-- Giả sử mã NCC là id --%>
+                                    <td><c:out value="${supplier.name}" /></td>
+                                    <td><c:out value="${supplier.phoneNumber}" /></td>
+                                    <td><c:out value="${supplier.email}" /></td>
+                                    <td><c:out value="${supplier.address}" /></td>
+                                    <td><c:out value="${supplier.description}" /></td>
+                                </tr>
+                            </c:forEach>
+                        </c:if>
+                        <%-- Hiển thị thông báo nếu danh sách rỗng --%>
+                        <c:if test="${empty supplierList}">
+                            <tr>
+                                <td colspan="9" class="text-center">Không có nhà cung cấp nào.</td>
+                            </tr>
+                        </c:if>
                         </tbody>
                     </table>
                 </div>
+
+                <%-- Phần phân trang --%>
+                <c:if test="${totalPages > 1}">
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination-container">
+                                <%-- Nút Previous --%>
+                            <li class="page-item <c:if test='${currentPage == 1}'>disabled</c:if>">
+                                <a class="page-link" href="supplier?page=${currentPage - 1}" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+
+                                <%-- Các nút số trang --%>
+                                <%-- Logic hiển thị số trang (ví dụ: hiển thị 5 trang xung quanh trang hiện tại) --%>
+                            <c:set var="startPage" value="${currentPage - 2}"/>
+                            <c:set var="endPage" value="${currentPage + 2}"/>
+
+                            <c:if test="${startPage < 1}">
+                                <c:set var="endPage" value="${endPage + (1 - startPage)}"/>
+                                <c:set var="startPage" value="1"/>
+                            </c:if>
+                            <c:if test="${endPage > totalPages}">
+                                <c:set var="startPage" value="${startPage - (endPage - totalPages)}"/>
+                                <c:set var="endPage" value="${totalPages}"/>
+                                <c:if test="${startPage < 1}"><c:set var="startPage" value="1"/></c:if>
+                            </c:if>
+
+                                <%-- Nút trang đầu và "..." nếu cần --%>
+                            <c:if test="${startPage > 1}">
+                                <li class="page-item">
+                                    <a class="page-link" href="supplier?page=1">1</a>
+                                </li>
+                                <c:if test="${startPage > 2}">
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                </c:if>
+                            </c:if>
+
+                            <c:forEach begin="${startPage}" end="${endPage}" var="i">
+                                <li class="page-item <c:if test='${currentPage == i}'>active</c:if>">
+                                    <a class="page-link" href="supplier?page=${i}">${i}</a>
+                                </li>
+                            </c:forEach>
+
+                                <%-- Nút trang cuối và "..." nếu cần --%>
+                            <c:if test="${endPage < totalPages}">
+                                <c:if test="${endPage < totalPages - 1}">
+                                    <li class="page-item disabled"><span class="page-link">...</span></li>
+                                </c:if>
+                                <li class="page-item">
+                                    <a class="page-link" href="supplier?page=${totalPages}">${totalPages}</a>
+                                </li>
+                            </c:if>
+
+                                <%-- Nút Next --%>
+                            <li class="page-item <c:if test='${currentPage == totalPages || totalPages == 0}'>disabled</c:if>">
+                                <a class="page-link" href="supplier?page=${currentPage + 1}" aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </c:if>
+                <%-- Hết phần phân trang --%>
+
+            </div>
+
             </div>
             <div id="supplierDetail" class="product-detail-card p-4 mt-4" style="display:none;">
                 <div class="d-flex justify-content-between align-items-center mb-3">

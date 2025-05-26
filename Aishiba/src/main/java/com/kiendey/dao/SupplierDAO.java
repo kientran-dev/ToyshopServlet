@@ -12,4 +12,7 @@ public interface SupplierDAO {
     void deleteSupplier(String id);
     List<Supplier> getAllSuppliers();
     List<Supplier> searchSuppliersByName(String name);
+    // Phương thức mới cho phân trang
+    List<Supplier> getSuppliersByPage(int pageNumber, int pageSize);
+    long getTotalSupplierCount();
 }
