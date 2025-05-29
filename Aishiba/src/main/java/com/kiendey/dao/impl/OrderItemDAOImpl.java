@@ -1,6 +1,7 @@
 package com.kiendey.dao.impl;
 
 import com.kiendey.dao.OrderItemDAO;
+import com.kiendey.dto.ProductSaleStat;
 import com.kiendey.model.Order;
 import com.kiendey.model.OrderItem;
 import com.kiendey.model.Toy;
@@ -8,6 +9,9 @@ import com.kiendey.utils.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
+
+import java.util.Collections;
+import java.util.List;
 
 public class OrderItemDAOImpl implements OrderItemDAO {
     /**
@@ -123,4 +127,21 @@ public class OrderItemDAOImpl implements OrderItemDAO {
         }
     }
 
+    @Override
+    public List<ProductSaleStat> getProductSalesStatistics() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Sử dụng HQL với constructor expression để tạo đối tượng ProductSaleStat
+            // Model OrderItem có thuộc tính 'toy' kiểu Toy, và Toy có 'id', 'name'.
+            // OrderItem có thuộc tính 'quantity' kiểu int.
+            String hql = "SELECT new com.kiendey.dto.ProductSaleStat(oi.toy.id, oi.toy.name, SUM(oi.quantity)) " +
+                    "FROM OrderItem oi " + // [cite: 9]
+                    "GROUP BY oi.toy.id, oi.toy.name " + // [cite: 9]
+                    "ORDER BY SUM(oi.quantity) DESC"; // [cite: 9]
+            Query<ProductSaleStat> query = session.createQuery(hql, ProductSaleStat.class);
+            return query.list();
+        } catch (Exception e) {
+            e.printStackTrace(); // Xử lý exception phù hợp
+            return Collections.emptyList();
+        }
+    }
 }

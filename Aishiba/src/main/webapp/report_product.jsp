@@ -1,18 +1,16 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: PC
-  Date: 5/9/2025
-  Time: 12:07 AM
-  To change this template use File | Settings | File Templates.
---%>
+<%-- Aishiba/src/main/webapp/report_product.jsp --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
+<c:set var="jstlTopN" value="10" />
+
 <main id="main" class="main">
   <div class="pagetitle">
     <h1>Báo cáo hàng hoá</h1>
     <nav>
       <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="#">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="${pageContext.request.contextPath}/homepage">Trang chủ</a></li>
         <li class="breadcrumb-item"><a href="#">Thống kê</a></li>
         <li class="breadcrumb-item active">Hàng hoá</li>
       </ol>
@@ -20,73 +18,293 @@
   </div>
 
   <div class="row">
-    <!-- Sidebar -->
     <div class="col-lg-3 col-md-4 sidebar-main">
+      <%-- Giữ nguyên phần filter của bạn --%>
       <div class="sidebar-section">
         <h5 class="mb-3">Kiểu hiển thị</h5>
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="displayType" id="chart" checked>
-          <label class="form-check-label" for="chart">Biểu đồ</label>
+          <input class="form-check-input" type="radio" name="displayType" id="chartRadio" checked>
+          <label class="form-check-label" for="chartRadio">Biểu đồ</label>
         </div>
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="displayType" id="report">
-          <label class="form-check-label" for="report">Báo cáo</label>
+          <input class="form-check-input" type="radio" name="displayType" id="reportRadio">
+          <label class="form-check-label" for="reportRadio">Báo cáo</label>
         </div>
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="displayType" id="group">
-          <label class="form-check-label" for="group">Gộp hàng hoá cùng loại</label>
+          <input class="form-check-input" type="radio" name="displayType" id="groupRadio">
+          <label class="form-check-label" for="groupRadio">Gộp hàng hoá cùng loại</label>
         </div>
       </div>
-
       <div class="sidebar-section">
         <h5 class="mb-3">Mối quan tâm</h5>
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="focus" id="sales" checked>
-          <label class="form-check-label" for="sales">Bán hàng</label>
+          <input class="form-check-input" type="radio" name="focus" id="salesRadio" checked>
+          <label class="form-check-label" for="salesRadio">Bán hàng</label>
         </div>
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="focus" id="profit">
-          <label class="form-check-label" for="profit">Lợi nhuận</label>
+          <input class="form-check-input" type="radio" name="focus" id="profitRadio">
+          <label class="form-check-label" for="profitRadio">Lợi nhuận</label>
         </div>
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="focus" id="inventory">
-          <label class="form-check-label" for="inventory">Giữ tồn kho</label>
+          <input class="form-check-input" type="radio" name="focus" id="inventoryRadio">
+          <label class="form-check-label" for="inventoryRadio">Giữ tồn kho</label>
         </div>
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="focus" id="import">
-          <label class="form-check-label" for="import">Xuất nhập tồn</label>
+          <input class="form-check-input" type="radio" name="focus" id="importRadio">
+          <label class="form-check-label" for="importRadio">Xuất nhập tồn</label>
         </div>
       </div>
-
       <div class="sidebar-section">
         <h5 class="mb-3">Thời gian</h5>
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="time" id="thisWeek" checked>
-          <label class="form-check-label" for="thisWeek">Tuần này</label>
+          <input class="form-check-input" type="radio" name="time" id="thisWeekRadio" checked>
+          <label class="form-check-label" for="thisWeekRadio">Tuần này</label>
         </div>
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="time" id="custom">
-          <label class="form-check-label" for="custom">Lựa chọn khác</label>
+          <input class="form-check-input" type="radio" name="time" id="customRadio">
+          <label class="form-check-label" for="customRadio">Lựa chọn khác</label>
         </div>
-        <input type="date" class="form-control mt-2" id="customDate">
+        <input type="date" class="form-control mt-2" id="customDateInput">
       </div>
     </div>
 
-    <!-- Main Content -->
     <div class="col-lg-9 col-md-8">
       <div class="card p-4">
-        <h5 class="text-center">Top 10 sản phẩm bán chạy theo số lượng (đã trừ trả hàng)</h5>
-        <div id="chart1" style="height: 300px;"></div>
+        <h5 class="text-center card-title">Top ${jstlTopN} sản phẩm được bán nhiều nhất</h5>
+        <%-- Đổi ID biểu đồ để tránh nhầm lẫn nếu có --%>
+        <div id="chartTopSellingHorizontalBarDistributed" style="height: 500px;"></div>
       </div>
 
-      <div class="card p-4 mt-4">
-        <h5 class="text-center">Top 10 sản phẩm doanh thu cao nhất (đã trừ trả hàng)</h5>
-        <div id="chart2" style="height: 300px;"></div>
+      <%-- Các bảng thống kê vẫn giữ nguyên cách bạn đã làm --%>
+      <div class="card mt-4">
+        <div class="card-body">
+          <h5 class="card-title">Danh sách Top ${jstlTopN} sản phẩm bán chạy nhất (Theo Số Lượng)</h5>
+          <c:choose>
+            <c:when test="${not empty productSaleStats}">
+              <div class="table-responsive">
+                <table class="table table-striped table-hover table-sm">
+                  <thead class="table-light">
+                  <tr  style="height: 40px;">
+                    <th scope="col" style="width: 5%;">#</th>
+                    <th scope="col" style="width: 25%;">Mã Sản Phẩm</th>
+                    <th scope="col" style="width: 40%;">Tên Sản Phẩm</th>
+                    <th scope="col" class="text-end" style="width: 30%;">Số lượng đã bán</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <c:forEach var="productStat" items="${productSaleStats}" varStatus="status" begin="0" end="${jstlTopN - 1}">
+                    <tr  style="height: 40px;">
+                      <th scope="row">${status.count}</th>
+                      <td><c:out value="${productStat.formattedIdDisplay}" /></td>
+                      <td><c:out value="${productStat.formattedToyName}" /></td>
+                      <td class="text-end fw-bold"><c:out value="${productStat.quantitySold}" /></td>
+                    </tr>
+                  </c:forEach>
+                  </tbody>
+                </table>
+              </div>
+            </c:when>
+            <c:otherwise>
+              <div class="alert alert-info text-center" role="alert">
+                Chưa có dữ liệu sản phẩm bán chạy.
+              </div>
+            </c:otherwise>
+          </c:choose>
+        </div>
+      </div>
+
+      <div class="card mt-4">
+        <div class="card-body">
+          <h5 class="card-title">Sản phẩm chưa bán được</h5>
+          <c:choose>
+            <c:when test="${not empty unsoldProducts}">
+              <div class="table-responsive">
+                <table class="table table-striped table-hover table-sm">
+                  <thead class="table-light">
+                  <tr v>
+                    <th scope="col" style="width: 5%;">#</th>
+                    <th scope="col" style="width: 30%;">Mã Sản Phẩm</th>
+                    <th scope="col" style="width: 65%;">Tên Sản Phẩm</th>
+                  </tr>
+                  </thead>
+                  <tbody>
+                  <c:forEach var="toy" items="${unsoldProducts}" varStatus="status">
+                    <tr style="height: 40px;">
+                      <th scope="row">${status.count}</th>
+                      <td><c:out value="${toy.formattedIdDisplay}" /></td>
+                      <td><c:out value="${toy.formattedToyName}" /></td>
+                    </tr>
+                  </c:forEach>
+                  </tbody>
+                </table>
+              </div>
+            </c:when>
+            <c:otherwise>
+              <div class="alert alert-info text-center" role="alert">
+                Tất cả sản phẩm đều đã được bán ít nhất một lần hoặc không có sản phẩm nào trong hệ thống.
+              </div>
+            </c:otherwise>
+          </c:choose>
+        </div>
       </div>
     </div>
   </div>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const chartProductNames = []; // Nhãn cho trục Y (ID - Tên Sản Phẩm)
+    const chartQuantityData = []; // Dữ liệu cho trục X (số lượng)
+
+    // Mảng màu sẽ được sử dụng cho các thanh và legend
+    const distributedChartColors = ['#008FFB', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#546E7A', '#26a69a', '#D10CE8', '#F9CE1D', '#33b2df'];
+
+
+    <c:if test="${not empty productSaleStats}">
+    <c:forEach items="${productSaleStats}" var="p" varStatus="loopStatus" begin="0" end="${jstlTopN - 1}">
+    // Đảm bảo p.formattedProductDisplay trả về giá trị chuỗi hợp lệ
+    chartProductNames.push('${p.formattedToyName.replace("\\\\", "\\\\\\\\").replace("\'", "\\\'").replace("\"", "\\\"")}');
+    chartQuantityData.push(${p.quantitySold});
+    </c:forEach>
+    </c:if>
+
+// ... (bên trong thẻ <script>) ...
+    var optionsHorizontalBarDistributed = {
+      series: [{
+        name: 'Số lượng đã bán', // Tên series
+        data: chartQuantityData
+      }],
+      chart: {
+        type: 'bar',
+        height: 700
+      },
+      plotOptions: {
+        bar: {
+          horizontal: true,
+          barHeight: '65%',
+          distributed: true,
+          dataLabels: {
+            position: 'top'
+          }
+        }
+      },
+      colors: distributedChartColors,
+      dataLabels: {
+        enabled: false, // Tắt data label trên thanh
+      },
+      xaxis: { // Đây là dọc vì horizontal
+        categories: chartProductNames, // Tên sản phẩm ("ID - Tên SP") được gán vào đây
+        title: {
+          text: 'Số lượng đã bán',
+          style: {
+            fontSize: '16px',
+            fontWeight: 'bold'
+          }
+        },
+        labels: {
+          show: true
+          // Không cần categories ở đây vì đây là trục số
+        }
+      },
+      yaxis: { // Đây là ngang vì horizontal
+        title: {
+          text: 'Sản phẩm',
+          style: {
+            fontSize: '17px',
+            fontWeight: 'bold'
+          }
+        },
+        labels: {
+          show: true,
+          style: {
+            fontSize: '13px',
+            colors: '#333'
+          },
+          formatter: function (value) {
+            if (value && value.length > 40) {
+              return value.substring(0, 37) + '...';
+            }
+            return value;
+          }
+        }
+      },
+      grid: {
+        xaxis: {
+          lines: {
+            show: true
+          }
+        },
+        yaxis: {
+          lines: {
+            show: false
+          }
+        }
+      },
+      legend: {
+        show: true,
+        position: 'bottom',
+        horizontalAlign: 'center',
+        offsetY: 5,
+      },
+
+      tooltip: {
+        theme: 'dark',
+        // Đối với horizontalBar, ApexCharts sẽ tự động lấy category từ trục Y làm tiêu đề tooltip.
+        // Ví dụ: "TOYABC - Tên Sản Phẩm"
+
+        // tooltip.x định dạng giá trị hiển thị cho trục X (số lượng)
+        x: {
+          formatter: function(value) {
+            // 'value' ở đây là số lượng (giá trị của thanh)
+            return value ;
+          }
+        },
+        // tooltip.y định dạng phần hiển thị của series trong tooltip
+        y: {
+          // Không cần formatter cho y ở đây để hiển thị lại tên sản phẩm,
+          // vì tên sản phẩm đã là tiêu đề chính của tooltip.
+          // Thay vào đó, chúng ta chỉ cần title cho series.
+          title: {
+            formatter: function (seriesName) {
+              // seriesName là 'Số lượng đã bán'
+              return seriesName + ':';
+            }
+          }
+          // Nếu bạn vẫn muốn formatter cho y (sẽ không cần thiết nếu x đã định dạng giá trị):
+          // formatter: function(value, { series, seriesIndex, dataPointIndex, w }) {
+          //    // 'value' trong ngữ cảnh này của tooltip.y.formatter cho horizontal bar
+          //    // thực chất là giá trị của series, giống như trong tooltip.x.formatter.
+          //    // Tránh nhầm lẫn, nên tập trung định dạng giá trị ở tooltip.x.formatter.
+          //    return value; // Hoặc bỏ trống nếu không muốn hiển thị gì thêm
+          // }
+        }
+      },
+      noData: {
+        text: "Không có dữ liệu để hiển thị.",
+        align: 'center',
+        verticalAlign: 'middle',
+        offsetX: 0,
+        offsetY: 0,
+        style: {
+          fontSize: '16px',
+        }
+      }
+    };
+
+    const chartDiv = document.querySelector("#chartTopSellingHorizontalBarDistributed");
+    if (chartDiv) {
+      if (chartQuantityData.length > 0 && chartProductNames.length === chartQuantityData.length) {
+        var chart = new ApexCharts(chartDiv, optionsHorizontalBarDistributed);
+        chart.render();
+      } else if (chartQuantityData.length === 0) {
+        chartDiv.innerHTML = '<div class="alert alert-info text-center p-5" role="alert">Không có dữ liệu sản phẩm bán chạy để hiển thị biểu đồ.</div>';
+      } else {
+        chartDiv.innerHTML = '<div class="alert alert-warning text-center p-5" role="alert">Lỗi: Dữ liệu tên sản phẩm và số lượng không khớp hoặc tên sản phẩm rỗng.</div>';
+      }
+    }
+  });
+</script>
 <style>
   /* Định vị sidebar trong main */
   .sidebar-main {
@@ -260,55 +478,3 @@
     /* Tăng khoảng cách giữa các khung biểu đồ */
   }
 </style>
-
-<script>
-  // Biểu đồ 1
-  var options1 = {
-    series: [{
-      data: [60, 40]
-    }],
-    chart: {
-      type: 'bar',
-      height: 300
-    },
-    plotOptions: {
-      bar: {
-        horizontal: true
-      }
-    },
-    dataLabels: {
-      enabled: false // Tắt hiển thị số liệu trên cột
-    },
-    xaxis: {
-      categories: ['Cặp đa khóa số', 'Ví nhớ dùng card Synapse']
-    }
-  };
-
-  var chart1 = new ApexCharts(document.querySelector("#chart1"), options1);
-  chart1.render();
-
-  // Biểu đồ 2
-  var options2 = {
-    series: [{
-      data: [90000000, 20000000]
-    }],
-    chart: {
-      type: 'bar',
-      height: 300
-    },
-    plotOptions: {
-      bar: {
-        horizontal: true
-      }
-    },
-    dataLabels: {
-      enabled: false // Tắt hiển thị số liệu trên cột
-    },
-    xaxis: {
-      categories: ['Cặp đa khóa số', 'Ví nhớ dùng card Synapse']
-    }
-  };
-
-  var chart2 = new ApexCharts(document.querySelector("#chart2"), options2);
-  chart2.render();
-</script>

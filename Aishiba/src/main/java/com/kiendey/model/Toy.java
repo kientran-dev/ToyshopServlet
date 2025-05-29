@@ -1,5 +1,6 @@
 package com.kiendey.model;
 
+import com.kiendey.utils.StringFormatUtil;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -65,4 +66,19 @@ public class Toy {
 
     @Column(name = "is_deleted")
     boolean isDeleted ; // Trạng thái xóa mềm, mặc định là false (không bị xóa)
+
+    // Thêm phương thức này
+    public String getFormattedIdDisplay() {
+        if (this.getId() != null && this.getId().length() >= 8) {
+            return "TOY" + this.getId().substring(0, 4).toUpperCase();
+        }
+        return "TOY-N/A"; // Hoặc một giá trị mặc định khác nếu id không hợp lệ
+    }
+
+    /**
+     * Trả về tên sản phẩm đã được định dạng (Title Case).
+     */
+    public String getFormattedToyName() {
+        return StringFormatUtil.toTitleCase(this.name);
+    }
 }
