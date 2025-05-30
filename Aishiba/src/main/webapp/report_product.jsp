@@ -23,34 +23,30 @@
       <div class="sidebar-section">
         <h5 class="mb-3">Kiểu hiển thị</h5>
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="displayType" id="chartRadio" checked>
+          <input class="form-check-input" type="radio" name="displayType" id="chartRadio" value="chart" <c:if test="${empty param.displayType or param.displayType eq 'chart'}">checked</c:if>>
           <label class="form-check-label" for="chartRadio">Biểu đồ</label>
         </div>
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="displayType" id="reportRadio">
+          <input class="form-check-input" type="radio" name="displayType" id="reportRadio" value="report" <c:if test="${param.displayType eq 'report'}">checked</c:if>>
           <label class="form-check-label" for="reportRadio">Báo cáo</label>
         </div>
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="displayType" id="groupRadio">
+          <input class="form-check-input" type="radio" name="displayType" id="groupRadio" value="group" <c:if test="${param.displayType eq 'group'}">checked</c:if>>
           <label class="form-check-label" for="groupRadio">Gộp hàng hoá cùng loại</label>
         </div>
       </div>
       <div class="sidebar-section">
         <h5 class="mb-3">Mối quan tâm</h5>
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="focus" id="salesRadio" checked>
+          <input class="form-check-input" type="radio" name="focus" id="salesRadio" value="sales" <c:if test="${empty param.focus or param.focus eq 'sales'}">checked</c:if>>
           <label class="form-check-label" for="salesRadio">Bán hàng</label>
         </div>
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="focus" id="profitRadio">
-          <label class="form-check-label" for="profitRadio">Lợi nhuận</label>
-        </div>
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="focus" id="inventoryRadio">
+          <input class="form-check-input" type="radio" name="focus" id="inventoryRadio" value="inventory" <c:if test="${param.focus eq 'inventory'}">checked</c:if>>
           <label class="form-check-label" for="inventoryRadio">Giữ tồn kho</label>
         </div>
         <div class="form-check">
-          <input class="form-check-input" type="radio" name="focus" id="importRadio">
+          <input class="form-check-input" type="radio" name="focus" id="importRadio" value="import" <c:if test="${param.focus eq 'import'}">checked</c:if>>
           <label class="form-check-label" for="importRadio">Xuất nhập tồn</label>
         </div>
       </div>
@@ -69,84 +65,201 @@
     </div>
 
     <div class="col-lg-9 col-md-8">
-      <div class="card p-4">
-        <h5 class="text-center card-title">Top ${jstlTopN} sản phẩm được bán nhiều nhất</h5>
-        <%-- Đổi ID biểu đồ để tránh nhầm lẫn nếu có --%>
-        <div id="chartTopSellingHorizontalBarDistributed" style="height: 500px;"></div>
-      </div>
-
-      <%-- Các bảng thống kê vẫn giữ nguyên cách bạn đã làm --%>
-      <div class="card mt-4">
-        <div class="card-body">
-          <h5 class="card-title">Danh sách Top ${jstlTopN} sản phẩm bán chạy nhất (Theo Số Lượng)</h5>
-          <c:choose>
-            <c:when test="${not empty productSaleStats}">
-              <div class="table-responsive">
-                <table class="table table-striped table-hover table-sm">
-                  <thead class="table-light">
-                  <tr  style="height: 40px;">
-                    <th scope="col" style="width: 5%;">#</th>
-                    <th scope="col" style="width: 25%;">Mã Sản Phẩm</th>
-                    <th scope="col" style="width: 40%;">Tên Sản Phẩm</th>
-                    <th scope="col" class="text-end" style="width: 30%;">Số lượng đã bán</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  <c:forEach var="productStat" items="${productSaleStats}" varStatus="status" begin="0" end="${jstlTopN - 1}">
-                    <tr  style="height: 40px;">
-                      <th scope="row">${status.count}</th>
-                      <td><c:out value="${productStat.formattedIdDisplay}" /></td>
-                      <td><c:out value="${productStat.formattedToyName}" /></td>
-                      <td class="text-end fw-bold"><c:out value="${productStat.quantitySold}" /></td>
-                    </tr>
-                  </c:forEach>
-                  </tbody>
-                </table>
-              </div>
-            </c:when>
-            <c:otherwise>
-              <div class="alert alert-info text-center" role="alert">
-                Chưa có dữ liệu sản phẩm bán chạy.
-              </div>
-            </c:otherwise>
-          </c:choose>
+      <%-- Hiển thị phần "Bán hàng" (Sales) --%>
+      <c:if test="${empty param.focus or param.focus eq 'sales'}">
+        <div class="card p-4">
+          <h5 class="text-center card-title">Top ${jstlTopN} sản phẩm được bán nhiều nhất</h5>
+          <div id="chartTopSellingHorizontalBarDistributed" style="height: 500px;"></div>
         </div>
-      </div>
 
-      <div class="card mt-4">
-        <div class="card-body">
-          <h5 class="card-title">Sản phẩm chưa bán được</h5>
-          <c:choose>
-            <c:when test="${not empty unsoldProducts}">
-              <div class="table-responsive">
-                <table class="table table-striped table-hover table-sm">
-                  <thead class="table-light">
-                  <tr v>
-                    <th scope="col" style="width: 5%;">#</th>
-                    <th scope="col" style="width: 30%;">Mã Sản Phẩm</th>
-                    <th scope="col" style="width: 65%;">Tên Sản Phẩm</th>
-                  </tr>
-                  </thead>
-                  <tbody>
-                  <c:forEach var="toy" items="${unsoldProducts}" varStatus="status">
+        <div class="card mt-4">
+          <div class="card-body">
+            <h5 class="card-title">Danh sách Top ${jstlTopN} sản phẩm bán chạy nhất (Theo Số Lượng)</h5>
+            <c:choose>
+              <c:when test="${not empty productSaleStats}">
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover table-sm">
+                    <thead class="table-light">
                     <tr style="height: 40px;">
-                      <th scope="row">${status.count}</th>
-                      <td><c:out value="${toy.formattedIdDisplay}" /></td>
-                      <td><c:out value="${toy.formattedToyName}" /></td>
+                      <th scope="col" style="width: 5%;">#</th>
+                      <th scope="col" style="width: 25%;">Mã Sản Phẩm</th>
+                      <th scope="col" style="width: 40%;">Tên Sản Phẩm</th>
+                      <th scope="col" class="text-end" style="width: 30%;">Số lượng đã bán</th>
                     </tr>
-                  </c:forEach>
-                  </tbody>
-                </table>
-              </div>
-            </c:when>
-            <c:otherwise>
-              <div class="alert alert-info text-center" role="alert">
-                Tất cả sản phẩm đều đã được bán ít nhất một lần hoặc không có sản phẩm nào trong hệ thống.
-              </div>
-            </c:otherwise>
-          </c:choose>
+                    </thead>
+                    <tbody>
+                    <c:forEach var="productStat" items="${productSaleStats}" varStatus="status" begin="0" end="${jstlTopN - 1}">
+                      <tr style="height: 40px;">
+                        <th scope="row">${status.count}</th>
+                        <td><c:out value="${productStat.formattedIdDisplay}" /></td>
+                        <td><c:out value="${productStat.formattedToyName}" /></td>
+                        <td class="text-end fw-bold"><c:out value="${productStat.quantitySold}" /></td>
+                      </tr>
+                    </c:forEach>
+                    </tbody>
+                  </table>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div class="alert alert-info text-center" role="alert">
+                  Chưa có dữ liệu sản phẩm bán chạy.
+                </div>
+              </c:otherwise>
+            </c:choose>
+          </div>
         </div>
-      </div>
+
+        <div class="card mt-4">
+          <div class="card-body">
+            <h5 class="card-title">Sản phẩm chưa bán được</h5>
+            <c:choose>
+              <c:when test="${not empty unsoldProducts}">
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover table-sm">
+                    <thead class="table-light">
+                    <tr>
+                      <th scope="col" style="width: 5%;">#</th>
+                      <th scope="col" style="width: 30%;">Mã Sản Phẩm</th>
+                      <th scope="col" style="width: 65%;">Tên Sản Phẩm</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <c:forEach var="toy" items="${unsoldProducts}" varStatus="status">
+                      <tr style="height: 40px;">
+                        <th scope="row">${status.count}</th>
+                        <td><c:out value="${toy.formattedIdDisplay}" /></td>
+                        <td><c:out value="${toy.formattedToyName}" /></td>
+                      </tr>
+                    </c:forEach>
+                    </tbody>
+                  </table>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div class="alert alert-info text-center" role="alert">
+                  Tất cả sản phẩm đều đã được bán ít nhất một lần hoặc không có sản phẩm nào trong hệ thống.
+                </div>
+              </c:otherwise>
+            </c:choose>
+          </div>
+        </div>
+      </c:if>
+
+      <%-- Thêm phần hiển thị "Giữ tồn kho" (Inventory) --%>
+      <c:if test="${param.focus eq 'inventory'}">
+        <div class="card mt-4">
+          <div class="card-body">
+            <h5 class="card-title">Sản phẩm sắp hết hàng (Dưới ${lowStockThreshold} sản phẩm)</h5>
+            <c:choose>
+              <c:when test="${not empty lowStockStats}">
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover table-sm">
+                    <thead class="table-light">
+                    <tr style="height: 40px;">
+                      <th scope="col" style="width: 5%;">#</th>
+                      <th scope="col" style="width: 25%;">Mã Sản Phẩm</th>
+                      <th scope="col" style="width: 40%;">Tên Sản Phẩm</th>
+                      <th scope="col" class="text-end" style="width: 30%;">Số lượng tồn kho</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <c:forEach var="item" items="${lowStockStats}" varStatus="status">
+                      <tr style="height: 40px;">
+                        <th scope="row">${status.count}</th>
+                        <td><c:out value="${item.formattedIdDisplay}" /></td>
+                        <td><c:out value="${item.formattedToyName}" /></td>
+                        <td class="text-end fw-bold"><c:out value="${item.quantity}" /></td>
+                      </tr>
+                    </c:forEach>
+                    </tbody>
+                  </table>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div class="alert alert-info text-center" role="alert">
+                  Không có sản phẩm nào sắp hết hàng.
+                </div>
+              </c:otherwise>
+            </c:choose>
+          </div>
+        </div>
+
+        <div class="card mt-4">
+          <div class="card-body">
+            <h5 class="card-title">Sản phẩm tồn kho nhiều (Trên ${highStockThreshold} sản phẩm)</h5>
+            <c:choose>
+              <c:when test="${not empty highStockStats}">
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover table-sm">
+                    <thead class="table-light">
+                    <tr style="height: 40px;">
+                      <th scope="col" style="width: 5%;">#</th>
+                      <th scope="col" style="width: 25%;">Mã Sản Phẩm</th>
+                      <th scope="col" style="width: 40%;">Tên Sản Phẩm</th>
+                      <th scope="col" class="text-end" style="width: 30%;">Số lượng tồn kho</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <c:forEach var="item" items="${highStockStats}" varStatus="status">
+                      <tr style="height: 40px;">
+                        <th scope="row">${status.count}</th>
+                        <td><c:out value="${item.formattedIdDisplay}" /></td>
+                        <td><c:out value="${item.formattedToyName}" /></td>
+                        <td class="text-end fw-bold"><c:out value="${item.quantity}" /></td>
+                      </tr>
+                    </c:forEach>
+                    </tbody>
+                  </table>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div class="alert alert-info text-center" role="alert">
+                  Không có sản phẩm nào tồn kho nhiều.
+                </div>
+              </c:otherwise>
+            </c:choose>
+          </div>
+        </div>
+
+        <div class="card mt-4">
+          <div class="card-body">
+            <h5 class="card-title">Sản phẩm đã hết hàng</h5>
+            <c:choose>
+              <c:when test="${not empty outOfStockStats}">
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover table-sm">
+                    <thead class="table-light">
+                    <tr style="height: 40px;">
+                      <th scope="col" style="width: 5%;">#</th>
+                      <th scope="col" style="width: 25%;">Mã Sản Phẩm</th>
+                      <th scope="col" style="width: 40%;">Tên Sản Phẩm</th>
+                      <th scope="col" class="text-end" style="width: 30%;">Số lượng tồn kho</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <c:forEach var="item" items="${outOfStockStats}" varStatus="status">
+                      <tr style="height: 40px;">
+                        <th scope="row">${status.count}</th>
+                        <td><c:out value="${item.formattedIdDisplay}" /></td>
+                        <td><c:out value="${item.formattedToyName}" /></td>
+                        <td class="text-end fw-bold"><c:out value="${item.quantity}" /></td>
+                      </tr>
+                    </c:forEach>
+                    </tbody>
+                  </table>
+                </div>
+              </c:when>
+              <c:otherwise>
+                <div class="alert alert-info text-center" role="alert">
+                  Không có sản phẩm nào đã hết hàng.
+                </div>
+              </c:otherwise>
+            </c:choose>
+          </div>
+        </div>
+      </c:if>
+      <%-- End of "Giữ tồn kho" (Inventory) section --%>
+
     </div>
   </div>
 </main>
@@ -161,7 +274,7 @@
     const distributedChartColors = ['#008FFB', '#00E396', '#FEB019', '#FF4560', '#775DD0', '#546E7A', '#26a69a', '#D10CE8', '#F9CE1D', '#33b2df'];
 
 
-    <c:if test="${not empty productSaleStats}">
+    <c:if test="${not empty productSaleStats and (empty param.focus or param.focus eq 'sales')}">
     <c:forEach items="${productSaleStats}" var="p" varStatus="loopStatus" begin="0" end="${jstlTopN - 1}">
     // Đảm bảo p.formattedProductDisplay trả về giá trị chuỗi hợp lệ
     chartProductNames.push('${p.formattedToyName.replace("\\\\", "\\\\\\\\").replace("\'", "\\\'").replace("\"", "\\\"")}');
@@ -169,7 +282,7 @@
     </c:forEach>
     </c:if>
 
-// ... (bên trong thẻ <script>) ...
+    // ... (bên trong thẻ <script>) ...
     var optionsHorizontalBarDistributed = {
       series: [{
         name: 'Số lượng đã bán', // Tên series
@@ -293,6 +406,8 @@
     };
 
     const chartDiv = document.querySelector("#chartTopSellingHorizontalBarDistributed");
+    // Chỉ render biểu đồ nếu đang ở chế độ "Bán hàng"
+    <c:if test="${empty param.focus or param.focus eq 'sales'}">
     if (chartDiv) {
       if (chartQuantityData.length > 0 && chartProductNames.length === chartQuantityData.length) {
         var chart = new ApexCharts(chartDiv, optionsHorizontalBarDistributed);
@@ -303,6 +418,38 @@
         chartDiv.innerHTML = '<div class="alert alert-warning text-center p-5" role="alert">Lỗi: Dữ liệu tên sản phẩm và số lượng không khớp hoặc tên sản phẩm rỗng.</div>';
       }
     }
+    </c:if>
+
+    // JavaScript để xử lý sự kiện radio button cho "Mối quan tâm" (focus)
+    const focusRadios = document.querySelectorAll('input[name="focus"]');
+    focusRadios.forEach(radio => {
+      radio.addEventListener('change', function() {
+        const selectedFocus = this.value;
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('focus', selectedFocus);
+        window.location.href = currentUrl.toString();
+      });
+    });
+
+    // JavaScript để xử lý sự kiện radio button cho "Kiểu hiển thị" (displayType)
+    const displayTypeRadios = document.querySelectorAll('input[name="displayType"]');
+    displayTypeRadios.forEach(radio => {
+      radio.addEventListener('change', function() {
+        const selectedDisplayType = this.value;
+        const currentUrl = new URL(window.location.href);
+        currentUrl.searchParams.set('displayType', selectedDisplayType);
+        window.location.href = currentUrl.toString();
+      });
+    });
+
+    // Highlight radio button based on current URL parameter on page load
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentFocus = urlParams.get('focus') || 'sales'; // Default to 'sales'
+    const currentDisplayType = urlParams.get('displayType') || 'chart'; // Default to 'chart'
+
+    document.getElementById(currentFocus + 'Radio').checked = true;
+    document.getElementById(currentDisplayType + 'Radio').checked = true;
+
   });
 </script>
 <style>
@@ -424,7 +571,6 @@
     border-radius: 5px;
     /* Bo góc nhẹ */
   }
-
   .gap-3>* {
     margin-left: 10px;
     /* Khoảng cách giữa các nút */
