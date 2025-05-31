@@ -402,7 +402,46 @@
         padding-left: 32px;
         /* Thụt lề cho các chỉ tiêu con */
     }
+
+    @media print {
+
+        .sidebar-main,
+        .sidebar,
+        .header,
+        .back-to-top,
+        .d-flex.justify-content-end,
+            /* Ẩn các nút chức năng trên báo cáo */
+        .sidebar-section,
+        .breadcrumb,
+        select,
+        input[type="radio"],
+        input[type="date"],
+        label[for="report"],
+        label[for="month"],
+        label[for="quarter"],
+        label[for="year"] {
+            display: none !important;
+        }
+
+        body,
+        .main,
+        .main-content,
+        .card {
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            background: #fff !important;
+        }
+
+        .col-lg-9,
+        .col-md-8 {
+            width: 100% !important;
+            max-width: 100% !important;
+            flex: 0 0 100% !important;
+        }
+    }
 </style>
+
 
 <!-- Thêm thư viện SheetJS (đặt trước thẻ đóng </body>) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -417,8 +456,7 @@
         XLSX.writeFile(wb, 'baocaotaichinh.xlsx');
     });
 
-    // Gửi Email - tạm thời hiển thị thông báo phát triển
     document.getElementById('sendEmail').addEventListener('click', function () {
-        alert("Chức năng gửi email đang được phát triển.");
+        alert("Chức năng này đang phát triển");
     });
 </script>

@@ -95,6 +95,12 @@
                         <td class="text-end">6,750,000 </td>
                         <td class="text-end">750,000 </td>
                     </tr>
+                    <tr class="table-primary fw-bold">
+                        <td colspan="4" class="text-end">Tổng cộng</td>
+                        <td class="text-end">15,500,000</td>
+                        <td class="text-end">13,950,000</td>
+                        <td class="text-end">1,550,000</td>
+                    </tr>
                     </tbody>
                 </table>
 
@@ -167,178 +173,223 @@
 </main>
 
 <style>
-    /* Định vị sidebar trong main */
-    .sidebar-main {
-        position: fixed;
-        /* Cố định vị trí */
-        top: 70px;
-        /* Khoảng cách từ trên xuống để không chèn lên header */
-        right: 0;
-        /* Sát cạnh phải màn hình */
-        width: 20%;
-        /* Chiếm 20% chiều rộng màn hình */
-        height: calc(100vh - 70px);
-        /* Chiều cao toàn màn hình trừ chiều cao của header */
-        z-index: 1020;
-        /* Đảm bảo nằm trên các phần tử khác */
-        overflow-y: auto;
-        /* Cuộn dọc nếu nội dung quá dài */
-        background-color: #ffffff;
-        /* Màu nền trắng */
-        border-left: 1px solid #e0e0e0;
-        /* Viền bên trái */
-        box-shadow: -2px 0 6px rgba(0, 0, 0, 0.1);
-        /* Đổ bóng bên trái */
-        padding: 16px;
-        /* Khoảng cách bên trong */
-    }
+/* Định vị sidebar trong main */
+.sidebar-main {
+position: fixed;
+/* Cố định vị trí */
+top: 70px;
+/* Khoảng cách từ trên xuống để không chèn lên header */
+right: 0;
+/* Sát cạnh phải màn hình */
+width: 20%;
+/* Chiếm 20% chiều rộng màn hình */
+height: calc(100vh - 70px);
+/* Chiều cao toàn màn hình trừ chiều cao của header */
+z-index: 1020;
+/* Đảm bảo nằm trên các phần tử khác */
+overflow-y: auto;
+/* Cuộn dọc nếu nội dung quá dài */
+background-color: #ffffff;
+/* Màu nền trắng */
+border-left: 1px solid #e0e0e0;
+/* Viền bên trái */
+box-shadow: -2px 0 6px rgba(0, 0, 0, 0.1);
+/* Đổ bóng bên trái */
+padding: 16px;
+/* Khoảng cách bên trong */
+}
 
-    /* Đảm bảo nội dung chính không bị chồng lấn */
-    .main-content {
-        margin-right: 20%;
-        /* Đẩy nội dung chính sang trái để nhường chỗ cho sidebar */
-    }
+/* Đảm bảo nội dung chính không bị chồng lấn */
+.main-content {
+margin-right: 20%;
+/* Đẩy nội dung chính sang trái để nhường chỗ cho sidebar */
+}
 
-    /* Tùy chỉnh khung sidebar */
-    .sidebar-wrapper {
-        padding: 16px;
-        /* Khoảng cách bên trong */
-        background-color: #ffffff;
-        /* Màu nền trắng */
-        border-radius: 8px;
-        /* Bo góc */
-    }
+/* Tùy chỉnh khung sidebar */
+.sidebar-wrapper {
+padding: 16px;
+/* Khoảng cách bên trong */
+background-color: #ffffff;
+/* Màu nền trắng */
+border-radius: 8px;
+/* Bo góc */
+}
 
-    /* Khung nhỏ cho từng phần */
-    .card {
-        background-color: #f9f9f9;
-        /* Màu nền sáng hơn */
-        border: 1px solid #e0e0e0;
-        /* Viền màu xám nhạt */
-        border-radius: 4px;
-        /* Bo góc nhẹ */
-        padding: 16px;
-        /* Khoảng cách bên trong */
-        margin-bottom: 16px;
-        /* Khoảng cách giữa các khung */
-    }
+/* Khung nhỏ cho từng phần */
+.card {
+background-color: #f9f9f9;
+/* Màu nền sáng hơn */
+border: 1px solid #e0e0e0;
+/* Viền màu xám nhạt */
+border-radius: 4px;
+/* Bo góc nhẹ */
+padding: 16px;
+/* Khoảng cách bên trong */
+margin-bottom: 16px;
+/* Khoảng cách giữa các khung */
+}
 
-    /* Tiêu đề của từng phần */
-    .card h5 {
-        font-size: 16px;
-        /* Cỡ chữ tiêu đề */
-        font-weight: bold;
-        /* In đậm tiêu đề */
-        color: #012970;
-        /* Màu chữ tiêu đề */
-        margin-bottom: 12px;
-        /* Khoảng cách dưới tiêu đề */
-    }
+/* Tiêu đề của từng phần */
+.card h5 {
+font-size: 16px;
+/* Cỡ chữ tiêu đề */
+font-weight: bold;
+/* In đậm tiêu đề */
+color: #012970;
+/* Màu chữ tiêu đề */
+margin-bottom: 12px;
+/* Khoảng cách dưới tiêu đề */
+}
 
-    /* Tùy chỉnh từng phần trong sidebar */
-    .sidebar-section {
-        margin-bottom: 16px;
-        /* Khoảng cách giữa các phần */
-        padding: 16px;
-        background-color: #ffffff;
-        /* Nền trắng */
-        border: 1px solid #e0e0e0;
-        /* Viền màu xám nhạt */
-        border-radius: 8px;
-        /* Bo góc */
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        /* Đổ bóng nhẹ */
-    }
+/* Tùy chỉnh từng phần trong sidebar */
+.sidebar-section {
+margin-bottom: 16px;
+/* Khoảng cách giữa các phần */
+padding: 16px;
+background-color: #ffffff;
+/* Nền trắng */
+border: 1px solid #e0e0e0;
+/* Viền màu xám nhạt */
+border-radius: 8px;
+/* Bo góc */
+box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+/* Đổ bóng nhẹ */
+}
 
-    /* Tiêu đề của từng phần */
-    .sidebar-section h5 {
-        font-size: 16px;
-        font-weight: bold;
-        color: #012970;
-        margin-bottom: 12px;
-    }
+/* Tiêu đề của từng phần */
+.sidebar-section h5 {
+font-size: 16px;
+font-weight: bold;
+color: #012970;
+margin-bottom: 12px;
+}
 
-    /* Input và select */
-    .sidebar-section .form-control,
-    .sidebar-section .form-select {
-        margin-top: 8px;
-        border-radius: 4px;
-    }
+/* Input và select */
+.sidebar-section .form-control,
+.sidebar-section .form-select {
+margin-top: 8px;
+border-radius: 4px;
+}
 
-    /* Radio button và nhãn */
-    .sidebar-section .form-check {
-        margin-bottom: 8px;
-    }
+/* Radio button và nhãn */
+.sidebar-section .form-check {
+margin-bottom: 8px;
+}
 
-    .sidebar-section .form-check-label {
-        font-size: 14px;
-        color: #6c757d;
-    }
+.sidebar-section .form-check-label {
+font-size: 14px;
+color: #6c757d;
+}
 
-    .text-center .btn {
-        padding: 10px 20px;
-        /* Tăng kích thước nút */
-        font-size: 14px;
-        /* Cỡ chữ */
-        border-radius: 5px;
-        /* Bo góc nhẹ */
-    }
+.text-center .btn {
+padding: 10px 20px;
+/* Tăng kích thước nút */
+font-size: 14px;
+/* Cỡ chữ */
+border-radius: 5px;
+/* Bo góc nhẹ */
+}
 
-    .gap-3>* {
-        margin-left: 10px;
-        /* Khoảng cách giữa các nút */
-    }
+.gap-3>* {
+margin-left: 10px;
+/* Khoảng cách giữa các nút */
+}
 
-    .d-flex.justify-content-end .btn {
-        padding: 10px 20px;
-        /* Tăng kích thước nút */
-        font-size: 14px;
-        /* Cỡ chữ */
-        border-radius: 5px;
-        /* Bo góc nhẹ */
-    }
+.d-flex.justify-content-end .btn {
+padding: 10px 20px;
+/* Tăng kích thước nút */
+font-size: 14px;
+/* Cỡ chữ */
+border-radius: 5px;
+/* Bo góc nhẹ */
+}
 
-    .d-flex.justify-content-end .btn+.btn {
-        margin-left: 10px;
-        /* Khoảng cách giữa các nút */
-    }
+.d-flex.justify-content-end .btn+.btn {
+margin-left: 10px;
+/* Khoảng cách giữa các nút */
+}
 
-    .d-flex.justify-content-end {
-        margin-top: -10px;
-        /* Điều chỉnh khoảng cách với tiêu đề */
-    }
+.d-flex.justify-content-end {
+margin-top: -10px;
+/* Điều chỉnh khoảng cách với tiêu đề */
+}
 
-    .d-flex.justify-content-end .btn {
-        padding: 8px 16px;
-        /* Kích thước nút */
-        font-size: 14px;
-        /* Cỡ chữ */
-        border-radius: 5px;
-        /* Bo góc nhẹ */
-    }
+.d-flex.justify-content-end .btn {
+padding: 8px 16px;
+/* Kích thước nút */
+font-size: 14px;
+/* Cỡ chữ */
+border-radius: 5px;
+/* Bo góc nhẹ */
+}
 
-    .d-flex.justify-content-end .btn+.btn {
-        margin-left: 10px;
-        /* Khoảng cách giữa các nút */
-    }
+.d-flex.justify-content-end .btn+.btn {
+margin-left: 10px;
+/* Khoảng cách giữa các nút */
+}
+
+@media print {
+
+/* Ẩn header, sidebar, các nút chức năng khi in */
+#header,
+#sidebar,
+.sidebar-main,
+.d-flex.justify-content-end,
+.sidebar-section,
+.back-to-top {
+display: none !important;
+}
+
+/* Căn chỉnh main cho đẹp khi in */
+#main.main,
+.main-content,
+.col-lg-9,
+.col-md-8 {
+width: 100% !important;
+max-width: 100% !important;
+margin: 0 !important;
+float: none !important;
+position: static !important;
+}
+
+/* Xóa margin/padding không cần thiết */
+body,
+html,
+#main.main {
+padding: 0 !important;
+margin: 0 !important;
+background: #fff !important;
+}
+
+/* Bảng báo cáo full width */
+table.table {
+width: 100% !important;
+font-size: 14px;
+}
+
+/* Ẩn các phần không cần thiết khác nếu có */
+}
 </style>
 
+<!-- Thêm thư viện SheetJS trước </body> -->
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
 <script>
     // Hàm in báo cáo
     document.getElementById('printReport').addEventListener('click', function () {
-        window.print(); // Sử dụng chức năng in của trình duyệt
+        window.print();
     });
 
     // Hàm xuất Excel
     document.getElementById('exportExcel').addEventListener('click', function () {
-        alert('Chức năng xuất Excel đang được phát triển!');
-        // Bạn có thể sử dụng thư viện như SheetJS (XLSX) để xuất dữ liệu ra file Excel
+        // Lấy bảng cần xuất
+        var table = document.querySelector('table.table');
+        var wb = XLSX.utils.table_to_book(table, { sheet: "Báo cáo cuối ngày" });
+        XLSX.writeFile(wb, 'baocao_cuoingay.xlsx');
     });
 
     // Hàm gửi Email
     document.getElementById('sendEmail').addEventListener('click', function () {
         alert('Chức năng gửi Email đang được phát triển!');
-        // Bạn có thể tích hợp API gửi email tại đây
     });
 </script>

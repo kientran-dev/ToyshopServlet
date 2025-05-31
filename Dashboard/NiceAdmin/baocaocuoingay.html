@@ -1,408 +1,828 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Báo cáo cuối ngày</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  <!-- Boxicons để dùng icon toolbar -->
-  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-  <script>
-    function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-      } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        }
-      }
-    }
-  </script>
-  <style>
-    /* Căn icon clock giữa input */
-    .relative input[type="time"] {
-      height: 32px;
-      line-height: 32px;
-    }
+  <title>Dashboard - Aishiba</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
 
-    .relative i.bi-clock {
-      top: 50%;
-      transform: translateY(-50%);
-    }
+  <!-- Favicons -->
+  <link href="\assets\img\logo.png" rel="icon">
+  <link href="\assets\img\logo.png" rel="apple-touch-icon">
 
-    .active-button {
-      background-color: #bbf7d0;
-      /* màu nền xanh nhạt */
-      color: #166534;
-      /* chữ xanh đậm */
-      border-color: #22c55e;
-    }
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link
+          href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i"
+          rel="stylesheet">
 
-    .inactive-button {
-      background-color: #ffffff;
-      color: #4b5563;
-      border-color: #d1d5db;
-    }
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="assets/vendor/quill/quill.snow.css" rel="stylesheet">
+  <link href="assets/vendor/quill/quill.bubble.css" rel="stylesheet">
+  <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+  <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet">
 
-    #report-content.vertical {
-      width: 850px;
-    }
+  <!-- Template Main CSS File -->
+  <link href="assets/css/style.css" rel="stylesheet">
 
-    #report-content.horizontal {
-      width: 1200px;
-    }
-  </style>
 
+
+  <!-- =======================================================
+    * Template Name: NiceAdmin
+    * Template URL: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/
+    * Updated: Apr 20 2024 with Bootstrap v5.3.3
+    * Author: BootstrapMade.com
+    * License: https://bootstrapmade.com/license/
+    ======================================================== -->
 </head>
 
-<body class="bg-[#7b8893] font-sans text-gray-800">
-  <div class="flex min-h-screen">
-    <!-- Sidebar -->
-    <aside class="w-[300px] bg-gray-100 p-4 border border-gray-300 rounded-lg shadow-sm rounded-lg">
+<body>
 
-      <h2 class="text-xl font-bold mb-4">Báo cáo cuối ngày</h2>
-      <div class="space-y-4">
-        <!-- Kiểu hiển thị -->
-        <div class="bg-white rounded-lg shadow-sm p-4">
-          <h3 class="text-sm font-semibold mb-2 text-gray-600">Kiểu hiển thị</h3>
-          <div class="flex space-x-2">
-            <button id="vertical-btn" class="flex-1 text-sm font-semibold border rounded-md py-1.5">Dọc</button>
-            <button id="horizontal-btn" class="flex-1 text-sm font-semibold border rounded-md py-1.5">Ngang</button>
-          </div>
+<!-- ======= Header ======= -->
+<header id="header" class="header fixed-top d-flex align-items-center">
 
-        </div>
+  <div class="d-flex align-items-center justify-content-between">
+    <a href="index.html" class="logo d-flex align-items-center">
+      <img src="assets/img/logo.png" alt="">
+      <span class="d-none d-lg-block">Aishiba</span>
+    </a>
+    <i class="bi bi-list toggle-sidebar-btn"></i>
+  </div><!-- End Logo -->
 
+  <div class="search-bar">
+    <form class="search-form d-flex align-items-center" method="POST" action="#">
+      <input type="text" name="query" placeholder="Search" title="Enter search keyword">
+      <button type="submit" title="Search"><i class="bi bi-search"></i></button>
+    </form>
+  </div><!-- End Search Bar -->
 
+  <nav class="header-nav ms-auto">
+    <ul class="d-flex align-items-center">
 
-        <!-- Mối quan tâm -->
-        <div class="bg-white rounded-lg shadow-sm p-4">
-          <h3 class="text-sm font-semibold mb-2 text-gray-600">Mối quan tâm</h3>
-          <div class="space-y-1">
-            <label class="flex items-center gap-2">
-              <input type="radio" name="focus" class="accent-green-600" checked>
-              <span>Bán hàng</span>
-            </label>
-            <label class="flex items-center gap-2">
-              <input type="radio" name="focus" class="accent-green-600">
-              <span>Thu chi</span>
-            </label>
-            <label class="flex items-center gap-2">
-              <input type="radio" name="focus" class="accent-green-600">
-              <span>Hàng hóa</span>
-            </label>
-            <label class="flex items-center gap-2">
-              <input type="radio" name="focus" class="accent-green-600">
-              <span>Tổng hợp</span>
-            </label>
-          </div>
-        </div>
+      <li class="nav-item d-block d-lg-none">
+        <a class="nav-link nav-icon search-bar-toggle " href="#">
+          <i class="bi bi-search"></i>
+        </a>
+      </li><!-- End Search Icon-->
 
-        <div class="bg-white rounded-lg shadow-sm p-4 text-[13px]">
-          <h3 class="font-semibold mb-2 text-gray-600">Thời gian</h3>
+      <li class="nav-item dropdown">
 
-          <!-- Radio chọn ngày -->
-          <div class="flex items-center mb-3">
-            <input type="radio" name="timeOption" id="today" class="accent-green-600" checked>
-            <label for="today" class="ml-2 w-full">
-              <div class="flex items-center border border-gray-300 rounded-md px-2 py-1.5 bg-white h-[36px]">
-                <input type="text" readonly value="22/04/2025" class="flex-1 bg-transparent outline-none text-[13px]">
-                <div class="flex flex-col justify-center ml-2">
-                  <i class="bi bi-caret-up-fill text-gray-500 text-[10px]"></i>
-                  <i class="bi bi-caret-down-fill text-gray-500 text-[10px] -mt-1"></i>
-                </div>
+        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+          <i class="bi bi-bell"></i>
+          <span class="badge bg-primary badge-number">4</span>
+        </a><!-- End Notification Icon -->
+
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+          <li class="dropdown-header">
+            You have 4 new notifications
+            <a href="#"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="notification-item">
+            <i class="bi bi-exclamation-circle text-warning"></i>
+            <div>
+              <h4>Lorem Ipsum</h4>
+              <p>Quae dolorem earum veritatis oditseno</p>
+              <p>30 min. ago</p>
+            </div>
+          </li>
+
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="notification-item">
+            <i class="bi bi-x-circle text-danger"></i>
+            <div>
+              <h4>Atque rerum nesciunt</h4>
+              <p>Quae dolorem earum veritatis oditseno</p>
+              <p>1 hr. ago</p>
+            </div>
+          </li>
+
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="notification-item">
+            <i class="bi bi-check-circle text-success"></i>
+            <div>
+              <h4>Sit rerum fuga</h4>
+              <p>Quae dolorem earum veritatis oditseno</p>
+              <p>2 hrs. ago</p>
+            </div>
+          </li>
+
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="notification-item">
+            <i class="bi bi-info-circle text-primary"></i>
+            <div>
+              <h4>Dicta reprehenderit</h4>
+              <p>Quae dolorem earum veritatis oditseno</p>
+              <p>4 hrs. ago</p>
+            </div>
+          </li>
+
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+          <li class="dropdown-footer">
+            <a href="#">Show all notifications</a>
+          </li>
+
+        </ul><!-- End Notification Dropdown Items -->
+
+      </li><!-- End Notification Nav -->
+
+      <li class="nav-item dropdown">
+
+        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+          <i class="bi bi-chat-left-text"></i>
+          <span class="badge bg-success badge-number">3</span>
+        </a><!-- End Messages Icon -->
+
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow messages">
+          <li class="dropdown-header">
+            You have 3 new messages
+            <a href="#"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="message-item">
+            <a href="#">
+              <img src="assets/img/messages-1.jpg" alt="" class="rounded-circle">
+              <div>
+                <h4>Maria Hudson</h4>
+                <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
+                <p>4 hrs. ago</p>
               </div>
-            </label>
-          </div>
+            </a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
 
-          <div class="flex items-center space-x-4 mb-3">
-            <span class="text-gray-600">Từ</span>
-            <div class="relative flex-shrink-0">
-              <input type="text" placeholder="--:--"
-                class="w-16 text-center text-[13px] border-b border-gray-300 focus:outline-none bg-transparent">
-              <i class="bi bi-clock absolute right-0 top-1/2 transform -translate-y-1/2 text-gray-400 text-[14px]"></i>
-            </div>
+          <li class="message-item">
+            <a href="#">
+              <img src="assets/img/messages-2.jpg" alt="" class="rounded-circle">
+              <div>
+                <h4>Anna Nelson</h4>
+                <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
+                <p>6 hrs. ago</p>
+              </div>
+            </a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
 
-            <span class="text-gray-600">Đến</span>
-            <div class="relative flex-shrink-0">
-              <input type="text" placeholder="--:--"
-                class="w-16 text-center text-[13px] border-b border-gray-300 focus:outline-none bg-transparent">
-              <i class="bi bi-clock absolute right-0 top-1/2 transform -translate-y-1/2 text-gray-400 text-[14px]"></i>
-            </div>
-          </div>
+          <li class="message-item">
+            <a href="#">
+              <img src="assets/img/messages-3.jpg" alt="" class="rounded-circle">
+              <div>
+                <h4>David Muldon</h4>
+                <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
+                <p>8 hrs. ago</p>
+              </div>
+            </a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
 
+          <li class="dropdown-footer">
+            <a href="#">Show all messages</a>
+          </li>
 
+        </ul><!-- End Messages Dropdown Items -->
 
-          <!-- Radio chọn khác -->
-          <div class="flex items-center">
-            <input type="radio" name="timeOption" id="other" class="accent-green-600">
-            <label for="other" class="ml-2 flex items-center gap-2">
-              <span class="text-gray-600">Lựa chọn khác</span>
-              <i class="bi bi-calendar-event text-gray-500 text-[14px]"></i>
-            </label>
-          </div>
-          <div id="custom-date-picker" class="mt-2 hidden">
-            <input type="date" class="w-full border border-gray-300 rounded-md p-2 text-sm">
-          </div>
+      </li><!-- End Messages Nav -->
 
-        </div>
+      <li class="nav-item dropdown pe-3">
 
+        <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+          <img src="assets/img/profile-img.jpg" alt="Profile" class="rounded-circle">
+          <span class="d-none d-md-block dropdown-toggle ps-2">K. Anderson</span>
+        </a><!-- End Profile Iamge Icon -->
 
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+          <li class="dropdown-header">
+            <h6>Kevin Anderson</h6>
+            <span>Web Designer</span>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
 
-        <!-- Khách hàng -->
-        <div class="bg-white rounded-lg shadow-sm p-4">
-          <h3 class="text-sm font-semibold mb-2 text-gray-600">Khách hàng</h3>
-          <input type="text" class="w-full border border-gray-300 rounded-md p-2 text-sm placeholder:text-gray-400"
-            placeholder="Theo mã, tên, điện thoại">
-        </div>
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
+              <i class="bi bi-person"></i>
+              <span>My Profile</span>
+            </a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
 
-        <!-- Nhân viên -->
-        <div class="bg-white rounded-lg shadow-sm p-4">
-          <h3 class="text-sm font-semibold mb-2 text-gray-600">Nhân viên</h3>
-          <input type="text" class="w-full border border-gray-300 rounded-md p-2 text-sm placeholder:text-gray-400"
-            placeholder="Chọn nhân viên...">
-        </div>
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
+              <i class="bi bi-gear"></i>
+              <span>Account Settings</span>
+            </a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
 
-        <!-- Người tạo -->
-        <div class="bg-white rounded-lg shadow-sm p-4">
-          <h3 class="text-sm font-semibold mb-2 text-gray-600">Người tạo</h3>
-          <input type="text" class="w-full border border-gray-300 rounded-md p-2 text-sm placeholder:text-gray-400"
-            placeholder="Chọn người tạo...">
-        </div>
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="pages-faq.html">
+              <i class="bi bi-question-circle"></i>
+              <span>Need Help?</span>
+            </a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
 
-        <!-- Phương thức thanh toán -->
-        <div class="bg-white rounded-lg shadow-sm p-4">
-          <h3 class="text-sm font-semibold mb-2 text-gray-600">Phương thức thanh toán</h3>
-          <input type="text" class="w-full border border-gray-300 rounded-md p-2 text-sm placeholder:text-gray-400"
-            placeholder="Chọn phương thức">
-        </div>
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="#">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Sign Out</span>
+            </a>
+          </li>
 
-        <!-- Phương thức bán hàng -->
-        <div class="bg-white rounded-lg shadow-sm p-4">
-          <h3 class="text-sm font-semibold mb-2 text-gray-600">Phương thức bán hàng</h3>
-          <select class="w-full border border-gray-300 rounded-md p-2 text-sm text-gray-700">
-            <option>Online</option>
-            <option>Offline</option>
-          </select>
-        </div>
-      </div>
-    </aside>
+        </ul><!-- End Profile Dropdown Items -->
+      </li><!-- End Profile Nav -->
 
-    <!-- Content -->
-    <main class="flex-1 p-8">
-      <!-- Toolbar điều khiển -->
-      <div class="flex justify-center items-center space-x-2 mb-2 text-white">
-        <i class='bx bx-arrow-back text-xl cursor-pointer hover:text-blue-500'></i>
-        <i class='bx bx-arrow-forward text-xl cursor-pointer hover:text-blue-500'></i>
-        <i class='bx bx-refresh text-xl cursor-pointer hover:text-blue-500'></i>
-        <i class='bx bx-first-page text-xl cursor-pointer hover:text-blue-500'></i>
-        <i class='bx bx-chevron-left text-xl cursor-pointer hover:text-blue-500'></i>
-        <span id="page-indicator" class="text-sm">1 / 1</span>
-        <i class='bx bx-chevron-right text-xl cursor-pointer hover:text-blue-500'></i>
-        <i class='bx bx-last-page text-xl cursor-pointer hover:text-blue-500'></i>
-        <i class='bx bx-file text-xl cursor-pointer hover:text-blue-500'></i>
-        <i class='bx bx-cloud-download text-xl cursor-pointer hover:text-blue-500'></i>
-        <i class='bx bx-printer text-xl cursor-pointer hover:text-blue-500'></i>
-        <i id="zoom-in" class='bx bx-zoom-in text-xl cursor-pointer hover:text-blue-500'></i>
-        <i id="zoom-out" class='bx bx-zoom-out text-xl cursor-pointer hover:text-blue-500'></i>
-        <i id="fullscreen-toggle" class='bx bx-fullscreen text-xl cursor-pointer hover:text-blue-500'></i>
-      </div>
+    </ul>
+  </nav><!-- End Icons Navigation -->
 
+</header><!-- End Header -->
 
-      <div id="report-content"
-        class="bg-gray-100 w-[850px] min-h-[1000px] mx-auto rounded-xl border border-gray-200 shadow-md p-8">
+<!-- ======= Sidebar ======= -->
+<aside id="sidebar" class="sidebar">
 
-        <p class="text-sm text-gray-500 mb-1">Ngày lập: 22/04/2025 18:22</p>
-        <h1 class="text-xl font-bold text-center mb-1">Báo cáo cuối ngày về bán hàng</h1>
-        <p class="text-sm text-center text-gray-500">Ngày bán: 22/04/2025</p>
-        <p class="text-sm text-center text-gray-500 mb-4">Chi nhánh: Chi nhánh trung tâm</p>
+  <ul class="sidebar-nav" id="sidebar-nav">
 
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm text-center border-collapse">
-            <thead>
-              <tr class="bg-sky-100 text-gray-700 font-semibold">
-                <th class="border border-gray-300 p-2">Mã chứng từ</th>
-                <th class="border border-gray-300 p-2">Khách hàng</th>
-                <th class="border border-gray-300 p-2">Nhân viên</th>
-                <th class="border border-gray-300 p-2">Thời gian</th>
-                <th class="border border-gray-300 p-2">Tổng tiền hàng</th>
-                <th class="border border-gray-300 p-2">Giảm giá</th>
-                <th class="border border-gray-300 p-2">Doanh thu</th>
-                <th class="border border-gray-300 p-2">Thu khác</th>
-                <th class="border border-gray-300 p-2">VAT</th>
-                <th class="border border-gray-300 p-2">Phí trả hàng</th>
-                <th class="border border-gray-300 p-2">Thực thu</th>
-                <th class="border border-gray-300 p-2">Ghi nợ</th>
-              </tr>
-            </thead>
+    <li class="nav-item">
+      <a class="nav-link " href="index.html">
+        <i class="bi bi-grid fs-5"></i>
+        <span>Dashboard</span>
+      </a>
+    </li><!-- End Dashboard Nav -->
 
-            <tbody>
-              <tr class="bg-yellow-50 text-gray-700">
-                <td class="border border-gray-200 p-2">+ Hóa đơn: 1</td> <!-- Mã chứng từ -->
-                <td class="border border-gray-200 p-2">Nguyễn Văn A</td> <!-- Khách hàng -->
-                <td class="border border-gray-200 p-2">Trần Thị B</td> <!-- Nhân viên -->
-                <td class="border border-gray-200 p-2">22/04/2025 18:15</td> <!-- Thời gian -->
-                <td class="border border-gray-200 p-2">305,600</td> <!-- Tổng tiền hàng -->
-                <td class="border border-gray-200 p-2">0</td> <!-- Giảm giá -->
-                <td class="border border-gray-200 p-2">305,600</td> <!-- Doanh thu -->
-                <td class="border border-gray-200 p-2">0</td> <!-- Thu khác -->
-                <td class="border border-gray-200 p-2">0</td> <!-- VAT -->
-                <td class="border border-gray-200 p-2">0</td> <!-- Phí trả hàng -->
-                <td class="border border-gray-200 p-2">305,600</td> <!-- Thực thu -->
-                <td class="border border-gray-200 p-2">0</td> <!-- Ghi nợ -->
-              </tr>
-            </tbody>
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-box-seam fs-5"></i><span>Sản phẩm</span><i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="product.html">
+            <i class="bi bi-list-ul fs-5"></i><span>Danh sách sản phẩm</span>
+          </a>
+        </li>
+        <li>
+          <a href="supplier.html">
+            <i class="bi bi-truck fs-5"></i><span>Nhà cung cấp</span>
+          </a>
+        </li>
+      </ul>
+    </li><!-- End Components Nav -->
 
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-people fs-5"></i><span>Nhân viên</span>
+      </a>
+    </li><!-- End Forms Nav -->
 
-          </table>
-        </div>
-      </div>
-    </main>
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#tables-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-cart-check fs-5"></i><span>Giao dịch</span><i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="tables-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="orders.html">
+            <i class="bi bi-receipt fs-5"></i><span>Đơn hàng</span>
+          </a>
+        </li>
+        <li>
+          <a href="stocks.html">
+            <i class="bi bi-box-arrow-in-down fs-5"></i><span>Nhập hàng</span>
+          </a>
+        </li>
+      </ul>
+    </li><!-- End Tables Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-people-fill fs-5"></i><span>Khách hàng</span><i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="#">
+            <i class="bi bi-person-lines-fill fs-5"></i><span>Danh sách khách hàng</span>
+          </a>
+        </li>
+        <li>
+          <a href="#">
+            <i class="bi bi-person-x fs-5"></i><span>Khóa/Mở tài khoản khách hàng</span>
+          </a>
+        </li>
+      </ul>
+    </li><!-- End Charts Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#icons-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-bar-chart-line fs-5"></i><span> Thống kê</span><i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="icons-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="baocaocuoingay.html">
+            <i class="bi bi-calendar-check fs-5"></i><span>Cuối ngày</span>
+          </a>
+        </li>
+        <li>
+          <a href="baocaohanghoa.html">
+            <i class="bi bi-box fs-5"></i><span>Hàng hoá</span>
+          </a>
+        </li>
+        <li>
+          <a href="baocaokhachhang.html">
+            <i class="bi bi-people fs-5"></i><span>Khách hàng</span>
+          </a>
+        </li>
+        <li>
+          <a href="baocaotaichinh.html">
+            <i class="bi bi-cash-coin fs-5"></i><span>Tài chính</span>
+          </a>
+        </li>
+      </ul>
+    </li><!-- End Icons Nav -->
+
+    <li class="nav-heading">Pages</li>
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="users-profile.html">
+        <i class="bi bi-person fs-5"></i>
+        <span>Thông tin cá nhân</span>
+      </a>
+    </li><!-- End Profile Page Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="pages-faq.html">
+        <i class="bi bi-question-circle fs-5"></i>
+        <span>F.A.Q</span>
+      </a>
+    </li><!-- End F.A.Q Page Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="pages-contact.html">
+        <i class="bi bi-envelope fs-5"></i>
+        <span>Liên hệ</span>
+      </a>
+    </li><!-- End Contact Page Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="pages-register.html">
+        <i class="bi bi-person-plus fs-5"></i>
+        <span>Đăng ký</span>
+      </a>
+    </li><!-- End Register Page Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="pages-login.html">
+        <i class="bi bi-box-arrow-in-right fs-5"></i>
+        <span>Đăng nhập</span>
+      </a>
+    </li><!-- End Login Page Nav -->
+
+  </ul>
+
+</aside><!-- End Sidebar-->
+
+<main id="main" class="main">
+  <div class="pagetitle">
+    <h1>Báo cáo cuối ngày</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="#">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="#">Thống kê</a></li>
+        <li class="breadcrumb-item active">Cuối ngày</li>
+      </ol>
+    </nav>
   </div>
-  <script>
-    const backBtn = document.querySelector('.bx-arrow-back');
-    const forwardBtn = document.querySelector('.bx-arrow-forward');
-    const refreshBtn = document.querySelector('.bx-refresh');
-    const firstPageBtn = document.querySelector('.bx-first-page');
-    const prevPageBtn = document.querySelector('.bx-chevron-left');
-    const nextPageBtn = document.querySelector('.bx-chevron-right');
-    const lastPageBtn = document.querySelector('.bx-last-page');
-    const fileBtn = document.querySelector('.bx-file');
-    const downloadBtn = document.querySelector('.bx-cloud-download');
-    const printBtn = document.querySelector('.bx-printer');
-    const zoomInBtn = document.getElementById('zoom-in');
-    const zoomOutBtn = document.getElementById('zoom-out');
-    const fullscreenBtn = document.getElementById('fullscreen-toggle');
-    const pageIndicator = document.getElementById('page-indicator');
+  </div>
+  </div>
+  <!-- End Breadcrumb -->
 
-    // Đây là dòng đã sửa:
-    const reportContent = document.getElementById('report-content');
+  <div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-9 col-md-8">
+      <div class="card p-4">
+        <div class="d-flex justify-content-end mb-3">
+          <button class="btn btn-primary me-2" id="printReport">
+            <i class="bi bi-printer"></i> In báo cáo
+          </button>
+          <button class="btn btn-success me-2" id="exportExcel">
+            <i class="bi bi-file-earmark-excel"></i> Xuất Excel
+          </button>
+          <button class="btn btn-info" id="sendEmail">
+            <i class="bi bi-envelope"></i> Gửi Email
+          </button>
+        </div>
+
+        <p class="text-muted">Ngày lập: <strong id="currentDate"></strong></p>
+
+        <script>
+          const currentDate = new Date();
+          const formattedDate = currentDate.toLocaleString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          });
+          document.getElementById('currentDate').textContent = formattedDate;
+        </script>
+
+        <h3 class="text-center">Báo cáo cuối ngày về bán hàng</h3>
+        <p class="text-center text-muted">Ngày bán: 22/04/2025</p>
+        <p class="text-center text-muted">Chi nhánh: Chi nhánh trung tâm</p>
+
+        <table class="table table-bordered mt-4">
+          <thead class="table-light">
+          <tr>
+            <th>Mã chứng từ</th>
+            <th>Khách hàng</th>
+            <th>Nhân viên</th>
+            <th>Thời gian</th>
+            <th>Tổng tiền hàng</th>
+            <th>Doanh thu</th>
+            <th>VAT</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr>
+            <td>HD001</td>
+            <td>Nguyễn Văn A</td>
+            <td>Trần Thị B</td>
+            <td>22/04/2025 14:30</td>
+            <td class="text-end">5,000,000 </td>
+            <td class="text-end">4,500,000 </td>
+            <td class="text-end">500,000 </td>
+          </tr>
+          <tr>
+            <td>HD002</td>
+            <td>Phạm Văn C</td>
+            <td>Nguyễn Văn D</td>
+            <td>22/04/2025 15:00</td>
+            <td class="text-end">3,000,000 </td>
+            <td class="text-end">2,700,000</td>
+            <td class="text-end"> 300,000 </td>
+          </tr>
+          <tr>
+            <td>HD003</td>
+            <td>Trần Thị E</td>
+            <td>Phạm Thị F</td>
+            <td>22/04/2025 16:45</td>
+            <td class="text-end">7,500,000 </td>
+            <td class="text-end">6,750,000 </td>
+            <td class="text-end">750,000 </td>
+          </tr>
+          <tr class="table-primary fw-bold">
+            <td colspan="4" class="text-end">Tổng cộng</td>
+            <td class="text-end">15,500,000</td>
+            <td class="text-end">13,950,000</td>
+            <td class="text-end">1,550,000</td>
+          </tr>
+          </tbody>
+        </table>
+
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-3 col-md-4 sidebar-main">
 
 
-    let currentPage = 1;
-    const totalPages = 5; // số trang giả định
+      <div class="sidebar-section">
+        <h5 class="mt-4 mb-3">Mối quan tâm</h5>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="focus" id="sales" checked>
+          <label class="form-check-label" for="sales">Bán hàng</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="focus" id="expenses">
+          <label class="form-check-label" for="expenses">Thu chi</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="focus" id="inventory">
+          <label class="form-check-label" for="inventory">Hàng hóa</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="focus" id="summary">
+          <label class="form-check-label" for="summary">Tổng hợp</label>
+        </div>
+      </div>
 
-    function updatePage() {
-      pageIndicator.innerText = `${currentPage} / ${totalPages}`;
+      <div class="sidebar-section">
+        <h5 class="mt-4 mb-3">Thời gian</h5>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="time" id="today" checked>
+          <label class="form-check-label" for="today">22/04/2025</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="time" id="custom">
+          <label class="form-check-label" for="custom">Lựa chọn khác</label>
+        </div>
+        <input type="date" class="form-control mt-2" id="customDate">
+      </div>
+
+      <div class="sidebar-section">
+        <h5 class="mt-4 mb-3">Khách hàng</h5>
+        <input type="text" class="form-control" placeholder="Theo mã, tên, điện thoại">
+      </div>
+
+      <div class="sidebar-section">
+        <h5 class="mt-4 mb-3">Nhân viên</h5>
+        <input type="text" class="form-control" placeholder="Nhập tên nhân viên">
+      </div>
+
+      <div class="sidebar-section">
+        <h5 class="mt-4 mb-3">Người tạo</h5>
+        <input type="text" class="form-control" placeholder="Nhập tên người tạo">
+      </div>
+
+      <div class="sidebar-section">
+        <h5 class="mt-4 mb-3">Phương thức thanh toán</h5>
+        <select class="form-select">
+          <option selected>Chọn phương thức...</option>
+          <option value="1">Tiền mặt</option>
+          <option value="2">Chuyển khoản</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  </div>
+</main>
+
+<style>
+  /* Định vị sidebar trong main */
+  .sidebar-main {
+    position: fixed;
+    /* Cố định vị trí */
+    top: 70px;
+    /* Khoảng cách từ trên xuống để không chèn lên header */
+    right: 0;
+    /* Sát cạnh phải màn hình */
+    width: 20%;
+    /* Chiếm 20% chiều rộng màn hình */
+    height: calc(100vh - 70px);
+    /* Chiều cao toàn màn hình trừ chiều cao của header */
+    z-index: 1020;
+    /* Đảm bảo nằm trên các phần tử khác */
+    overflow-y: auto;
+    /* Cuộn dọc nếu nội dung quá dài */
+    background-color: #ffffff;
+    /* Màu nền trắng */
+    border-left: 1px solid #e0e0e0;
+    /* Viền bên trái */
+    box-shadow: -2px 0 6px rgba(0, 0, 0, 0.1);
+    /* Đổ bóng bên trái */
+    padding: 16px;
+    /* Khoảng cách bên trong */
+  }
+
+  /* Đảm bảo nội dung chính không bị chồng lấn */
+  .main-content {
+    margin-right: 20%;
+    /* Đẩy nội dung chính sang trái để nhường chỗ cho sidebar */
+  }
+
+  /* Tùy chỉnh khung sidebar */
+  .sidebar-wrapper {
+    padding: 16px;
+    /* Khoảng cách bên trong */
+    background-color: #ffffff;
+    /* Màu nền trắng */
+    border-radius: 8px;
+    /* Bo góc */
+  }
+
+  /* Khung nhỏ cho từng phần */
+  .card {
+    background-color: #f9f9f9;
+    /* Màu nền sáng hơn */
+    border: 1px solid #e0e0e0;
+    /* Viền màu xám nhạt */
+    border-radius: 4px;
+    /* Bo góc nhẹ */
+    padding: 16px;
+    /* Khoảng cách bên trong */
+    margin-bottom: 16px;
+    /* Khoảng cách giữa các khung */
+  }
+
+  /* Tiêu đề của từng phần */
+  .card h5 {
+    font-size: 16px;
+    /* Cỡ chữ tiêu đề */
+    font-weight: bold;
+    /* In đậm tiêu đề */
+    color: #012970;
+    /* Màu chữ tiêu đề */
+    margin-bottom: 12px;
+    /* Khoảng cách dưới tiêu đề */
+  }
+
+  /* Tùy chỉnh từng phần trong sidebar */
+  .sidebar-section {
+    margin-bottom: 16px;
+    /* Khoảng cách giữa các phần */
+    padding: 16px;
+    background-color: #ffffff;
+    /* Nền trắng */
+    border: 1px solid #e0e0e0;
+    /* Viền màu xám nhạt */
+    border-radius: 8px;
+    /* Bo góc */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    /* Đổ bóng nhẹ */
+  }
+
+  /* Tiêu đề của từng phần */
+  .sidebar-section h5 {
+    font-size: 16px;
+    font-weight: bold;
+    color: #012970;
+    margin-bottom: 12px;
+  }
+
+  /* Input và select */
+  .sidebar-section .form-control,
+  .sidebar-section .form-select {
+    margin-top: 8px;
+    border-radius: 4px;
+  }
+
+  /* Radio button và nhãn */
+  .sidebar-section .form-check {
+    margin-bottom: 8px;
+  }
+
+  .sidebar-section .form-check-label {
+    font-size: 14px;
+    color: #6c757d;
+  }
+
+  .text-center .btn {
+    padding: 10px 20px;
+    /* Tăng kích thước nút */
+    font-size: 14px;
+    /* Cỡ chữ */
+    border-radius: 5px;
+    /* Bo góc nhẹ */
+  }
+
+  .gap-3>* {
+    margin-left: 10px;
+    /* Khoảng cách giữa các nút */
+  }
+
+  .d-flex.justify-content-end .btn {
+    padding: 10px 20px;
+    /* Tăng kích thước nút */
+    font-size: 14px;
+    /* Cỡ chữ */
+    border-radius: 5px;
+    /* Bo góc nhẹ */
+  }
+
+  .d-flex.justify-content-end .btn+.btn {
+    margin-left: 10px;
+    /* Khoảng cách giữa các nút */
+  }
+
+  .d-flex.justify-content-end {
+    margin-top: -10px;
+    /* Điều chỉnh khoảng cách với tiêu đề */
+  }
+
+  .d-flex.justify-content-end .btn {
+    padding: 8px 16px;
+    /* Kích thước nút */
+    font-size: 14px;
+    /* Cỡ chữ */
+    border-radius: 5px;
+    /* Bo góc nhẹ */
+  }
+
+  .d-flex.justify-content-end .btn+.btn {
+    margin-left: 10px;
+    /* Khoảng cách giữa các nút */
+  }
+
+  @media print {
+
+    /* Ẩn header, sidebar, các nút chức năng khi in */
+    #header,
+    #sidebar,
+    .sidebar-main,
+    .d-flex.justify-content-end,
+    .sidebar-section,
+    .back-to-top {
+      display: none !important;
     }
 
-    if (backBtn) backBtn.addEventListener('click', () => window.history.back());
-    if (forwardBtn) forwardBtn.addEventListener('click', () => window.history.forward());
-    if (refreshBtn) refreshBtn.addEventListener('click', () => location.reload());
-    if (firstPageBtn) firstPageBtn.addEventListener('click', () => { currentPage = 1; updatePage(); });
-    if (prevPageBtn) prevPageBtn.addEventListener('click', () => { if (currentPage > 1) currentPage--; updatePage(); });
-    if (nextPageBtn) nextPageBtn.addEventListener('click', () => { if (currentPage < totalPages) currentPage++; updatePage(); });
-    if (lastPageBtn) lastPageBtn.addEventListener('click', () => { currentPage = totalPages; updatePage(); });
-    if (fileBtn) fileBtn.addEventListener('click', () => alert('Xem tài liệu'));
-    if (downloadBtn) downloadBtn.addEventListener('click', () => alert('Đang tải file...'));
-    if (printBtn) printBtn.addEventListener('click', () => window.print());
-
-    let currentZoom = 1.0;
-    const zoomStep = 0.1;
-    const maxZoom = 2.0;
-    const minZoom = 0.5;
-
-    function applyZoom() {
-      if (reportContent) {
-        reportContent.style.transform = `scale(${currentZoom})`;
-        reportContent.style.transformOrigin = "top center";
-        reportContent.style.transition = "transform 0.3s ease";
-      }
+    /* Căn chỉnh main cho đẹp khi in */
+    #main.main,
+    .main-content,
+    .col-lg-9,
+    .col-md-8 {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      float: none !important;
+      position: static !important;
     }
 
-    if (zoomInBtn) zoomInBtn.addEventListener('click', () => {
-      if (currentZoom < maxZoom) {
-        currentZoom += zoomStep;
-        applyZoom();
-      }
-    });
+    /* Xóa margin/padding không cần thiết */
+    body,
+    html,
+    #main.main {
+      padding: 0 !important;
+      margin: 0 !important;
+      background: #fff !important;
+    }
 
-    if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => {
-      if (currentZoom > minZoom) {
-        currentZoom -= zoomStep;
-        applyZoom();
-      }
-    });
+    /* Bảng báo cáo full width */
+    table.table {
+      width: 100% !important;
+      font-size: 14px;
+    }
 
-    if (fullscreenBtn) fullscreenBtn.addEventListener('click', () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-      } else {
-        document.exitFullscreen();
-      }
-    });
-
-    // Init lần đầu
-    updatePage();
-    applyZoom();
-  </script>
-  <script>
-    // Lấy tất cả các icon đồng hồ bên trong khối time picker
-    document.querySelectorAll('.relative i.bi-clock').forEach(icon => {
-      icon.style.cursor = 'pointer';  // cho con trỏ thành tay khi hover
-
-      // Khi click thì focus vào input ngay trước nó
-      icon.addEventListener('click', () => {
-        const input = icon.parentElement.querySelector('input');
-        if (!input) return;
-
-        // Nếu hỗ trợ showPicker (Chrome mới), hãy gọi nó
-        if (typeof input.showPicker === 'function') {
-          input.showPicker();
-        } else {
-          // Còn không thì chỉ focus vào input
-          input.focus();
-        }
-      });
-    });
-    const otherRadio = document.getElementById('other');
-    const todayRadio = document.getElementById('today');
-    const customDatePicker = document.getElementById('custom-date-picker');
-
-    otherRadio.addEventListener('change', function () {
-      if (this.checked) {
-        customDatePicker.classList.remove('hidden');
-      }
-    });
-
-    todayRadio.addEventListener('change', function () {
-      if (this.checked) {
-        customDatePicker.classList.add('hidden');
-      }
-    });
-    const verticalBtn = document.getElementById('vertical-btn');
-    const horizontalBtn = document.getElementById('horizontal-btn');
-    const reportDiv = document.getElementById('report-content');
-
-    // Khi click Dọc
-    verticalBtn.addEventListener('click', () => {
-      reportDiv.classList.add('vertical');
-      reportDiv.classList.remove('horizontal');
-
-      verticalBtn.classList.add('active-button');
-      verticalBtn.classList.remove('inactive-button');
-      horizontalBtn.classList.add('inactive-button');
-      horizontalBtn.classList.remove('active-button');
-    });
-
-    // Khi click Ngang
-    horizontalBtn.addEventListener('click', () => {
-      reportDiv.classList.add('horizontal');
-      reportDiv.classList.remove('vertical');
-
-      horizontalBtn.classList.add('active-button');
-      horizontalBtn.classList.remove('inactive-button');
-      verticalBtn.classList.add('inactive-button');
-      verticalBtn.classList.remove('active-button');
-    });
+    /* Ẩn các phần không cần thiết khác nếu có */
+  }
+</style>
 
 
-    // Gán trạng thái ban đầu
-    verticalBtn.classList.add('active-button');
-    horizontalBtn.classList.add('inactive-button');
-  </script>
+<!-- Thêm thư viện SheetJS trước </body> -->
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
+<script>
+  // Hàm in báo cáo
+  document.getElementById('printReport').addEventListener('click', function () {
+    window.print();
+  });
+
+  // Hàm xuất Excel
+  document.getElementById('exportExcel').addEventListener('click', function () {
+    // Lấy bảng cần xuất
+    var table = document.querySelector('table.table');
+    var wb = XLSX.utils.table_to_book(table, { sheet: "Báo cáo cuối ngày" });
+    XLSX.writeFile(wb, 'baocao_cuoingay.xlsx');
+  });
+
+  // Hàm gửi Email
+  document.getElementById('sendEmail').addEventListener('click', function () {
+    alert('Chức năng gửi Email đang được phát triển!');
+  });
+</script>
+
+
+<!-- ======= Footer ======= -->
+
+
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i
+        class="bi bi-arrow-up-short"></i></a>
+
+<!-- Vendor JS Files -->
+<script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
+<script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="assets/vendor/chart.js/chart.umd.js"></script>
+<script src="assets/vendor/echarts/echarts.min.js"></script>
+<script src="assets/vendor/quill/quill.js"></script>
+<script src="assets/vendor/simple-datatables/simple-datatables.js"></script>
+<script src="assets/vendor/tinymce/tinymce.min.js"></script>
+<script src="assets/vendor/php-email-form/validate.js"></script>
+
+<!-- Template Main JS File -->
+<script src="assets/js/main.js"></script>
+
 
 </body>
 

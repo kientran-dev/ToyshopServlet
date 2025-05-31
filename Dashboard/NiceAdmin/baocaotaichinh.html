@@ -1,530 +1,894 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Báo cáo tài chính</title>
-  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background-color: #d9dee3;
-    }
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
 
-    .container {
-      display: flex;
-    }
+  <title>Dashboard - Aishiba</title>
+  <meta content="" name="description">
+  <meta content="" name="keywords">
 
-    .sidebar {
-      width: 260px;
-      /* mở rộng hơn */
-      background: #f3f4f6;
-      padding: 20px;
-      overflow-y: auto;
-      height: auto;
-      max-height: 100%;
+  <!-- Favicons -->
+  <link href="\assets\img\logo.png" rel="icon">
+  <link href="\assets\img\logo.png" rel="apple-touch-icon">
 
-    }
+  <!-- Google Fonts -->
+  <link href="https://fonts.gstatic.com" rel="preconnect">
+  <link
+          href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i"
+          rel="stylesheet">
 
+  <!-- Vendor CSS Files -->
+  <link href="assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/vendor/bootstrap-icons/bootstrap-icons.css" rel="stylesheet">
+  <link href="assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
+  <link href="assets/vendor/quill/quill.snow.css" rel="stylesheet">
+  <link href="assets/vendor/quill/quill.bubble.css" rel="stylesheet">
+  <link href="assets/vendor/remixicon/remixicon.css" rel="stylesheet">
+  <link href="assets/vendor/simple-datatables/style.css" rel="stylesheet">
 
-
-    .sidebar h2 {
-      font-size: 20px;
-      font-weight: 700;
-      color: #111827;
-      margin-bottom: 20px;
-    }
-
-    .section {
-      background: #ffffff;
-      /* nền trắng cho từng card */
-      padding: 16px;
-      border-radius: 12px;
-      /* bo tròn góc */
-      margin-bottom: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-      /* bóng đổ nhẹ */
-    }
-
-    .section h3 {
-      font-size: 15px;
-      font-weight: 600;
-      color: #111827;
-      margin-bottom: 12px;
-    }
-
-    .section label {
-      display: flex;
-      align-items: center;
-      font-size: 14px;
-      font-weight: 400;
-      color: #374151;
-      /* xám đậm chữ nội dung */
-      margin: 8px 0;
-      cursor: pointer;
-    }
-
-    .sidebar input[type="radio"] {
-      appearance: none;
-      -webkit-appearance: none;
-      width: 18px;
-      height: 18px;
-      border: 2px solid #cbd5e1;
-      border-radius: 50%;
-      margin-right: 10px;
-      background: #fff;
-      display: inline-grid;
-      place-content: center;
-      transition: 0.2s;
-    }
-
-    .sidebar input[type="radio"]::before {
-      content: "";
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background-color: #22c55e;
-      transform: scale(0);
-      transition: 0.2s ease-in-out;
-    }
-
-    .sidebar input[type="radio"]:checked::before {
-      transform: scale(1);
-    }
-
-    .sidebar input[type="radio"]:focus {
-      border-color: #22c55e;
-      box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.3);
-    }
+  <!-- Template Main CSS File -->
+  <link href="assets/css/style.css" rel="stylesheet">
 
 
-    .report {
-      flex-grow: 1;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .toolbar {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 2px;
-      padding: 10px;
-      width: 100%;
-      max-width: 900px;
-      background: transparent;
-      /* Xóa nền trắng */
-      border-radius: 0;
-      /* Xóa bo góc */
-      box-shadow: none;
-      /* Xóa bóng đổ */
-      transition: color 0.3s ease;
-    }
-
-    .toolbar i:hover {
-      color: #007bff;
-      /* Khi hover đổi màu xanh */
-    }
-
-    .toolbar i {
-      font-size: 20px;
-      margin: 0 5px;
-      cursor: pointer;
-      color: #333;
-    }
-
-    .toolbar i.active {
-      color: #007bff;
-    }
-
-    .report-content {
-      width: 100%;
-      max-width: 900px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-      padding: 20px;
-      transform-origin: top center;
-      /* Cố định khi phóng to/nhỏ */
-      transition: transform 0.3s ease;
-    }
-
-    .report-title {
-      text-align: center;
-      font-weight: bold;
-      margin-bottom: 10px;
-      font-size: 18px;
-    }
-
-    .report-date {
-      text-align: left;
-      font-size: 12px;
-      color: #555;
-      margin-bottom: 10px;
-    }
-
-    .report-period {
-      text-align: center;
-      font-size: 14px;
-      color: #555;
-      margin-bottom: 20px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 14px;
-    }
-
-    table th,
-    table td {
-      padding: 8px;
-      text-align: left;
-      border-bottom: 1px solid #ddd;
-    }
-
-    table th {
-      background: #e7f3f9;
-      font-weight: bold;
-    }
-
-    .footer {
-      text-align: center;
-      margin-top: 20px;
-      font-size: 12px;
-      color: #777;
-    }
-  </style>
-
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/litepicker/dist/css/litepicker.css" />
-  <script src="https://cdn.jsdelivr.net/npm/litepicker/dist/bundle.js"></script>
+  <!-- =======================================================
+    * Template Name: NiceAdmin
+    * Template URL: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/
+    * Updated: Apr 20 2024 with Bootstrap v5.3.3
+    * Author: BootstrapMade.com
+    * License: https://bootstrapmade.com/license/
+    ======================================================== -->
 </head>
 
-
 <body>
-  <div class="container">
-    <div class="sidebar" style="width: 260px;">
-      <h2>Báo cáo tài chính</h2>
 
-      <div class="section">
-        <h3>Kiểu hiển thị</h3>
-        <label>
-          <input type="radio" name="display" checked> Báo cáo
-        </label>
+<!-- ======= Header ======= -->
+<header id="header" class="header fixed-top d-flex align-items-center">
+
+  <div class="d-flex align-items-center justify-content-between">
+    <a href="index.html" class="logo d-flex align-items-center">
+      <img src="assets/img/logo.png" alt="">
+      <span class="d-none d-lg-block">Aishiba</span>
+    </a>
+    <i class="bi bi-list toggle-sidebar-btn"></i>
+  </div><!-- End Logo -->
+
+  <div class="search-bar">
+    <form class="search-form d-flex align-items-center" method="POST" action="#">
+      <input type="text" name="query" placeholder="Search" title="Enter search keyword">
+      <button type="submit" title="Search"><i class="bi bi-search"></i></button>
+    </form>
+  </div><!-- End Search Bar -->
+
+  <nav class="header-nav ms-auto">
+    <ul class="d-flex align-items-center">
+
+      <li class="nav-item d-block d-lg-none">
+        <a class="nav-link nav-icon search-bar-toggle " href="#">
+          <i class="bi bi-search"></i>
+        </a>
+      </li><!-- End Search Icon-->
+
+      <li class="nav-item dropdown">
+
+        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+          <i class="bi bi-bell"></i>
+          <span class="badge bg-primary badge-number">4</span>
+        </a><!-- End Notification Icon -->
+
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
+          <li class="dropdown-header">
+            You have 4 new notifications
+            <a href="#"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="notification-item">
+            <i class="bi bi-exclamation-circle text-warning"></i>
+            <div>
+              <h4>Lorem Ipsum</h4>
+              <p>Quae dolorem earum veritatis oditseno</p>
+              <p>30 min. ago</p>
+            </div>
+          </li>
+
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="notification-item">
+            <i class="bi bi-x-circle text-danger"></i>
+            <div>
+              <h4>Atque rerum nesciunt</h4>
+              <p>Quae dolorem earum veritatis oditseno</p>
+              <p>1 hr. ago</p>
+            </div>
+          </li>
+
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="notification-item">
+            <i class="bi bi-check-circle text-success"></i>
+            <div>
+              <h4>Sit rerum fuga</h4>
+              <p>Quae dolorem earum veritatis oditseno</p>
+              <p>2 hrs. ago</p>
+            </div>
+          </li>
+
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="notification-item">
+            <i class="bi bi-info-circle text-primary"></i>
+            <div>
+              <h4>Dicta reprehenderit</h4>
+              <p>Quae dolorem earum veritatis oditseno</p>
+              <p>4 hrs. ago</p>
+            </div>
+          </li>
+
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+          <li class="dropdown-footer">
+            <a href="#">Show all notifications</a>
+          </li>
+
+        </ul><!-- End Notification Dropdown Items -->
+
+      </li><!-- End Notification Nav -->
+
+      <li class="nav-item dropdown">
+
+        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
+          <i class="bi bi-chat-left-text"></i>
+          <span class="badge bg-success badge-number">3</span>
+        </a><!-- End Messages Icon -->
+
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow messages">
+          <li class="dropdown-header">
+            You have 3 new messages
+            <a href="#"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="message-item">
+            <a href="#">
+              <img src="assets/img/messages-1.jpg" alt="" class="rounded-circle">
+              <div>
+                <h4>Maria Hudson</h4>
+                <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
+                <p>4 hrs. ago</p>
+              </div>
+            </a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="message-item">
+            <a href="#">
+              <img src="assets/img/messages-2.jpg" alt="" class="rounded-circle">
+              <div>
+                <h4>Anna Nelson</h4>
+                <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
+                <p>6 hrs. ago</p>
+              </div>
+            </a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="message-item">
+            <a href="#">
+              <img src="assets/img/messages-3.jpg" alt="" class="rounded-circle">
+              <div>
+                <h4>David Muldon</h4>
+                <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
+                <p>8 hrs. ago</p>
+              </div>
+            </a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li class="dropdown-footer">
+            <a href="#">Show all messages</a>
+          </li>
+
+        </ul><!-- End Messages Dropdown Items -->
+
+      </li><!-- End Messages Nav -->
+
+      <li class="nav-item dropdown pe-3">
+
+        <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#" data-bs-toggle="dropdown">
+          <img src="assets/img/profile-img.jpg" alt="Profile" class="rounded-circle">
+          <span class="d-none d-md-block dropdown-toggle ps-2">K. Anderson</span>
+        </a><!-- End Profile Iamge Icon -->
+
+        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
+          <li class="dropdown-header">
+            <h6>Kevin Anderson</h6>
+            <span>Web Designer</span>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
+              <i class="bi bi-person"></i>
+              <span>My Profile</span>
+            </a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
+              <i class="bi bi-gear"></i>
+              <span>Account Settings</span>
+            </a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="pages-faq.html">
+              <i class="bi bi-question-circle"></i>
+              <span>Need Help?</span>
+            </a>
+          </li>
+          <li>
+            <hr class="dropdown-divider">
+          </li>
+
+          <li>
+            <a class="dropdown-item d-flex align-items-center" href="#">
+              <i class="bi bi-box-arrow-right"></i>
+              <span>Sign Out</span>
+            </a>
+          </li>
+
+        </ul><!-- End Profile Dropdown Items -->
+      </li><!-- End Profile Nav -->
+
+    </ul>
+  </nav><!-- End Icons Navigation -->
+
+</header><!-- End Header -->
+
+<!-- ======= Sidebar ======= -->
+<aside id="sidebar" class="sidebar">
+
+  <ul class="sidebar-nav" id="sidebar-nav">
+
+    <li class="nav-item">
+      <a class="nav-link " href="index.html">
+        <i class="bi bi-grid fs-5"></i>
+        <span>Dashboard</span>
+      </a>
+    </li><!-- End Dashboard Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-box-seam fs-5"></i><span>Sản phẩm</span><i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="product.html">
+            <i class="bi bi-list-ul fs-5"></i><span>Danh sách sản phẩm</span>
+          </a>
+        </li>
+        <li>
+          <a href="supplier.html">
+            <i class="bi bi-truck fs-5"></i><span>Nhà cung cấp</span>
+          </a>
+        </li>
+      </ul>
+    </li><!-- End Components Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#forms-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-people fs-5"></i><span>Nhân viên</span>
+      </a>
+    </li><!-- End Forms Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#tables-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-cart-check fs-5"></i><span>Giao dịch</span><i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="tables-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="orders.html">
+            <i class="bi bi-receipt fs-5"></i><span>Đơn hàng</span>
+          </a>
+        </li>
+        <li>
+          <a href="stocks.html">
+            <i class="bi bi-box-arrow-in-down fs-5"></i><span>Nhập hàng</span>
+          </a>
+        </li>
+      </ul>
+    </li><!-- End Tables Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-people-fill fs-5"></i><span>Khách hàng</span><i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="#">
+            <i class="bi bi-person-lines-fill fs-5"></i><span>Danh sách khách hàng</span>
+          </a>
+        </li>
+        <li>
+          <a href="#">
+            <i class="bi bi-person-x fs-5"></i><span>Khóa/Mở tài khoản khách hàng</span>
+          </a>
+        </li>
+      </ul>
+    </li><!-- End Charts Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" data-bs-target="#icons-nav" data-bs-toggle="collapse" href="#">
+        <i class="bi bi-bar-chart-line fs-5"></i><span>Thống kê</span><i class="bi bi-chevron-down ms-auto"></i>
+      </a>
+      <ul id="icons-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
+        <li>
+          <a href="baocaocuoingay.html">
+            <i class="bi bi-calendar-check fs-5"></i><span>Cuối ngày</span>
+          </a>
+        </li>
+        <li>
+          <a href="baocaohanghoa.html">
+            <i class="bi bi-box fs-5"></i><span>Hàng hoá</span>
+          </a>
+        </li>
+        <li>
+          <a href="baocaokhachhang.html">
+            <i class="bi bi-people fs-5"></i><span>Khách hàng</span>
+          </a>
+        </li>
+        <li>
+          <a href="baocaotaichinh.html">
+            <i class="bi bi-cash-coin fs-5"></i><span>Tài chính</span>
+          </a>
+        </li>
+      </ul>
+    </li><!-- End Icons Nav -->
+    <li class="nav-heading">Pages</li>
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="users-profile.html">
+        <i class="bi bi-person fs-5"></i>
+        <span>Thông tin cá nhân</span>
+      </a>
+    </li><!-- End Profile Page Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="pages-faq.html">
+        <i class="bi bi-question-circle fs-5"></i>
+        <span>F.A.Q</span>
+      </a>
+    </li><!-- End F.A.Q Page Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="pages-contact.html">
+        <i class="bi bi-envelope fs-5"></i>
+        <span>Liên hệ</span>
+      </a>
+    </li><!-- End Contact Page Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="pages-register.html">
+        <i class="bi bi-person-plus fs-5"></i>
+        <span>Đăng ký</span>
+      </a>
+    </li><!-- End Register Page Nav -->
+
+    <li class="nav-item">
+      <a class="nav-link collapsed" href="pages-login.html">
+        <i class="bi bi-box-arrow-in-right fs-5"></i>
+        <span>Đăng nhập</span>
+      </a>
+    </li><!-- End Login Page Nav -->
+
+  </ul>
+
+</aside><!-- End Sidebar-->
+
+<main id="main" class="main">
+  <div class="pagetitle">
+    <h1>Báo cáo tài chính</h1>
+    <nav>
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="#">Trang chủ</a></li>
+        <li class="breadcrumb-item"><a href="#">Thống kê</a></li>
+        <li class="breadcrumb-item active">Tài chính</li>
+      </ol>
+    </nav>
+  </div>
+
+  <div class="row">
+    <!-- Sidebar -->
+    <div class="col-lg-3 col-md-4 sidebar-main">
+      <div class="sidebar-section">
+        <h5 class="mb-3">Kiểu hiển thị</h5>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="displayType" id="report" checked>
+          <label class="form-check-label" for="report">Báo cáo</label>
+        </div>
       </div>
 
-      <div class="section">
-        <h3>Thời gian</h3>
-
-        <div style="margin-bottom: 12px;">
-          <input type="number" value="2025" min="1900" max="2100"
-            style="width: 100%; border: none; border-bottom: 1px solid #ccc; padding: 8px 0; background: transparent; outline: none;">
+      <div class="sidebar-section">
+        <h5 class="mb-3">Thời gian</h5>
+        <select class="form-select mb-3">
+          <option selected>2025</option>
+          <option>2024</option>
+          <option>2023</option>
+        </select>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="time" id="month" checked>
+          <label class="form-check-label" for="month">Theo Tháng</label>
         </div>
-        <style>
-          /* Hiện luôn spin button cho input[type="number"] */
-          input[type="number"]::-webkit-inner-spin-button,
-          input[type="number"]::-webkit-outer-spin-button {
-            opacity: 1;
-          }
-        </style>
-
-
-        <label>
-          <input type="radio" name="period"> Theo Tháng
-        </label>
-        <label>
-          <input type="radio" name="period"> Theo Quý
-        </label>
-        <label>
-          <input type="radio" name="period"> Theo Năm
-        </label>
-
-        <label style="display: flex; align-items: center; margin-top: 12px; gap: 8px; cursor: pointer;">
-          <input type="radio" name="period" style="flex-shrink: 0;" checked>
-          <div style="flex: 1; position: relative;">
-            <input type="text" id="date-range-picker" value="01/04/2025 - 25/04/2025" readonly
-              style="min-width: 120px; max-width: 220px; width: auto; border: none; border-bottom: 1px solid #ccc; padding: 8px 32px 8px 0; background: transparent; outline: none;">
-
-            <i class='bx bx-calendar'
-              style="position: absolute; right: 8px; top: 50%; transform: translateY(-50%); font-size: 20px; color: #555;"></i>
-          </div>
-        </label>
-
-
-
-
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="time" id="quarter">
+          <label class="form-check-label" for="quarter">Theo Quý</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="radio" name="time" id="year">
+          <label class="form-check-label" for="year">Theo Năm</label>
+        </div>
+        <input type="date" class="form-control mt-3" id="customDateStart">
+        <input type="date" class="form-control mt-2" id="customDateEnd">
       </div>
     </div>
 
+    <!-- Main Content -->
+    <div class="col-lg-9 col-md-8">
+      <div class="card p-4">
+        <div class="d-flex justify-content-end mb-3" style="position: absolute; top: 20px; right: 20px;">
+          <button class="btn btn-primary me-2" id="printReport">
+            <i class="bi bi-printer"></i> In báo cáo
+          </button>
+          <button class="btn btn-success me-2" id="exportExcel">
+            <i class="bi bi-file-earmark-excel"></i> Xuất Excel
+          </button>
+          <button class="btn btn-info" id="sendEmail">
+            <i class="bi bi-envelope"></i> Gửi Email
+          </button>
+        </div>
+        <p class="text-muted">Ngày lập: <strong>20/04/2025 23:10</strong></p>
+        <h5 class="text-center">Báo cáo kết quả hoạt động kinh doanh</h5>
+        <p class="text-center text-muted">Từ ngày 01/04/2025 đến ngày 20/04/2025</p>
+        <p class="text-center text-muted">Chi nhánh trung tâm</p>
 
-    <div class="report">
-      <div class="toolbar">
-        <i class='bx bx-arrow-back'></i> <!-- Quay lại -->
-        <i class='bx bx-arrow-forward'></i> <!-- Tiến tới -->
-        <i class='bx bx-refresh'></i> <!-- Tải lại -->
-        <i class='bx bx-first-page'></i> <!-- Về đầu -->
-        <i class='bx bx-chevron-left'></i> <!-- Lùi 1 trang -->
-        <span>1 / 1</span> <!-- Trang số -->
-        <i class='bx bx-chevron-right'></i> <!-- Tiến 1 trang -->
-        <i class='bx bx-last-page'></i> <!-- Tới cuối -->
-        <i class='bx bx-file'></i> <!-- Xem tài liệu -->
-        <i class='bx bx-cloud-download'></i> <!-- Download -->
-        <i class='bx bx-printer'></i> <!-- In -->
-        <i class='bx bx-zoom-in' id="zoom-in-icon"></i>
-        <i class='bx bx-zoom-out' id="zoom-out-icon"></i>
-        <i class='bx bx-fullscreen'></i>
-
-      </div>
-
-
-
-      <div class="report-content">
-        <div class="report-date">Ngày lập: 20/04/2025 23:10</div>
-        <div class="report-title">Báo cáo kết quả hoạt động kinh doanh</div>
-        <div class="report-period">Từ ngày 01/04/2025 đến ngày 20/04/2025<br>Chi nhánh trung tâm</div>
-
-        <table>
-          <thead>
-            <tr>
-              <th></th>
-              <th>Tổng</th>
-            </tr>
+        <table class="table table-bordered mt-4">
+          <thead class="table-light">
+          <tr>
+            <th>Chỉ tiêu</th>
+            <th class="text-center">Tổng</th>
+          </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>Doanh thu bán hàng (1)</td>
-              <td style="color: blue;">298,370,000</td>
-            </tr>
-            <tr>
-              <td>Giảm trừ Doanh thu (2 = 2.1+2.2)</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>Chiết khấu hóa đơn (2.1)</td>
-              <td style="color: blue;">0</td>
-            </tr>
-            <tr>
-              <td>Giá trị hàng bán bị trả lại (2.2)</td>
-              <td style="color: blue;">0</td>
-            </tr>
-            <tr>
-              <td>Doanh thu thuần (3=1-2)</td>
-              <td>298,370,000</td>
-            </tr>
-            <tr>
-              <td>Giá vốn hàng bán (4)</td>
-              <td>280,297,500</td>
-            </tr>
-            <tr>
-              <td>Lợi nhuận gộp về bán hàng (5=3-4)</td>
-              <td>16,072,500</td>
-            </tr>
-            <tr>
-              <td>Chi phí (6)</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>Chi phí voucher</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>Phí trả ĐTGĐ</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>Xuất huỷ hàng hóa</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>Chiết khấu thanh toán bằng điểm</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>Chiết khấu thanh toán cho khách</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>Chi trả lương NV</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>Lợi nhuận từ hoạt động kinh doanh (7=5-6)</td>
-              <td>16,072,500</td>
-            </tr>
-            <tr>
-              <td>Thu nhập khác (8)</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>Phí trả hàng</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>Chiết khấu thanh toán từ NCC</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>Chi phí khác (9)</td>
-              <td>0</td>
-            </tr>
-            <tr>
-              <td>Lợi nhuận thuần (10=(7+8)-9)</td>
-              <td>16,072,500</td>
-            </tr>
+          <tr>
+            <td>Doanh thu bán hàng (1)</td>
+            <td class="text-end">298,370,000</td>
+          </tr>
+          <tr>
+            <td>Giảm trừ Doanh thu (2 = 2.1+2.2)</td>
+            <td class="text-end">0</td>
+          </tr>
+          <tr>
+            <td class="sub-item">Chiết khấu hóa đơn (2.1)</td>
+            <td class="text-end">0</td>
+          </tr>
+          <tr>
+            <td class="sub-item">Giá trị hàng bán bị trả lại (2.2)</td>
+            <td class="text-end">0</td>
+          </tr>
+          <tr>
+            <td>Doanh thu thuần (3=1-2)</td>
+            <td class="text-end">298,370,000</td>
+          </tr>
+          <tr>
+            <td>Giá vốn hàng bán (4)</td>
+            <td class="text-end">280,297,500</td>
+          </tr>
+          <tr>
+            <td>Lợi nhuận gộp về bán hàng (5=3-4)</td>
+            <td class="text-end">16,072,500</td>
+          </tr>
+          <tr>
+            <td>Chi phí (6)</td>
+            <td class="text-end">0</td>
+          </tr>
+          <tr>
+            <td class="sub-item">Chi phí voucher</td>
+            <td class="text-end">0</td>
+          </tr>
+          <tr>
+            <td class="sub-item">Phí trả ĐTGH</td>
+            <td class="text-end">0</td>
+          </tr>
+          <tr>
+            <td class="sub-item">Xuất hủy hàng hóa</td>
+            <td class="text-end">0</td>
+          </tr>
+          <tr>
+            <td class="sub-item">Giá trị thanh toán bằng điểm</td>
+            <td class="text-end">0</td>
+          </tr>
+          <tr>
+            <td class="sub-item">Chiết khấu thanh toán cho khách</td>
+            <td class="text-end">0</td>
+          </tr>
+          <tr>
+            <td class="sub-item">Chi trả lương NV</td>
+            <td class="text-end">0</td>
+          </tr>
+          <tr>
+            <td>Lợi nhuận từ hoạt động kinh doanh (7=5-6)</td>
+            <td class="text-end">16,072,500</td>
+          </tr>
+          <tr>
+            <td>Thu nhập khác (8)</td>
+            <td class="text-end">0</td>
+          </tr>
+          <tr>
+            <td class="sub-item">Phí trả hàng</td>
+            <td class="text-end">0</td>
+          </tr>
+          <tr>
+            <td class="sub-item">Chiết khấu thanh toán từ NCC</td>
+            <td class="text-end">0</td>
+          </tr>
+          <tr>
+            <td class="sub-item">Chi phí khác (9)</td>
+            <td class="text-end">0</td>
+          </tr>
+          <tr>
+            <td>Lợi nhuận thuần (10=7+8-9)</td>
+            <td class="text-end">16,072,500</td>
+          </tr>
           </tbody>
         </table>
-
-        <div class="footer">Chi nhánh trung tâm</div>
+        <p class="text-muted text-center mt-3">Chi nhánh trung tâm:</p>
       </div>
     </div>
   </div>
+</main>
+<style>
+  /* Định vị sidebar trong main */
+  .sidebar-main {
+    position: fixed;
+    /* Cố định vị trí */
+    top: 70px;
+    /* Khoảng cách từ trên xuống để không chèn lên header */
+    right: 0;
+    /* Sát cạnh phải màn hình */
+    width: 20%;
+    /* Chiếm 20% chiều rộng màn hình */
+    height: calc(100vh - 70px);
+    /* Chiều cao toàn màn hình trừ chiều cao của header */
+    z-index: 1020;
+    /* Đảm bảo nằm trên các phần tử khác */
+    overflow-y: auto;
+    /* Cuộn dọc nếu nội dung quá dài */
+    background-color: #ffffff;
+    /* Màu nền trắng */
+    border-left: 1px solid #e0e0e0;
+    /* Viền bên trái */
+    box-shadow: -2px 0 6px rgba(0, 0, 0, 0.1);
+    /* Đổ bóng bên trái */
+    padding: 16px;
+    /* Khoảng cách bên trong */
+  }
 
-  <script>
-    const backBtn = document.querySelector('.bx-arrow-back');
-    if (backBtn) {
-      backBtn.addEventListener('click', () => {
-        window.history.back();
-      });
+  /* Đảm bảo nội dung chính không bị chồng lấn */
+  .main-content {
+    margin-right: 20%;
+    /* Đẩy nội dung chính sang trái để nhường chỗ cho sidebar */
+  }
+
+  /* Tùy chỉnh khung sidebar */
+  .sidebar-wrapper {
+    padding: 16px;
+    /* Khoảng cách bên trong */
+    background-color: #ffffff;
+    /* Màu nền trắng */
+    border-radius: 8px;
+    /* Bo góc */
+  }
+
+  /* Khung nhỏ cho từng phần */
+  .card {
+    background-color: #ffffff;
+    /* Màu nền sáng hơn */
+    border: 1px solid #e0e0e0;
+    /* Viền màu xám nhạt */
+    border-radius: 8px;
+    /* Bo góc nhẹ */
+    padding: 24px;
+    /* Tăng khoảng cách bên trong khung */
+    margin-bottom: 24px;
+    /* Tăng khoảng cách giữa các khung */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Tiêu đề của từng phần */
+  .card h5 {
+    font-size: 28px;
+    /* Tăng cỡ chữ tiêu đề */
+    font-weight: bold;
+    color: #012970;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  /* Tùy chỉnh từng phần trong sidebar */
+  .sidebar-section {
+    margin-bottom: 16px;
+    /* Khoảng cách giữa các phần */
+    padding: 16px;
+    background-color: #ffffff;
+    /* Nền trắng */
+    border: 1px solid #e0e0e0;
+    /* Viền màu xám nhạt */
+    border-radius: 8px;
+    /* Bo góc */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    /* Đổ bóng nhẹ */
+  }
+
+  /* Tiêu đề của từng phần */
+  .sidebar-section h5 {
+    font-size: 16px;
+    font-weight: bold;
+    color: #012970;
+    margin-bottom: 12px;
+  }
+
+  /* Input và select */
+  .sidebar-section .form-control,
+  .sidebar-section .form-select {
+    margin-top: 8px;
+    border-radius: 4px;
+  }
+
+  /* Radio button và nhãn */
+  .sidebar-section .form-check {
+    margin-bottom: 8px;
+  }
+
+  .sidebar-section .form-check-label {
+    font-size: 14px;
+    color: #6c757d;
+  }
+
+  .text-center .btn {
+    padding: 10px 20px;
+    /* Tăng kích thước nút */
+    font-size: 14px;
+    /* Cỡ chữ */
+    border-radius: 5px;
+    /* Bo góc nhẹ */
+  }
+
+  .gap-3>* {
+    margin-left: 10px;
+    /* Khoảng cách giữa các nút */
+  }
+
+  .d-flex.justify-content-end .btn {
+    padding: 10px 20px;
+    /* Tăng kích thước nút */
+    font-size: 14px;
+    /* Cỡ chữ */
+    border-radius: 5px;
+    /* Bo góc nhẹ */
+  }
+
+  .d-flex.justify-content-end .btn+.btn {
+    margin-left: 10px;
+    /* Khoảng cách giữa các nút */
+  }
+
+  .d-flex.justify-content-end {
+    margin-top: -10px;
+    /* Điều chỉnh khoảng cách với tiêu đề */
+  }
+
+  .d-flex.justify-content-end {
+    position: absolute;
+    top: 20px;
+    /* Căn chỉnh nút cách phía trên 20px */
+    right: 20px;
+    /* Căn chỉnh nút cách phía phải 20px */
+    z-index: 10;
+    /* Đảm bảo nút nằm trên các phần tử khác */
+  }
+
+  .d-flex.justify-content-end .btn {
+    padding: 10px 20px;
+    /* Tăng kích thước nút */
+    font-size: 14px;
+    /* Cỡ chữ */
+    border-radius: 5px;
+    /* Bo góc nhẹ */
+  }
+
+  .d-flex.justify-content-end .btn+.btn {
+    margin-left: 10px;
+    /* Khoảng cách giữa các nút */
+  }
+
+  #chart1,
+  #chart2 {
+    height: 400px;
+    /* Tăng chiều cao biểu đồ */
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    padding: 16px;
+    /* Thêm khoảng cách bên trong */
+  }
+
+  .card+.card {
+    margin-top: 100px;
+    /* Tăng khoảng cách giữa các khung biểu đồ */
+  }
+
+  /* Main Content */
+  .card {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 24px;
+  }
+
+  .card h5 {
+    font-size: 26px;
+    font-weight: bold;
+    color: #012970;
+    margin-bottom: 16px;
+  }
+
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .table th {
+    background-color: #f9f9f9;
+    font-weight: bold;
+    text-align: left;
+  }
+
+  .table td,
+  .table th {
+    padding: 12px;
+    border: 1px solid #e0e0e0;
+  }
+
+  .table .text-end {
+    text-align: right;
+  }
+
+  .text-muted {
+    color: #6c757d;
+  }
+
+  .text-center {
+    text-align: center;
+    /* Căn giữa văn bản */
+  }
+
+  .table tbody tr td {
+    padding-left: 8px;
+    /* Khoảng cách mặc định cho các chỉ tiêu */
+  }
+
+  .table tbody tr td.sub-item {
+    padding-left: 32px;
+    /* Thụt lề cho các chỉ tiêu con */
+  }
+
+  @media print {
+
+    .sidebar-main,
+    .sidebar,
+    .header,
+    .back-to-top,
+    .d-flex.justify-content-end,
+      /* Ẩn các nút chức năng trên báo cáo */
+    .sidebar-section,
+    .breadcrumb,
+    select,
+    input[type="radio"],
+    input[type="date"],
+    label[for="report"],
+    label[for="month"],
+    label[for="quarter"],
+    label[for="year"] {
+      display: none !important;
     }
 
-    // Gắn hành động cho các icon toolbar
-    document.querySelector('.bx-arrow-back').addEventListener('click', () => {
-      window.history.back();
-    });
-
-    document.querySelector('.bx-arrow-forward').addEventListener('click', () => {
-      window.history.forward();
-    });
-
-    document.querySelector('.bx-refresh').addEventListener('click', () => {
-      location.reload();
-    });
-
-    document.querySelector('.bx-first-page').addEventListener('click', () => {
-      currentPage = 1;
-      updatePage();
-    });
-
-    document.querySelector('.bx-chevron-left').addEventListener('click', () => {
-      if (currentPage > 1) {
-        currentPage--;
-        updatePage();
-      }
-    });
-
-    document.querySelector('.bx-chevron-right').addEventListener('click', () => {
-      if (currentPage < totalPages) {
-        currentPage++;
-        updatePage();
-      }
-    });
-
-    document.querySelector('.bx-last-page').addEventListener('click', () => {
-      currentPage = totalPages;
-      updatePage();
-    });
-
-    document.querySelector('.bx-file').addEventListener('click', () => {
-      alert('Xem tài liệu');
-    });
-
-    document.querySelector('.bx-cloud-download').addEventListener('click', () => {
-      alert('Đang tải file...');
-    });
-
-    document.querySelector('.bx-printer').addEventListener('click', () => {
-      window.print();
-    });
-
-    const zoomInIcon = document.getElementById('zoom-in-icon');
-    const zoomOutIcon = document.getElementById('zoom-out-icon');
-    const zoomPercentage = document.getElementById('zoom-percentage');
-    const reportContent = document.querySelector('.report-content');
-
-    let currentZoom = 1.0;
-    const zoomStep = 0.1;
-    const maxZoom = 2.0;
-    const minZoom = 0.5;
-
-    function applyZoom() {
-      reportContent.style.transform = `scale(${currentZoom})`;
-      reportContent.style.transformOrigin = "top center"; // Phóng từ giữa và trên
-      reportContent.style.transition = "transform 0.3s ease";
-
-      // Cập nhật phần trăm Zoom
-      if (zoomPercentage) {
-        zoomPercentage.innerText = `${Math.round(currentZoom * 100)}%`;
-        zoomPercentage.style.color = (Math.round(currentZoom * 100) === 100) ? "#333" : "#007bff";
-      }
-
-      // Disable/mờ nút khi đạt giới hạn
-      zoomInIcon.style.opacity = currentZoom >= maxZoom ? "0.5" : "1";
-      zoomInIcon.style.pointerEvents = currentZoom >= maxZoom ? "none" : "auto";
-
-      zoomOutIcon.style.opacity = currentZoom <= minZoom ? "0.5" : "1";
-      zoomOutIcon.style.pointerEvents = currentZoom <= minZoom ? "none" : "auto";
+    body,
+    .main,
+    .main-content,
+    .card {
+      margin: 0 !important;
+      padding: 0 !important;
+      box-shadow: none !important;
+      background: #fff !important;
     }
 
-    if (zoomInIcon) {
-      zoomInIcon.addEventListener('click', () => {
-        if (currentZoom < maxZoom) {
-          currentZoom += zoomStep;
-          currentZoom = Math.min(currentZoom, maxZoom);
-          applyZoom();
-        }
-      });
+    .col-lg-9,
+    .col-md-8 {
+      width: 100% !important;
+      max-width: 100% !important;
+      flex: 0 0 100% !important;
     }
-
-    if (zoomOutIcon) {
-      zoomOutIcon.addEventListener('click', () => {
-        if (currentZoom > minZoom) {
-          currentZoom -= zoomStep;
-          currentZoom = Math.max(currentZoom, minZoom);
-          applyZoom();
-        }
-      });
-    }
-
-    // Gọi ngay để cập nhật lần đầu
-    applyZoom();
+  }
+</style>
 
 
 
-    document.querySelector('.bx-fullscreen').addEventListener('click', () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen();
-      } else {
-        document.exitFullscreen();
-      }
-    });
-
-    // Biến quản lý số trang
-    let currentPage = 1;
-    const totalPages = 10; // Bạn có thể thay đổi số này
-
-    function updatePage() {
-      document.querySelector('.toolbar span').innerText = `${currentPage} / ${totalPages}`;
-    }
-
-    // Gọi để set mặc định ban đầu
-    updatePage();
+<!-- ======= Footer ======= -->
 
 
-    const picker = new Litepicker({
-      element: document.getElementById('date-range-picker'),
-      singleMode: false,
-      format: 'DD/MM/YYYY',
-      numberOfMonths: 2,
-      numberOfColumns: 2,
-      autoApply: true,
-      lang: 'vi-VN'
-    });
-  </script>
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i
+        class="bi bi-arrow-up-short"></i></a>
+
+<!-- Vendor JS Files -->
+<script src="assets/vendor/apexcharts/apexcharts.min.js"></script>
+<script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="assets/vendor/chart.js/chart.umd.js"></script>
+<script src="assets/vendor/echarts/echarts.min.js"></script>
+<script src="assets/vendor/quill/quill.js"></script>
+<script src="assets/vendor/simple-datatables/simple-datatables.js"></script>
+<script src="assets/vendor/tinymce/tinymce.min.js"></script>
+<script src="assets/vendor/php-email-form/validate.js"></script>
+
+<!-- Template Main JS File -->
+<script src="assets/js/main.js"></script>
+
+<!-- Thêm thư viện SheetJS (đặt trước thẻ đóng </body>) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+  document.getElementById('printReport').addEventListener('click', function () {
+    window.print();
+  });
+
+  document.getElementById('exportExcel').addEventListener('click', function () {
+    var wb = XLSX.utils.table_to_book(document.querySelector('table'), { sheet: "Báo cáo" });
+    XLSX.writeFile(wb, 'baocaotaichinh.xlsx');
+  });
+
+  document.getElementById('sendEmail').addEventListener('click', function () {
+    alert("Chức năng này đang phát triển");
+  });
+</script>
+
+
+
 </body>
-
 
 </html>
