@@ -5,6 +5,8 @@ import com.kiendey.model.Order;
 import com.kiendey.utils.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public class OrderDAOImpl implements OrderDAO {
@@ -96,6 +98,28 @@ public class OrderDAOImpl implements OrderDAO {
                     .list();
         } catch (Exception e) {
             throw new RuntimeException("Error searching Orders by status: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<Order> getOrdersByDate(LocalDateTime startDate, LocalDateTime endDate) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Thay đổi HQL để lọc theo ngày, tháng, năm cụ thể
+            String hql = "FROM Order o LEFT JOIN FETCH o.user LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.toy " +
+                    "WHERE YEAR(o.orderDate) = :year " +
+                    "  AND MONTH(o.orderDate) = :month " +
+                    "  AND DAY(o.orderDate) = :day";
+
+            Query<Order> query = session.createQuery(hql, Order.class);
+
+            // Lấy năm, tháng, ngày từ startDate (là ngày bắt đầu của ngày được chọn)
+            query.setParameter("year", startDate.getYear());
+            query.setParameter("month", startDate.getMonthValue());
+            query.setParameter("day", startDate.getDayOfMonth());
+
+            return query.list();
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting Orders by date range: " + e.getMessage(), e);
         }
     }
 }

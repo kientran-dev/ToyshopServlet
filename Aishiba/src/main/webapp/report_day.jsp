@@ -1,11 +1,9 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: PC
-  Date: 5/9/2025
-  Time: 12:02 AM
-  To change this template use File | Settings | File Templates.
---%>
+<%-- Created by IntelliJ IDEA. User: PC Date: 5/9/2025 Time: 12:02 AM To change this template use File | Settings | File
+    Templates. --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
+
 <main id="main" class="main">
     <div class="pagetitle">
         <h1>Báo cáo cuối ngày</h1>
@@ -19,10 +17,7 @@
     </div>
     </div>
     </div>
-    <!-- End Breadcrumb -->
-
     <div class="row">
-        <!-- Main Content -->
         <div class="col-lg-9 col-md-8">
             <div class="card p-4">
                 <div class="d-flex justify-content-end mb-3">
@@ -52,7 +47,8 @@
                 </script>
 
                 <h3 class="text-center">Báo cáo cuối ngày về bán hàng</h3>
-                <p class="text-center text-muted">Ngày bán: 22/04/2025</p>
+                <p class="text-center text-muted">Ngày bán: <strong
+                        id="reportSalesDate">${reportDate}</strong></p>
                 <p class="text-center text-muted">Chi nhánh: Chi nhánh trung tâm</p>
 
                 <table class="table table-bordered mt-4">
@@ -68,38 +64,98 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td>HD001</td>
-                        <td>Nguyễn Văn A</td>
-                        <td>Trần Thị B</td>
-                        <td>22/04/2025 14:30</td>
-                        <td class="text-end">5,000,000 </td>
-                        <td class="text-end">4,500,000 </td>
-                        <td class="text-end">500,000 </td>
-                    </tr>
-                    <tr>
-                        <td>HD002</td>
-                        <td>Phạm Văn C</td>
-                        <td>Nguyễn Văn D</td>
-                        <td>22/04/2025 15:00</td>
-                        <td class="text-end">3,000,000 </td>
-                        <td class="text-end">2,700,000</td>
-                        <td class="text-end"> 300,000 </td>
-                    </tr>
-                    <tr>
-                        <td>HD003</td>
-                        <td>Trần Thị E</td>
-                        <td>Phạm Thị F</td>
-                        <td>22/04/2025 16:45</td>
-                        <td class="text-end">7,500,000 </td>
-                        <td class="text-end">6,750,000 </td>
-                        <td class="text-end">750,000 </td>
-                    </tr>
+                    <c:forEach var="entry" items="${dailyEntries}">
+                        <tr>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${entry.invoiceCode != null && entry.invoiceCode != ''}">
+                                        ${entry.invoiceCode}
+                                    </c:when>
+                                    <c:otherwise>N/A</c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${entry.customerName != null && entry.customerName != ''}">
+                                        ${entry.customerName}
+                                    </c:when>
+                                    <c:otherwise>N/A</c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${entry.employeeName != null && entry.employeeName != ''}">
+                                        ${entry.employeeName}
+                                    </c:when>
+                                    <c:otherwise>N/A</c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td>
+                                <c:choose>
+                                    <c:when test="${entry.time != null && entry.time != ''}">
+                                        ${entry.time}
+                                    </c:when>
+                                    <c:otherwise>N/A</c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td class="text-end">
+                                <c:choose>
+                                    <c:when test="${entry.totalItemsAmount != null}">
+                                        <fmt:formatNumber value="${entry.totalItemsAmount}" type="currency"
+                                                          currencySymbol="" maxFractionDigits="0" />
+                                    </c:when>
+                                    <c:otherwise>0</c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td class="text-end">
+                                <c:choose>
+                                    <c:when test="${entry.revenue != null}">
+                                        <fmt:formatNumber value="${entry.revenue}" type="currency"
+                                                          currencySymbol="" maxFractionDigits="0" />
+                                    </c:when>
+                                    <c:otherwise>0</c:otherwise>
+                                </c:choose>
+                            </td>
+                            <td class="text-end">
+                                <c:choose>
+                                    <c:when test="${entry.vat != null}">
+                                        <fmt:formatNumber value="${entry.vat}" type="currency"
+                                                          currencySymbol="" maxFractionDigits="0" />
+                                    </c:when>
+                                    <c:otherwise>0</c:otherwise>
+                                </c:choose>
+                            </td>
+                        </tr>
+                    </c:forEach>
                     <tr class="table-primary fw-bold">
                         <td colspan="4" class="text-end">Tổng cộng</td>
-                        <td class="text-end">15,500,000</td>
-                        <td class="text-end">13,950,000</td>
-                        <td class="text-end">1,550,000</td>
+                        <td class="text-end">
+                            <c:choose>
+                                <c:when test="${totalSummary.totalAllItemsAmount != null}">
+                                    <fmt:formatNumber value="${totalSummary.totalAllItemsAmount}"
+                                                      type="currency" currencySymbol="" maxFractionDigits="0" />
+                                </c:when>
+                                <c:otherwise>0</c:otherwise>
+                            </c:choose>
+                        </td>
+                        <td class="text-end">
+                            <c:choose>
+                                <c:when test="${totalSummary.totalAllRevenue != null}">
+                                    <fmt:formatNumber value="${totalSummary.totalAllRevenue}"
+                                                      type="currency" currencySymbol="" maxFractionDigits="0" />
+                                </c:when>
+                                <c:otherwise>0</c:otherwise>
+                            </c:choose>
+                        </td>
+                        <td class="text-end">
+                            <c:choose>
+                                <c:when test="${totalSummary.totalAllVat != null}">
+                                    <fmt:formatNumber value="${totalSummary.totalAllVat}" type="currency"
+                                                      currencySymbol="" maxFractionDigits="0" />
+                                </c:when>
+                                <c:otherwise>0</c:otherwise>
+                            </c:choose>
+                        </td>
                     </tr>
                     </tbody>
                 </table>
@@ -107,10 +163,7 @@
             </div>
         </div>
 
-        <!-- Sidebar -->
         <div class="col-lg-3 col-md-4 sidebar-main">
-
-
             <div class="sidebar-section">
                 <h5 class="mt-4 mb-3">Mối quan tâm</h5>
                 <div class="form-check">
@@ -133,15 +186,22 @@
 
             <div class="sidebar-section">
                 <h5 class="mt-4 mb-3">Thời gian</h5>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="time" id="today" checked>
-                    <label class="form-check-label" for="today">22/04/2025</label>
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="radio" name="time" id="custom">
-                    <label class="form-check-label" for="custom">Lựa chọn khác</label>
-                </div>
-                <input type="date" class="form-control mt-2" id="customDate">
+                <form action="${pageContext.request.contextPath}/report-day" method="GET"
+                      id="reportFilterForm">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="timeOption" id="todayRadio"
+                               value="today" ${empty param.date ? 'checked' : '' }>
+                        <label class="form-check-label" for="todayRadio">Hôm nay</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="timeOption" id="customRadio"
+                               value="custom" ${not empty param.date ? 'checked' : '' }>
+                        <label class="form-check-label" for="customRadio">Lựa chọn khác</label>
+                    </div>
+                    <input type="date" class="form-control mt-2" id="customDateInput" name="date"
+                           value="${param.date != null ? param.date : ''}" autocomplete="off">
+                    <button type="submit" class="btn btn-primary mt-2" id="applyFilter">Áp dụng</button>
+                </form>
             </div>
 
             <div class="sidebar-section">
@@ -173,205 +233,204 @@
 </main>
 
 <style>
-/* Định vị sidebar trong main */
-.sidebar-main {
-position: fixed;
-/* Cố định vị trí */
-top: 70px;
-/* Khoảng cách từ trên xuống để không chèn lên header */
-right: 0;
-/* Sát cạnh phải màn hình */
-width: 20%;
-/* Chiếm 20% chiều rộng màn hình */
-height: calc(100vh - 70px);
-/* Chiều cao toàn màn hình trừ chiều cao của header */
-z-index: 1020;
-/* Đảm bảo nằm trên các phần tử khác */
-overflow-y: auto;
-/* Cuộn dọc nếu nội dung quá dài */
-background-color: #ffffff;
-/* Màu nền trắng */
-border-left: 1px solid #e0e0e0;
-/* Viền bên trái */
-box-shadow: -2px 0 6px rgba(0, 0, 0, 0.1);
-/* Đổ bóng bên trái */
-padding: 16px;
-/* Khoảng cách bên trong */
-}
+    /* Định vị sidebar trong main */
+    .sidebar-main {
+        position: fixed;
+        /* Cố định vị trí */
+        top: 70px;
+        /* Khoảng cách từ trên xuống để không chèn lên header */
+        right: 0;
+        /* Sát cạnh phải màn hình */
+        width: 20%;
+        /* Chiếm 20% chiều rộng màn hình */
+        height: calc(100vh - 70px);
+        /* Chiều cao toàn màn hình trừ chiều cao của header */
+        z-index: 1020;
+        /* Đảm bảo nằm trên các phần tử khác */
+        overflow-y: auto;
+        /* Cuộn dọc nếu nội dung quá dài */
+        background-color: #ffffff;
+        /* Màu nền trắng */
+        border-left: 1px solid #e0e0e0;
+        /* Viền bên trái */
+        box-shadow: -2px 0 6px rgba(0, 0, 0, 0.1);
+        /* Đổ bóng bên trái */
+        padding: 16px;
+        /* Khoảng cách bên trong */
+    }
 
-/* Đảm bảo nội dung chính không bị chồng lấn */
-.main-content {
-margin-right: 20%;
-/* Đẩy nội dung chính sang trái để nhường chỗ cho sidebar */
-}
+    /* Đảm bảo nội dung chính không bị chồng lấn */
+    .main-content {
+        margin-right: 20%;
+        /* Đẩy nội dung chính sang trái để nhường chỗ cho sidebar */
+    }
 
-/* Tùy chỉnh khung sidebar */
-.sidebar-wrapper {
-padding: 16px;
-/* Khoảng cách bên trong */
-background-color: #ffffff;
-/* Màu nền trắng */
-border-radius: 8px;
-/* Bo góc */
-}
+    /* Tùy chỉnh khung sidebar */
+    .sidebar-wrapper {
+        padding: 16px;
+        /* Khoảng cách bên trong */
+        background-color: #ffffff;
+        /* Màu nền trắng */
+        border-radius: 8px;
+        /* Bo góc */
+    }
 
-/* Khung nhỏ cho từng phần */
-.card {
-background-color: #f9f9f9;
-/* Màu nền sáng hơn */
-border: 1px solid #e0e0e0;
-/* Viền màu xám nhạt */
-border-radius: 4px;
-/* Bo góc nhẹ */
-padding: 16px;
-/* Khoảng cách bên trong */
-margin-bottom: 16px;
-/* Khoảng cách giữa các khung */
-}
+    /* Khung nhỏ cho từng phần */
+    .card {
+        background-color: #f9f9f9;
+        /* Màu nền sáng hơn */
+        border: 1px solid #e0e0e0;
+        /* Viền màu xám nhạt */
+        border-radius: 4px;
+        /* Bo góc nhẹ */
+        padding: 16px;
+        /* Khoảng cách bên trong */
+        margin-bottom: 16px;
+        /* Khoảng cách giữa các khung */
+    }
 
-/* Tiêu đề của từng phần */
-.card h5 {
-font-size: 16px;
-/* Cỡ chữ tiêu đề */
-font-weight: bold;
-/* In đậm tiêu đề */
-color: #012970;
-/* Màu chữ tiêu đề */
-margin-bottom: 12px;
-/* Khoảng cách dưới tiêu đề */
-}
+    /* Tiêu đề của từng phần */
+    .card h5 {
+        font-size: 16px;
+        /* Cỡ chữ tiêu đề */
+        font-weight: bold;
+        /* In đậm tiêu đề */
+        color: #012970;
+        /* Màu chữ tiêu đề */
+        margin-bottom: 12px;
+        /* Khoảng cách dưới tiêu đề */
+    }
 
-/* Tùy chỉnh từng phần trong sidebar */
-.sidebar-section {
-margin-bottom: 16px;
-/* Khoảng cách giữa các phần */
-padding: 16px;
-background-color: #ffffff;
-/* Nền trắng */
-border: 1px solid #e0e0e0;
-/* Viền màu xám nhạt */
-border-radius: 8px;
-/* Bo góc */
-box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-/* Đổ bóng nhẹ */
-}
+    /* Tùy chỉnh từng phần trong sidebar */
+    .sidebar-section {
+        margin-bottom: 16px;
+        /* Khoảng cách giữa các phần */
+        padding: 16px;
+        background-color: #ffffff;
+        /* Nền trắng */
+        border: 1px solid #e0e0e0;
+        /* Viền màu xám nhạt */
+        border-radius: 8px;
+        /* Bo góc */
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        /* Đổ bóng nhẹ */
+    }
 
-/* Tiêu đề của từng phần */
-.sidebar-section h5 {
-font-size: 16px;
-font-weight: bold;
-color: #012970;
-margin-bottom: 12px;
-}
+    /* Tiêu đề của từng phần */
+    .sidebar-section h5 {
+        font-size: 16px;
+        font-weight: bold;
+        color: #012970;
+        margin-bottom: 12px;
+    }
 
-/* Input và select */
-.sidebar-section .form-control,
-.sidebar-section .form-select {
-margin-top: 8px;
-border-radius: 4px;
-}
+    /* Input và select */
+    .sidebar-section .form-control,
+    .sidebar-section .form-select {
+        margin-top: 8px;
+        border-radius: 4px;
+    }
 
-/* Radio button và nhãn */
-.sidebar-section .form-check {
-margin-bottom: 8px;
-}
+    /* Radio button và nhãn */
+    .sidebar-section .form-check {
+        margin-bottom: 8px;
+    }
 
-.sidebar-section .form-check-label {
-font-size: 14px;
-color: #6c757d;
-}
+    .sidebar-section .form-check-label {
+        font-size: 14px;
+        color: #6c757d;
+    }
 
-.text-center .btn {
-padding: 10px 20px;
-/* Tăng kích thước nút */
-font-size: 14px;
-/* Cỡ chữ */
-border-radius: 5px;
-/* Bo góc nhẹ */
-}
+    .text-center .btn {
+        padding: 10px 20px;
+        /* Tăng kích thước nút */
+        font-size: 14px;
+        /* Cỡ chữ */
+        border-radius: 5px;
+        /* Bo góc nhẹ */
+    }
 
-.gap-3>* {
-margin-left: 10px;
-/* Khoảng cách giữa các nút */
-}
+    .gap-3>* {
+        margin-left: 10px;
+        /* Khoảng cách giữa các nút */
+    }
 
-.d-flex.justify-content-end .btn {
-padding: 10px 20px;
-/* Tăng kích thước nút */
-font-size: 14px;
-/* Cỡ chữ */
-border-radius: 5px;
-/* Bo góc nhẹ */
-}
+    .d-flex.justify-content-end .btn {
+        padding: 10px 20px;
+        /* Tăng kích thước nút */
+        font-size: 14px;
+        /* Cỡ chữ */
+        border-radius: 5px;
+        /* Bo góc nhẹ */
+    }
 
-.d-flex.justify-content-end .btn+.btn {
-margin-left: 10px;
-/* Khoảng cách giữa các nút */
-}
+    .d-flex.justify-content-end .btn+.btn {
+        margin-left: 10px;
+        /* Khoảng cách giữa các nút */
+    }
 
-.d-flex.justify-content-end {
-margin-top: -10px;
-/* Điều chỉnh khoảng cách với tiêu đề */
-}
+    .d-flex.justify-content-end {
+        margin-top: -10px;
+        /* Điều chỉnh khoảng cách với tiêu đề */
+    }
 
-.d-flex.justify-content-end .btn {
-padding: 8px 16px;
-/* Kích thước nút */
-font-size: 14px;
-/* Cỡ chữ */
-border-radius: 5px;
-/* Bo góc nhẹ */
-}
+    .d-flex.justify-content-end .btn {
+        padding: 8px 16px;
+        /* Kích thước nút */
+        font-size: 14px;
+        /* Cỡ chữ */
+        border-radius: 5px;
+        /* Bo góc nhẹ */
+    }
 
-.d-flex.justify-content-end .btn+.btn {
-margin-left: 10px;
-/* Khoảng cách giữa các nút */
-}
+    .d-flex.justify-content-end .btn+.btn {
+        margin-left: 10px;
+        /* Khoảng cách giữa các nút */
+    }
 
-@media print {
+    @media print {
 
-/* Ẩn header, sidebar, các nút chức năng khi in */
-#header,
-#sidebar,
-.sidebar-main,
-.d-flex.justify-content-end,
-.sidebar-section,
-.back-to-top {
-display: none !important;
-}
+        /* Ẩn header, sidebar, các nút chức năng khi in */
+        #header,
+        #sidebar,
+        .sidebar-main,
+        .d-flex.justify-content-end,
+        .sidebar-section,
+        .back-to-top {
+            display: none !important;
+        }
 
-/* Căn chỉnh main cho đẹp khi in */
-#main.main,
-.main-content,
-.col-lg-9,
-.col-md-8 {
-width: 100% !important;
-max-width: 100% !important;
-margin: 0 !important;
-float: none !important;
-position: static !important;
-}
+        /* Căn chỉnh main cho đẹp khi in */
+        #main.main,
+        .main-content,
+        .col-lg-9,
+        .col-md-8 {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            float: none !important;
+            position: static !important;
+        }
 
-/* Xóa margin/padding không cần thiết */
-body,
-html,
-#main.main {
-padding: 0 !important;
-margin: 0 !important;
-background: #fff !important;
-}
+        /* Xóa margin/padding không cần thiết */
+        body,
+        html,
+        #main.main {
+            padding: 0 !important;
+            margin: 0 !important;
+            background: #fff !important;
+        }
 
-/* Bảng báo cáo full width */
-table.table {
-width: 100% !important;
-font-size: 14px;
-}
+        /* Bảng báo cáo full width */
+        table.table {
+            width: 100% !important;
+            font-size: 14px;
+        }
 
-/* Ẩn các phần không cần thiết khác nếu có */
-}
+        /* Ẩn các phần không cần thiết khác nếu có */
+    }
 </style>
 
-<!-- Thêm thư viện SheetJS trước </body> -->
 <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
 
 <script>
@@ -382,7 +441,6 @@ font-size: 14px;
 
     // Hàm xuất Excel
     document.getElementById('exportExcel').addEventListener('click', function () {
-        // Lấy bảng cần xuất
         var table = document.querySelector('table.table');
         var wb = XLSX.utils.table_to_book(table, { sheet: "Báo cáo cuối ngày" });
         XLSX.writeFile(wb, 'baocao_cuoingay.xlsx');
@@ -391,5 +449,42 @@ font-size: 14px;
     // Hàm gửi Email
     document.getElementById('sendEmail').addEventListener('click', function () {
         alert('Chức năng gửi Email đang được phát triển!');
+    });
+
+    // JavaScript để xử lý lựa chọn ngày và gửi form
+    document.addEventListener('DOMContentLoaded', function () {
+        const todayRadio = document.getElementById('todayRadio');
+        const customRadio = document.getElementById('customRadio');
+        const customDateInput = document.getElementById('customDateInput');
+        const reportFilterForm = document.getElementById('reportFilterForm');
+
+        // Khởi tạo trạng thái input date
+        if (customRadio.checked) {
+            customDateInput.disabled = false;
+        } else {
+            customDateInput.disabled = true;
+        }
+
+        todayRadio.addEventListener('change', function () {
+            if (this.checked) {
+                customDateInput.disabled = true;
+                // Có thể reset giá trị nếu muốn
+                // customDateInput.value = '';
+                reportFilterForm.submit();
+            }
+        });
+
+        customRadio.addEventListener('change', function () {
+            if (this.checked) {
+                customDateInput.disabled = false;
+                customDateInput.focus();
+            }
+        });
+
+        customDateInput.addEventListener('change', function () {
+            if (customRadio.checked) {
+                reportFilterForm.submit();
+            }
+        });
     });
 </script>
