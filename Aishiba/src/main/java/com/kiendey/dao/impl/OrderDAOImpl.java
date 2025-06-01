@@ -2,12 +2,19 @@ package com.kiendey.dao.impl;
 
 import com.kiendey.dao.OrderDAO;
 import com.kiendey.model.Order;
+import com.kiendey.model.OrderItem; // Thêm import cho OrderItem
+import com.kiendey.model.Toy; // Thêm import cho Toy
 import com.kiendey.utils.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap; // Để giữ thứ tự kết quả
+import java.util.stream.Collectors; // Để sử dụng Stream API
+import com.kiendey.dto.ProductSaleStat; // Thêm import cho ProductSaleStat
 
 public class OrderDAOImpl implements OrderDAO {
 
@@ -40,7 +47,7 @@ public class OrderDAOImpl implements OrderDAO {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            session.merge(order);
+            session.merge(order); // Use merge for updating detached instances
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
@@ -85,7 +92,7 @@ public class OrderDAOImpl implements OrderDAO {
                     .setParameter("userId", userId)
                     .list();
         } catch (Exception e) {
-            throw new RuntimeException("Error getting Orders by userId: " + e.getMessage(), e);
+            throw new RuntimeException("Error getting Orders by user ID: " + e.getMessage(), e);
         }
     }
 
@@ -104,22 +111,158 @@ public class OrderDAOImpl implements OrderDAO {
     @Override
     public List<Order> getOrdersByDate(LocalDateTime startDate, LocalDateTime endDate) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            // Thay đổi HQL để lọc theo ngày, tháng, năm cụ thể
             String hql = "FROM Order o LEFT JOIN FETCH o.user LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.toy " +
-                    "WHERE YEAR(o.orderDate) = :year " +
-                    "  AND MONTH(o.orderDate) = :month " +
-                    "  AND DAY(o.orderDate) = :day";
+                    "WHERE o.orderDate BETWEEN :startDate AND :endDate ORDER BY o.orderDate ASC";
 
             Query<Order> query = session.createQuery(hql, Order.class);
-
-            // Lấy năm, tháng, ngày từ startDate (là ngày bắt đầu của ngày được chọn)
-            query.setParameter("year", startDate.getYear());
-            query.setParameter("month", startDate.getMonthValue());
-            query.setParameter("day", startDate.getDayOfMonth());
+            query.setParameter("startDate", startDate);
+            query.setParameter("endDate", endDate);
 
             return query.list();
         } catch (Exception e) {
             throw new RuntimeException("Error getting Orders by date range: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Map<String, Long> getCustomerOrderCounts() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Thay đổi o.user.id thành o.user.name để lấy tên khách hàng
+            String hql = "SELECT o.user.name, COUNT(o.id) FROM Order o GROUP BY o.user.name ORDER BY COUNT(o.id) DESC";
+            List<Object[]> results = session.createQuery(hql, Object[].class).list();
+
+            Map<String, Long> customerOrderCounts = new LinkedHashMap<>();
+            for (Object[] result : results) {
+                customerOrderCounts.put((String) result[0], (Long) result[1]);
+            }
+            return customerOrderCounts;
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting customer order counts: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Map<String, Double> getCustomerTotalPurchaseValues() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Thay đổi o.user.id thành o.user.name để lấy tên khách hàng
+            String hql = "SELECT o.user.name, SUM(oi.quantity * oi.toy.price) " +
+                    "FROM Order o JOIN o.orderItems oi " +
+                    "GROUP BY o.user.name " +
+                    "ORDER BY SUM(oi.quantity * oi.toy.price) DESC";
+
+            List<Object[]> results = session.createQuery(hql, Object[].class).list();
+
+            Map<String, Double> customerTotalPurchaseValues = new LinkedHashMap<>();
+            for (Object[] result : results) {
+                customerTotalPurchaseValues.put((String) result[0], (Double) result[1]);
+            }
+            return customerTotalPurchaseValues;
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting customer total purchase values: " + e.getMessage(), e);
+        }
+    }
+
+    // Các phương thức OrderItemDAOImpl (nếu có)
+    // Các phương thức này không liên quan trực tiếp đến yêu cầu chuyển từ ID sang tên khách hàng trên biểu đồ,
+    // nhưng chúng được bao gồm để hoàn thiện lớp OrderDAOImpl dựa trên ngữ cảnh ban đầu.
+    // Đảm bảo rằng OrderDAO interface của bạn cũng có các phương thức này.
+    // Hiện tại OrderDAOImpl đang triển khai OrderDAO, nhưng các phương thức này thường thuộc về OrderItemDAO.
+    // Nếu bạn muốn giữ chúng trong OrderDAOImpl, hãy đảm bảo interface OrderDAO cũng định nghĩa chúng.
+    // Tôi sẽ thêm chúng vào đây với giả định rằng chúng là một phần của OrderDAO.
+
+    public void createOrderItem(String orderId, String toyId, int quantity) {
+        Transaction transaction = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+
+            Toy toy = session.get(Toy.class, toyId);
+            if (toy == null) {
+                throw new RuntimeException("Toy not found with ID: " + toyId);
+            }
+            Order order = session.get(Order.class, orderId);
+            if (order == null) {
+                throw new RuntimeException("Order not found with ID: " + orderId);
+            }
+            OrderItem orderItem = new OrderItem();
+            orderItem.setToy(toy);
+            orderItem.setOrder(order);
+            orderItem.setQuantity(quantity);
+            session.persist(orderItem);
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new RuntimeException("Error creating OrderItem: " + e.getMessage(), e);
+        }
+    }
+
+    public OrderItem readOrderItem(String orderId, String toyId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "FROM OrderItem oi WHERE oi.order.id = :orderId AND oi.toy.id = :toyId";
+            Query<OrderItem> query = session.createQuery(hql, OrderItem.class);
+            query.setParameter("orderId", orderId);
+            query.setParameter("toyId", toyId);
+            return query.uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public void updateOrderItem(String orderId, String toyId, int quantity) {
+        Transaction transaction = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+
+            OrderItem orderItem = readOrderItem(orderId, toyId);
+            if (orderItem == null) {
+                throw new RuntimeException("OrderItem not found for Order ID: " + orderId + " and Toy ID: " + toyId);
+            }
+            orderItem.setQuantity(quantity);
+            session.merge(orderItem);
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new RuntimeException("Error updating OrderItem: " + e.getMessage(), e);
+        }
+    }
+
+    public void deleteOrderItem(String orderId, String toyId) {
+        Transaction transaction = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+
+            OrderItem orderItem = readOrderItem(orderId, toyId);
+            if (orderItem == null) {
+                throw new RuntimeException("OrderItem not found for Order ID: " + orderId + " and Toy ID: " + toyId);
+            }
+            session.remove(orderItem);
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new RuntimeException("Error deleting OrderItem: " + e.getMessage(), e);
+        }
+    }
+
+    public List<ProductSaleStat> getProductSalesStatistics() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT new com.kiendey.dto.ProductSaleStat(oi.toy.id, oi.toy.name, SUM(oi.quantity)) " +
+                    "FROM OrderItem oi " +
+                    "GROUP BY oi.toy.id, oi.toy.name " +
+                    "ORDER BY SUM(oi.quantity) DESC";
+            Query<ProductSaleStat> query = session.createQuery(hql, ProductSaleStat.class);
+            return query.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
         }
     }
 }
