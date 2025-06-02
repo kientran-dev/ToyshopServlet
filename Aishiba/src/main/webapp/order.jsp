@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %> <%-- Thêm dòng này --%>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <main id="main" class="main">
   <div class="pagetitle">
     <h1>Đơn hàng</h1>
@@ -17,203 +18,253 @@
       <div class="col-lg-12">
         <div class="card">
           <div class="card-body">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-              <h5 class="card-title fs-4 text-primary">Danh sách đơn hàng</h5>
-              <div class="d-flex gap-2">
-                <button class="btn btn-primary d-flex align-items-center">
-                  <i class="bi bi-plus-lg me-1"></i>
-                  Thêm mới
-                </button>
-                <button class="btn btn-success d-flex align-items-center">
-                  <i class="bi bi-collection me-1"></i>
-                  Gộp đơn
-                </button>
-                <div class="dropdown">
-                  <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="fileDropdown" data-bs-toggle="dropdown">
-                    <i class="bi bi-file-earmark me-1"></i>
-                    File
-                  </button>
-                  <ul class="dropdown-menu shadow">
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-download me-2"></i>Xuất Excel</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-printer me-2"></i>In đơn hàng</a></li>
-                  </ul>
-                </div>
-              </div>
-            </div>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="card-title fs-4 text-primary">Danh sách đơn hàng</h5>
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary d-flex align-items-center">
+        <i class="bi bi-plus-lg me-1"></i>
+        Thêm mới
+      </button>
+      <button class="btn btn-success d-flex align-items-center">
+        <i class="bi bi-collection me-1"></i>
+        Gộp đơn
+      </button>
+      <div class="dropdown">
+        <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="fileDropdown" data-bs-toggle="dropdown">
+          <i class="bi bi-file-earmark me-1"></i>
+          File
+        </button>
+        <ul class="dropdown-menu shadow">
+          <li><a class="dropdown-item" href="#"><i class="bi bi-download me-2"></i>Xuất Excel</a></li>
+          <li><a class="dropdown-item" href="#"><i class="bi bi-printer me-2"></i>In đơn hàng</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
 
-            <!-- Add above the table -->
-            <div class="row mb-3">
-              <div class="col-md-8 d-flex gap-2 align-items-center">
-                <div class="search-box flex-grow-1">
-                  <div class="input-group">
+    <%-- Cac nut tim kiem, loc --%>
+    <!-- Add above the table -->
+    <div class="row mb-3">
+      <div class="col-md-8 d-flex gap-2 align-items-center">
+        <div class="search-box flex-grow-1">
+          <div class="input-group">
                       <span class="input-group-text bg-light">
                         <i class="bi bi-search"></i>
                       </span>
-                    <input type="text" class="form-control" id="searchInput" placeholder="Tìm kiếm theo mã đơn hàng, khách hàng...">
-                  </div>
-                </div>
-                <select class="form-select" style="width: auto;">
-                  <option value="">Tất cả trạng thái</option>
-                  <option value="pending">Chờ xử lý</option>
-                  <option value="confirmed">Đã xác nhận</option>
-                  <option value="shipping">Đang giao hàng</option>
-                  <option value="completed">Hoàn thành</option>
-                  <option value="cancelled">Đã hủy</option>
-                  <option value="returned">Đã trả hàng</option>
-                </select>
-                <input type="date" class="form-control" style="width: auto;" title="Lọc theo ngày đặt hàng">
-              </div>
-            </div>
+            <input type="text" class="form-control" id="searchInput" placeholder="Tìm kiếm theo mã đơn hàng, khách hàng...">
+          </div>
+        </div>
+        <select class="form-select" style="width: auto;">
+          <option value="">Tất cả trạng thái</option>
+          <option value="pending">Chờ xử lý</option>
+          <option value="confirmed">Đã xác nhận</option>
+          <option value="shipping">Đang giao hàng</option>
+          <option value="completed">Hoàn thành</option>
+          <option value="cancelled">Đã hủy</option>
+          <option value="returned">Đã trả hàng</option>
+        </select>
+        <input type="date" class="form-control" style="width: auto;" title="Lọc theo ngày đặt hàng">
+      </div>
+    </div>
 
-            <div class="table-responsive">
-              <table class="table table-hover">
-                <thead class="table-light">
-                <tr>
-                  <th class="text-center" width="40">
-                    <input type="checkbox" class="form-check-input" id="selectAll" title="Chọn tất cả đơn hàng">
-                  </th>
-                  <th class="text-center" width="40">★</th>
-                  <th class="text-start">Mã hóa đơn</th>
-                  <th class="text-center">Thời gian</th>
-                  <th class="text-center">Mã trả hàng</th>
-                  <th class="text-start">Khách hàng</th>
-                  <th class="text-end">Tổng tiền hàng</th>
-                  <th class="text-end">Giảm giá</th>
-                  <th class="text-end">Khách đã trả</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                  <td class="text-center"><input type="checkbox" class="form-check-input row-checkbox" title="Chọn đơn hàng này"></td>
-                  <td class="text-center"><i class="bi bi-star text-warning"></i></td>
-                  <td class="text-start"><a href="#" class="text-primary">HD000055</a></td>
-                  <td class="text-center">20/04/2025 15:30</td>
-                  <td class="text-center"><span class="badge bg-success">TH000132</span></td>
-                  <td class="text-start">Chị Lan - Hà Nội</td>
-                  <td class="text-end">1,250,000</td>
-                  <td class="text-end text-danger">50,000</td>
-                  <td class="text-end text-success">1,200,000</td>
-                </tr>
-
-                <tr>
-                  <td class="text-center"><input type="checkbox" class="form-check-input row-checkbox" title="Chọn đơn hàng này"></td>
-                  <td class="text-center"><i class="bi bi-star text-warning"></i></td>
-                  <td class="text-start"><a href="#" class="text-primary">HD000054</a></td>
-                  <td class="text-center">19/04/2025 14:45</td>
-                  <td class="text-center"><span class="badge bg-secondary">-</span></td>
-                  <td class="text-start">Anh Tuấn - Đà Nẵng</td>
-                  <td class="text-end">2,800,000</td>
-                  <td class="text-end text-danger">100,000</td>
-                  <td class="text-end text-success">2,700,000</td>
-                </tr>
-
-                <tr>
-                  <td class="text-center"><input type="checkbox" class="form-check-input row-checkbox" title="Chọn đơn hàng này"></td>
-                  <td class="text-center"><i class="bi bi-star text-warning"></i></td>
-                  <td class="text-start"><a href="#" class="text-primary">HD000053</a></td>
-                  <td class="text-center">18/04/2025 11:20</td>
-                  <td class="text-center"><span class="badge bg-success">TH000131</span></td>
-                  <td class="text-start">Chị Hương - Hải Phòng</td>
-                  <td class="text-end">3,500,000</td>
-                  <td class="text-end text-danger">150,000</td>
-                  <td class="text-end text-success">3,350,000</td>
-                </tr>
-
-                <tr>
-                  <td class="text-center"><input type="checkbox" class="form-check-input row-checkbox" title="Chọn đơn hàng này"></td>
-                  <td class="text-center"><i class="bi bi-star text-warning"></i></td>
-                  <td class="text-start"><a href="#" class="text-primary">HD000052</a></td>
-                  <td class="text-center">17/04/2025 09:15</td>
-                  <td class="text-center"><span class="badge bg-secondary">-</span></td>
-                  <td class="text-start">Anh Nam - Cần Thơ</td>
-                  <td class="text-end">1,800,000</td>
-                  <td class="text-end text-danger">0</td>
-                  <td class="text-end text-success">1,800,000</td>
-                </tr>
-
-                <tr>
-                  <td class="text-center"><input type="checkbox" class="form-check-input row-checkbox" title="Chọn đơn hàng này"></td>
-                  <td class="text-center"><i class="bi bi-star text-warning"></i></td>
-                  <td class="text-start"><a href="#" class="text-primary">HD000051</a></td>
-                  <td class="text-center">16/04/2025 16:40</td>
-                  <td class="text-center"><span class="badge bg-secondary">-</span></td>
-                  <td class="text-start">Chị Mai - Nha Trang</td>
-                  <td class="text-end">2,100,000</td>
-                  <td class="text-end text-danger">100,000</td>
-                  <td class="text-end text-success">2,000,000</td>
-                </tr>
-
-                <tr>
-                  <td class="text-center"><input type="checkbox" class="form-check-input row-checkbox" title="Chọn đơn hàng này"></td>
-                  <td class="text-center"><i class="bi bi-star text-warning"></i></td>
-                  <td class="text-start"><a href="#" class="text-primary">HD000050</a></td>
-                  <td class="text-center">15/04/2025 13:25</td>
-                  <td class="text-center"><span class="badge bg-secondary">-</span></td>
-                  <td class="text-start">Anh Dũng - Huế</td>
-                  <td class="text-end">4,200,000</td>
-                  <td class="text-end text-danger">200,000</td>
-                  <td class="text-end text-success">4,000,000</td>
-                </tr>
-
-                <tr>
-                  <td class="text-center"><input type="checkbox" class="form-check-input row-checkbox" title="Chọn đơn hàng này"></td>
-                  <td class="text-center"><i class="bi bi-star text-warning"></i></td>
-                  <td class="text-start"><a href="#" class="text-primary">HD000049</a></td>
-                  <td class="text-center">14/04/2025 10:50</td>
-                  <td class="text-center"><span class="badge bg-secondary">-</span></td>
-                  <td class="text-start">Chị Linh - Vũng Tàu</td>
-                  <td class="text-end">1,550,000</td>
-                  <td class="text-end text-danger">50,000</td>
-                  <td class="text-end text-success">1,500,000</td>
-                </tr>
-
-                <tr>
-                  <td class="text-center"><input type="checkbox" class="form-check-input row-checkbox" title="Chọn đơn hàng này"></td>
-                  <td class="text-center"><i class="bi bi-star text-warning"></i></td>
-                  <td class="text-start"><a href="#" class="text-primary">HD000048</a></td>
-                  <td class="text-center">13/04/2025 14:15</td>
-                  <td class="text-center"><span class="badge bg-secondary">-</span></td>
-                  <td class="text-start">Anh Thành - Bình Dương</td>
-                  <td class="text-end">2,900,000</td>
-                  <td class="text-end text-danger">100,000</td>
-                  <td class="text-end text-success">2,800,000</td>
-                </tr>
-
-                <tr>
-                  <td class="text-center"><input type="checkbox" class="form-check-input row-checkbox" title="Chọn đơn hàng này"></td>
-                  <td class="text-center"><i class="bi bi-star text-warning"></i></td>
-                  <td class="text-start"><a href="#" class="text-primary">HD000047</a></td>
-                  <td class="text-center">12/04/2025 09:30</td>
-                  <td class="text-center"><span class="badge bg-secondary">-</span></td>
-                  <td class="text-start">Chị Thảo - Đồng Nai</td>
-                  <td class="text-end">3,300,000</td>
-                  <td class="text-end text-danger">150,000</td>
-                  <td class="text-end text-success">3,150,000</td>
-                </tr>
-
-                <tr>
-                  <td class="text-center"><input type="checkbox" class="form-check-input row-checkbox" title="Chọn đơn hàng này"></td>
-                  <td class="text-center"><i class="bi bi-star text-warning"></i></td>
-                  <td class="text-start"><a href="#" class="text-primary">HD000046</a></td>
-                  <td class="text-center">11/04/2025 16:20</td>
-                  <td class="text-center"><span class="badge bg-secondary">-</span></td>
-                  <td class="text-start">Anh Phong - Long An</td>
-                  <td class="text-end">1,700,000</td>
-                  <td class="text-end text-danger">0</td>
-                  <td class="text-end text-success">1,700,000</td>
-                </tr>
-                </tbody>
-              </table>
-            </div>
-
+  <div class="table-responsive">
+    <table class="table table-hover align-middle rounded-4 overflow-hidden">
+      <thead class="table-light">
+      <tr>
+        <th style="width:40px">
+          <input type="checkbox" class="form-check-input" id="selectAllorder" title="Chọn tất cả" onclick="toggleSelectAllorder(this)">
+        </th>
+        <th style="width:40px">
+          <i class="bi bi-star header-star text-warning" id="selectAllorderStars" title="Chọn/Bỏ chọn tất cả nổi bật" onclick="toggleSelectAllorderStars()"></i>
+        </th>
+        <th>Mã DH</th>
+        <th>Thời gian</th>
+        <th>Khách hàng</th>
+        <th>Địa chỉ nhận hàng</th>
+        <th >Tổng tiền hàng</th>
+      </tr>
+      </thead>
+      <tbody id="orderTableBody">
+      <%-- Kiểm tra nếu orderList không rỗng --%>
+      <c:if test="${not empty orderList}">
+        <%-- Duyệt qua danh sách nhà cung cấp và hiển thị --%>
+        <c:forEach var="order" items="${orderList}" varStatus="loop">
+          <tr>
+            <td><input type="checkbox" class="form-check-input supplier-checkbox" title="Chọn nhà cung cấp này" onclick="event.stopPropagation();"></td>
+            <td><i class="bi bi-star star-outline" onclick="toggleSupplierStar(this, event)"></i></td>
+            <td style="color: #0D6EFD"><c:out value="${order.formattedOrderCode}" /></td>
+              <%-- Ngày đặt hàng --%>
+            <td>
+              <c:choose>
+                <c:when test="${not empty order.orderDate}">
+                  <fmt:formatDate value="${orderDateList[loop.index]}" pattern="dd/MM/yyyy HH:mm:ss" />
+                </c:when>
+                <c:otherwise>
+                  N/A
+                </c:otherwise>
+              </c:choose>
+            </td>
+              <%-- Tên Khách hàng --%>
+            <td>
+              <c:choose>
+                <c:when test="${not empty order.user and not empty order.user.name}">
+                  <c:out value="${order.user.name}" />
+                </c:when>
+                <c:otherwise>
+                  N/A
+                </c:otherwise>
+              </c:choose>
+            </td>
+              <%-- Địa chỉ --%>
+            <td><c:out value="${order.address}" /></td>
+              <%-- Email Khách hàng --%>
+            <td class="text-end">
+              <c:if test="${not empty totalAmountList[loop.index]}">
+                <fmt:formatNumber value="${totalAmountList[loop.index]}" type="currency" currencyCode="VND" />
+              </c:if>
+              <c:if test="${empty totalAmountList[loop.index]}">
+                N/A
+              </c:if>
+            </td>
+          </tr>
+        </c:forEach>
+      </c:if>
+      <%-- Hiển thị thông báo nếu danh sách rỗng --%>
+      <c:if test="${empty orderList}">
+        <tr>
+          <td colspan="9" class="text-center">Không có nhà cung cấp nào.</td>
+        </tr>
+      </c:if>
+      </tbody>
+    </table>
+  </div>
           </div>
         </div>
       </div>
     </div>
   </section>
+  <%-- Phần phân trang --%>
+  <c:if test="${totalPages > 1}">
+    <nav aria-label="Page navigation">
+      <ul class="pagination-container">
+          <%-- Nút Previous --%>
+        <li class="page-item <c:if test='${currentPage == 1}'>disabled</c:if>">
+          <a class="page-link" href="order?page=${currentPage - 1}" aria-label="Previous">
+            <span aria-hidden="true">&laquo;</span>
+          </a>
+        </li>
+
+          <%-- Các nút số trang --%>
+          <%-- Logic hiển thị số trang (ví dụ: hiển thị 5 trang xung quanh trang hiện tại) --%>
+        <c:set var="startPage" value="${currentPage - 2}"/>
+        <c:set var="endPage" value="${currentPage + 2}"/>
+
+        <c:if test="${startPage < 1}">
+          <c:set var="endPage" value="${endPage + (1 - startPage)}"/>
+          <c:set var="startPage" value="1"/>
+        </c:if>
+        <c:if test="${endPage > totalPages}">
+          <c:set var="startPage" value="${startPage - (endPage - totalPages)}"/>
+          <c:set var="endPage" value="${totalPages}"/>
+          <c:if test="${startPage < 1}"><c:set var="startPage" value="1"/></c:if>
+        </c:if>
+
+          <%-- Nút trang đầu và "..." nếu cần --%>
+        <c:if test="${startPage > 1}">
+          <li class="page-item">
+            <a class="page-link" href="order?page=1">1</a>
+          </li>
+          <c:if test="${startPage > 2}">
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+          </c:if>
+        </c:if>
+
+        <c:forEach begin="${startPage}" end="${endPage}" var="i">
+          <li class="page-item <c:if test='${currentPage == i}'>active</c:if>">
+            <a class="page-link" href="order?page=${i}">${i}</a>
+          </li>
+        </c:forEach>
+
+          <%-- Nút trang cuối và "..." nếu cần --%>
+        <c:if test="${endPage < totalPages}">
+          <c:if test="${endPage < totalPages - 1}">
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+          </c:if>
+          <li class="page-item">
+            <a class="page-link" href="order?page=${totalPages}">${totalPages}</a>
+          </li>
+        </c:if>
+
+          <%-- Nút Next --%>
+        <li class="page-item <c:if test='${currentPage == totalPages || totalPages == 0}'>disabled</c:if>">
+          <a class="page-link" href="order?page=${currentPage + 1}" aria-label="Next">
+            <span aria-hidden="true">&raquo;</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </c:if>
+  <%-- Hết phần phân trang --%>
+
 </main>
+
+<div class="modal fade" id="adminOrderDetailModal" tabindex="-1" aria-labelledby="adminOrderDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="adminOrderDetailModalLabel">Chi tiết Đơn hàng</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="adminOrderDetailModalBody">
+        <p class="text-center">Đang tải dữ liệu...</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%-- Thêm các style cần thiết --%>
 <!-- Thêm CSS -->
 <style>
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+
+  .pagination-container .page-item {
+    margin: 0 5px;
+  }
+
+  .pagination-container .page-link {
+    padding: 8px 12px;
+    text-decoration: none;
+    color: #0d6efd; /* Bootstrap primary color */
+    border: 1px solid #dee2e6; /* Bootstrap border color */
+    border-radius: 4px;
+    transition: background-color 0.2s, color 0.2s;
+  }
+
+  .pagination-container .page-link:hover {
+    background-color: #e9ecef; /* Bootstrap hover color */
+  }
+
+  .pagination-container .page-item.active .page-link {
+    background-color: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+  }
+
+  .pagination-container .page-item.disabled .page-link {
+    color: #6c757d; /* Bootstrap disabled color */
+    pointer-events: none;
+    background-color: #fff;
+    border-color: #dee2e6;
+  }
   .status-select option[value="pending"] {
     background-color: #fff3cd;
     color: #856404;
@@ -268,8 +319,7 @@
     color: #721c24;
     background-color: #f8d7da;
   }
-</style>
-<style>
+
   /* Style cho select trạng thái */
   .form-select {
     padding: 0.375rem 2.25rem 0.375rem 0.75rem;
@@ -376,7 +426,9 @@
     cursor: default;
   }
 </style>
+
 <!-- ======= Script ======= -->
+<%-- Script ngoi sao --%>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     // Lấy ngôi sao ở header và tất cả ngôi sao trong tbody
@@ -476,6 +528,7 @@
   });
 </script>
 
+<%-- Script chon va thao tac don --%>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const selectAll = document.getElementById('selectAll');
@@ -668,222 +721,7 @@
   });
 </script>
 
-<!-- Order Detail Modal -->
-<div class="modal fade" id="orderDetailModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Chi tiết đơn hàng</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body">
-        <div class="row mb-3">
-          <div class="col-md-6">
-            <div class="mb-2">
-              <label class="form-label">Mã đơn hàng:</label>
-              <input type="text" class="form-control" value="HD000045" readonly title="Mã đơn hàng">
-            </div>
-            <div class="mb-2">
-              <label class="form-label">Thời gian:</label>
-              <input type="text" class="form-control" value="14/04/2025 08:33" readonly title="Thời gian đặt hàng">
-            </div>
-            <div class="mb-2">
-              <label class="form-label">Khách hàng:</label>
-              <input type="text" class="form-control" value="KH000004 - Anh Hoàng - Sài Gòn" readonly title="Khách hàng">
-            </div>
-            <div class="mb-2">
-              <label class="form-label">Bảng giá:</label>
-              <input type="text" class="form-control" value="Bảng giá chung" readonly title="Bảng giá áp dụng">
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="mb-2">
-              <label class="form-label">Trạng thái:</label>
-              <select class="form-select" title="Chọn trạng thái đơn hàng">
-                <option value="pending" selected>Chờ xử lý</option>
-                <option value="confirmed">Đã xác nhận</option>
-                <option value="shipping">Đang giao hàng</option>
-                <option value="completed">Hoàn thành</option>
-                <option value="cancelled">Đã hủy</option>
-              </select>
-            </div>
-            <div class="mb-2">
-              <label class="form-label">Chi nhánh:</label>
-              <input type="text" class="form-control" value="Chi nhánh trung tâm" readonly title="Chi nhánh bán hàng">
-            </div>
-            <div class="mb-2">
-              <label class="form-label">Người tạo:</label>
-              <input type="text" class="form-control" value="Lê Thị Bảo Trân" readonly title="Người tạo đơn">
-            </div>
-          </div>
-        </div>
-
-        <div class="table-responsive mb-3">
-          <table class="table table-bordered">
-            <thead class="table-light">
-            <tr>
-              <th>Mã hàng</th>
-              <th>Tên hàng</th>
-              <th class="text-center">Số lượng</th>
-              <th class="text-end">Đơn giá</th>
-              <th class="text-end">Giảm giá</th>
-              <th class="text-end">Giá bán</th>
-              <th class="text-end">Thành tiền</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr>
-              <td>BG0003</td>
-              <td>Váy cao cấp hồng</td>
-              <td class="text-center">12</td>
-              <td class="text-end">140,000</td>
-              <td class="text-end">140,000</td>
-              <td class="text-end">140,000</td>
-              <td class="text-end">1,680,000</td>
-            </tr>
-            <tr>
-              <td>BG0004</td>
-              <td>Váy đầm Kitty bé gái 4 tuổi</td>
-              <td class="text-center">13</td>
-              <td class="text-end">28,000</td>
-              <td class="text-end">28,000</td>
-              <td class="text-end">28,000</td>
-              <td class="text-end">364,000</td>
-            </tr>
-            </tbody>
-            <tfoot>
-            <tr>
-              <td colspan="2" class="text-end">Tổng số lượng:</td>
-              <td class="text-center">25</td>
-              <td colspan="3" class="text-end">Tổng tiền hàng:</td>
-              <td class="text-end">2,044,000</td>
-            </tr>
-            <tr>
-              <td colspan="6" class="text-end">Giảm giá hóa đơn:</td>
-              <td class="text-end">0</td>
-            </tr>
-            <tr>
-              <td colspan="6" class="text-end">Khách cần trả:</td>
-              <td class="text-end">2,044,000</td>
-            </tr>
-            <tr>
-              <td colspan="6" class="text-end">Khách đã trả:</td>
-              <td class="text-end">2,044,000</td>
-            </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-success d-flex align-items-center">
-          <i class="bi bi-arrow-clockwise me-1"></i>
-          Cập nhật
-        </button>
-        <button type="button" class="btn btn-primary d-flex align-items-center">
-          <i class="bi bi-save me-1"></i>
-          Lưu
-        </button>
-        <button type="button" class="btn btn-warning d-flex align-items-center">
-          <i class="bi bi-arrow-counterclockwise me-1"></i>
-          Trả hàng
-        </button>
-        <button type="button" class="btn btn-secondary d-flex align-items-center">
-          <i class="bi bi-printer me-1"></i>
-          In
-        </button>
-        <button type="button" class="btn btn-info d-flex align-items-center">
-          <i class="bi bi-file-earmark me-1"></i>
-          Xuất file
-        </button>
-        <button type="button" class="btn btn-primary d-flex align-items-center">
-          <i class="bi bi-files me-1"></i>
-          Sao chép
-        </button>
-        <button type="button" class="btn btn-danger d-flex align-items-center">
-          <i class="bi bi-trash me-1"></i>
-          Hủy bỏ
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script>
-  // Add after existing script
-  document.addEventListener('DOMContentLoaded', function() {
-    // Chỉ chọn các link mã đơn hàng (có class text-primary trong cột mã hóa đơn)
-    document.querySelectorAll('td.text-start a.text-primary').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        const modal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
-        modal.show();
-      });
-    });
-  });
-
-  document.addEventListener('DOMContentLoaded', function() {
-    // Fix click handler for order links
-    document.querySelectorAll('td.text-start a.text-primary').forEach(link => {
-      link.addEventListener('click', function(e) {
-        e.preventDefault();
-
-        // Get data from clicked row
-        const row = this.closest('tr');
-        const orderData = {
-          id: this.textContent,
-          date: row.cells[3].textContent,
-          returnId: row.querySelector('.badge').textContent,
-          customer: row.cells[5].textContent,
-          total: row.cells[6].textContent,
-          discount: row.cells[7].textContent,
-          paid: row.cells[8].textContent
-        };
-
-        // Get modal and update content
-        const modal = document.getElementById('orderDetailModal');
-
-        // Update header information
-        modal.querySelector('input[value^="HD"]').value = orderData.id;
-        modal.querySelector('input[value$="08:33"]').value = orderData.date;
-        modal.querySelector('input[value^="KH"]').value = orderData.customer;
-
-        // Update amounts in footer
-        const tfoot = modal.querySelector('table tfoot');
-        tfoot.rows[0].cells[6].textContent = orderData.total; // Tổng tiền hàng
-        tfoot.rows[1].cells[1].textContent = orderData.discount; // Giảm giá
-        tfoot.rows[2].cells[1].textContent = orderData.total; // Khách cần trả
-        tfoot.rows[3].cells[1].textContent = orderData.paid; // Khách đã trả
-
-        // Show modal
-        const bsModal = new bootstrap.Modal(modal);
-        bsModal.show();
-      });
-    });
-
-    // Calculate totals in modal table
-    function updateModalTotals() {
-      const modal = document.getElementById('orderDetailModal');
-      const tbody = modal.querySelector('table tbody');
-      let totalQty = 0;
-      let totalAmount = 0;
-
-      // Sum up quantities and amounts
-      tbody.querySelectorAll('tr').forEach(row => {
-        totalQty += parseInt(row.cells[2].textContent);
-        totalAmount += parseInt(row.cells[6].textContent.replace(/,/g, ''));
-      });
-
-      // Update footer totals
-      const tfoot = modal.querySelector('table tfoot');
-      tfoot.rows[0].cells[2].textContent = totalQty;
-      tfoot.rows[0].cells[6].textContent = totalAmount.toLocaleString();
-    }
-
-    // Call this after populating table data
-    updateModalTotals();
-  });
-</script>
-
+<%-- Script cho cac nut tren cung --%>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // Get buttons
@@ -1033,6 +871,7 @@
   }
 </script>
 
+<%-- Script cho tim kiem va loc --%>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     // Get filter elements

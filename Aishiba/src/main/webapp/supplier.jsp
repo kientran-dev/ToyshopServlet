@@ -158,7 +158,7 @@
         border-color: #dee2e6;
     }
 </style>
-</head>
+
 <body>
 <main id="main" class="main">
     <div class="pagetitle">

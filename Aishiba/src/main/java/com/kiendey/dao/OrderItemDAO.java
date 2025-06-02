@@ -11,6 +11,7 @@ public interface OrderItemDAO {
     OrderItem readOrderItem(String orderId, String toyId);
     void updateOrderItem(String orderId, String toyId, int quantity);
     void deleteOrderItem(String orderId, String toyId);
+
     /**
      * Lấy danh sách thống kê số lượng bán của mỗi sản phẩm,
      * sắp xếp theo số lượng bán giảm dần.

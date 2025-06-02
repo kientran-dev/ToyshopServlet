@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap; // Để giữ thứ tự kết quả
-import java.util.stream.Collectors; // Để sử dụng Stream API
+
 import com.kiendey.dto.ProductSaleStat; // Thêm import cho ProductSaleStat
 
 public class OrderDAOImpl implements OrderDAO {
@@ -78,7 +78,8 @@ public class OrderDAOImpl implements OrderDAO {
     @Override
     public List<Order> getAllOrders() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM Order", Order.class).list();
+            String hql = "FROM Order o LEFT JOIN FETCH o.user LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.toy";
+            return session.createQuery(hql, Order.class).list();
         } catch (Exception e) {
             throw new RuntimeException("Error getting all Orders: " + e.getMessage(), e);
         }
@@ -108,6 +109,64 @@ public class OrderDAOImpl implements OrderDAO {
         }
     }
 
+    @Override
+    public Order getOrderById(String id) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.get(Order.class, id);
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting Order by ID: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public double getTotalOrderAmount(String userId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT SUM(oi.quantity * oi.toy.price) FROM Order o JOIN o.orderItems oi WHERE o.user.id = :userId";
+            Double totalAmount = session.createQuery(hql, Double.class)
+                    .setParameter("userId", userId)
+                    .uniqueResult();
+            return totalAmount != null ? totalAmount : 0.0;
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting total order amount: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public double getFinalAmount(String orderId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT SUM(oi.quantity * oi.toy.price) FROM OrderItem oi WHERE oi.order.id = :orderId";
+            Double finalAmount = session.createQuery(hql, Double.class)
+                    .setParameter("orderId", orderId)
+                    .uniqueResult();
+            return finalAmount != null ? finalAmount : 0.0;
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting final amount for Order: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<Order> getOrdersByPage(int pageNumber, int pageSize) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "FROM Order o LEFT JOIN FETCH o.user LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.toy";
+            Query<Order> query = session.createQuery(hql, Order.class);
+            query.setFirstResult((pageNumber - 1) * pageSize);
+            query.setMaxResults(pageSize);
+            return query.list();
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting Orders by page: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public long getTotalOrderCount() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT COUNT(o.id) FROM Order o";
+            Long count = session.createQuery(hql, Long.class).uniqueResult();
+            return count != null ? count : 0;
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting total order count: " + e.getMessage(), e);
+        }
+    }
     @Override
     public List<Order> getOrdersByDate(LocalDateTime startDate, LocalDateTime endDate) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

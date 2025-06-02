@@ -1,10 +1,10 @@
 package com.kiendey.servlet.test;
 
-import com.kiendey.dao.ToyDAO;
-import com.kiendey.dao.impl.ToyDAOImpl;
+import com.kiendey.dao.OrderDAO;
+import com.kiendey.dao.impl.OrderDAOImpl;
 import com.kiendey.model.Permission;
 import com.kiendey.model.Role;
-import com.kiendey.model.Toy;
+import com.kiendey.model.Order;
 import com.kiendey.model.User;
 import com.kiendey.utils.PasswordUtil;
 import jakarta.persistence.EntityManager;
@@ -35,9 +35,11 @@ public class InitServlet extends HttpServlet {
         resp.setContentType("text/html;charset=UTF-8");
 
         try {
-            ToyDAOImpl toyDAO = new ToyDAOImpl();
-            List<Toy> toys = toyDAO.getAllToys();
-            out.println("<html>Laay thanh cong<body>");
+            OrderDAOImpl OrderDAO = new OrderDAOImpl();
+            List<Order> Orders = OrderDAO.getAllOrders();
+            int count = 0;
+            count = Orders.size();
+            out.println("console.log(" + count + " orders found');");
         } catch (Exception e) {
             out.println("<html>Khong the lay du lieu <body>");
         }
