@@ -12,4 +12,6 @@ public interface UserDAO {
     void deleteUser(String id);
     List<User> getAllUsers();
     List<User> searchUsersByName(String name);
+    List<User> getUsersByPage(int pageNumber, int pageSize);
+    long getTotalUserCount();
 }

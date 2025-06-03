@@ -1,529 +1,146 @@
 <%@ page contentType="text/html; charset=UTF-8" language="java" %>
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="utf-8">
-  <meta content="width=device-width, initial-scale=1.0" name="viewport">
-
-  <title>Danh sách khách hàng</title>
-  <meta content="" name="description">
-  <meta content="" name="keywords">
-
-  <!-- Favicons -->
-  <link href="${pageContext.request.contextPath}/assets/img/logo.png" rel="icon">
-  <link href="${pageContext.request.contextPath}/assets/img/logo.png" rel="apple-touch-icon">
-
-  <!-- Google Fonts -->
-  <link href="https://fonts.gstatic.com" rel="preconnect">
-  <link
-          href="https://fonts.googleapis.com/css?family=Open+Sans:300,300i,400,400i,600,600i,700,700i|Nunito:300,300i,400,400i,600,600i,700,700i"
-          rel="stylesheet">
-
-  <!-- Vendor CSS Files -->
-  <link href="${pageContext.request.contextPath}/assets/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-  <link href="${pageContext.request.contextPath}/assets/vendor/bootstrap-icons/bootstrap-icons.css"
-        rel="stylesheet">
-  <link href="${pageContext.request.contextPath}/assets/vendor/boxicons/css/boxicons.min.css" rel="stylesheet">
-  <link href="${pageContext.request.contextPath}/assets/vendor/quill/quill.snow.css" rel="stylesheet">
-  <link href="${pageContext.request.contextPath}/assets/vendor/quill/quill.bubble.css" rel="stylesheet">
-  <link href="${pageContext.request.contextPath}/assets/vendor/remixicon/remixicon.css" rel="stylesheet">
-  <link href="${pageContext.request.contextPath}/assets/vendor/simple-datatables/style.css" rel="stylesheet">
-
-  <!-- Template Main CSS File -->
-  <link href="${pageContext.request.contextPath}/assets/css/style.css" rel="stylesheet">
-
-  <!-- Custom CSS -->
-  <style>
-    /* Tùy chỉnh bảng */
-    .table-hover tbody tr:hover {
-      background-color: #f8f9fa;
-    }
-
-    .table th,
-    .table td {
-      vertical-align: middle;
-      text-align: center;
-    }
-
-    /* Thêm style cho header của bảng */
-    .table thead tr:first-child {
-      background-color: #fff3cd;
-      /* Màu vàng nhạt giống ảnh */
-      font-weight: bold;
-    }
-
-    /* Tùy chỉnh nút */
-    .btn-success,
-    .btn-primary,
-    .btn-secondary {
-      margin-left: 5px;
-    }
-
-    .form-check-input:checked+.form-check-label::before {
-      background-color: #198754;
-      /* Bootstrap success green */
-      border-color: #198754;
-    }
-
-
-
-    #company:checked+.form-check-label::before {
-      background-color: #0d6efd;
-      /* Bootstrap primary blue */
-      border-color: #0d6efd;
-    }
-
-    /* Add specific icon for 'Cá nhân' when checked */
-    #individual:checked+.form-check-label::after {
-      content: '\\f26e';
-      /* Bootstrap Icons check */
-      font-family: bootstrap-icons !important;
-      position: absolute;
-      left: 4px;
-      /* Adjust position */
-      top: 1px;
-      /* Adjust position */
-      color: white;
-      font-size: 0.8em;
-    }
-
-    /* Add specific icon for 'Công ty' when checked */
-    #company:checked+.form-check-label::after {
-      content: '\\f283';
-      /* Bootstrap Icons circle-fill */
-      font-family: bootstrap-icons !important;
-      position: absolute;
-      left: 4px;
-      /* Adjust position */
-      top: 1px;
-      /* Adjust position */
-      color: white;
-      font-size: 0.8em;
-    }
-
-    /* Style cho phần chi tiết khách hàng */
-    .customer-detail-container {
-      background-color: #f8f9fc;
-      /* Màu nền nhạt */
-      border-top: 1px solid #dee2e6;
-    }
-
-    .customer-detail-row td {
-      border-top: none !important;
-      /* Bỏ border top của ô chứa chi tiết */
-    }
-
-    #customer-table-body tr:not(.total-row):not(.customer-detail-row):hover {
-      cursor: pointer;
-      background-color: #e9ecef;
-      /* Màu nền khi hover vào hàng */
-    }
-
-    #customer-table-body tr.table-active {
-      background-color: #cfe2ff !important;
-      /* Màu nền khi hàng được chọn */
-    }
-
-    .nav-tabs .nav-link {
-      color: #6c757d;
-      border-bottom-width: 2px;
-    }
-
-    .nav-tabs .nav-link.active {
-      color: #0d6efd;
-      border-color: #dee2e6 #dee2e6 #0d6efd;
-    }
-  </style>
-
-  <!-- =======================================================
-* Template Name: NiceAdmin
-* Template URL: https://bootstrapmade.com/nice-admin-bootstrap-admin-html-template/
-* Updated: Apr 20 2024 with Bootstrap v5.3.3
-* Author: BootstrapMade.com
-* License: https://bootstrapmade.com/license/
-======================================================== -->
-</head>
-
-<body>
-
-<!-- ======= Header ======= -->
-<header id="header" class="header fixed-top d-flex align-items-center">
-
-  <div class="d-flex align-items-center justify-content-between">
-    <a href="index.html" class="logo d-flex align-items-center">
-      <img src="${pageContext.request.contextPath}/assets/img/logo.png" alt="">
-      <span class="d-none d-lg-block">Aishiba</span>
-    </a>
-    <i class="bi bi-list toggle-sidebar-btn"></i>
-  </div><!-- End Logo -->
-
-  <div class="search-bar">
-    <form class="search-form d-flex align-items-center" method="POST" action="#">
-      <input type="text" name="query" placeholder="Search" title="Enter search keyword">
-      <button type="submit" title="Search"><i class="bi bi-search"></i></button>
-    </form>
-  </div><!-- End Search Bar -->
-
-  <nav class="header-nav ms-auto">
-    <ul class="d-flex align-items-center">
-
-      <li class="nav-item d-block d-lg-none">
-        <a class="nav-link nav-icon search-bar-toggle " href="#">
-          <i class="bi bi-search"></i>
-        </a>
-      </li><!-- End Search Icon-->
-
-      <li class="nav-item dropdown">
-
-        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-          <i class="bi bi-bell"></i>
-          <span class="badge bg-primary badge-number">4</span>
-        </a><!-- End Notification Icon -->
-
-        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow notifications">
-          <li class="dropdown-header">
-            You have 4 new notifications
-            <a href="#"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
-          </li>
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-
-          <li class="notification-item">
-            <i class="bi bi-exclamation-circle text-warning"></i>
-            <div>
-              <h4>Lorem Ipsum</h4>
-              <p>Quae dolorem earum veritatis oditseno</p>
-              <p>30 min. ago</p>
-            </div>
-          </li>
-
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-
-          <li class="notification-item">
-            <i class="bi bi-x-circle text-danger"></i>
-            <div>
-              <h4>Atque rerum nesciunt</h4>
-              <p>Quae dolorem earum veritatis oditseno</p>
-              <p>1 hr. ago</p>
-            </div>
-          </li>
-
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-
-          <li class="notification-item">
-            <i class="bi bi-check-circle text-success"></i>
-            <div>
-              <h4>Sit rerum fuga</h4>
-              <p>Quae dolorem earum veritatis oditseno</p>
-              <p>2 hrs. ago</p>
-            </div>
-          </li>
-
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-
-          <li class="notification-item">
-            <i class="bi bi-info-circle text-primary"></i>
-            <div>
-              <h4>Dicta reprehenderit</h4>
-              <p>Quae dolorem earum veritatis oditseno</p>
-              <p>4 hrs. ago</p>
-            </div>
-          </li>
-
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-          <li class="dropdown-footer">
-            <a href="#">Show all notifications</a>
-          </li>
-
-        </ul><!-- End Notification Dropdown Items -->
-
-      </li><!-- End Notification Nav -->
-
-      <li class="nav-item dropdown">
-
-        <a class="nav-link nav-icon" href="#" data-bs-toggle="dropdown">
-          <i class="bi bi-chat-left-text"></i>
-          <span class="badge bg-success badge-number">3</span>
-        </a><!-- End Messages Icon -->
-
-        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow messages">
-          <li class="dropdown-header">
-            You have 3 new messages
-            <a href="#"><span class="badge rounded-pill bg-primary p-2 ms-2">View all</span></a>
-          </li>
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-
-          <li class="message-item">
-            <a href="#">
-              <img src="${pageContext.request.contextPath}/assets/img/messages-1.jpg" alt=""
-                   class="rounded-circle">
-              <div>
-                <h4>Maria Hudson</h4>
-                <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
-                <p>4 hrs. ago</p>
-              </div>
-            </a>
-          </li>
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-
-          <li class="message-item">
-            <a href="#">
-              <img src="${pageContext.request.contextPath}/assets/img/messages-2.jpg" alt=""
-                   class="rounded-circle">
-              <div>
-                <h4>Anna Nelson</h4>
-                <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
-                <p>6 hrs. ago</p>
-              </div>
-            </a>
-          </li>
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-
-          <li class="message-item">
-            <a href="#">
-              <img src="${pageContext.request.contextPath}/assets/img/messages-3.jpg" alt=""
-                   class="rounded-circle">
-              <div>
-                <h4>David Muldon</h4>
-                <p>Velit asperiores et ducimus soluta repudiandae labore officia est ut...</p>
-                <p>8 hrs. ago</p>
-              </div>
-            </a>
-          </li>
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-
-          <li class="dropdown-footer">
-            <a href="#">Show all messages</a>
-          </li>
-
-        </ul><!-- End Messages Dropdown Items -->
-
-      </li><!-- End Messages Nav -->
-
-      <li class="nav-item dropdown pe-3">
-
-        <a class="nav-link nav-profile d-flex align-items-center pe-0" href="#"
-           data-bs-toggle="dropdown">
-          <img src="${pageContext.request.contextPath}/assets/img/profile-img.jpg" alt="Profile"
-               class="rounded-circle">
-          <span class="d-none d-md-block dropdown-toggle ps-2">K. Anderson</span>
-        </a><!-- End Profile Iamge Icon -->
-
-        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow profile">
-          <li class="dropdown-header">
-            <h6>Kevin Anderson</h6>
-            <span>Web Designer</span>
-          </li>
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-
-          <li>
-            <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
-              <i class="bi bi-person"></i>
-              <span>My Profile</span>
-            </a>
-          </li>
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-
-          <li>
-            <a class="dropdown-item d-flex align-items-center" href="users-profile.html">
-              <i class="bi bi-gear"></i>
-              <span>Account Settings</span>
-            </a>
-          </li>
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-
-          <li>
-            <a class="dropdown-item d-flex align-items-center" href="pages-faq.html">
-              <i class="bi bi-question-circle"></i>
-              <span>Need Help?</span>
-            </a>
-          </li>
-          <li>
-            <hr class="dropdown-divider">
-          </li>
-
-          <li>
-            <a class="dropdown-item d-flex align-items-center" href="#">
-              <i class="bi bi-box-arrow-right"></i>
-              <span>Sign Out</span>
-            </a>
-          </li>
-
-        </ul><!-- End Profile Dropdown Items -->
-      </li><!-- End Profile Nav -->
-
-    </ul>
-  </nav><!-- End Icons Navigation -->
-
-</header><!-- End Header -->
-
-<!-- ======= Sidebar ======= -->
-<aside id="sidebar" class="sidebar">
-
-  <ul class="sidebar-nav" id="sidebar-nav">
-
-    <li class="nav-item">
-      <a class="nav-link " href="index.jsp">
-        <i class="bi bi-grid fs-5"></i>
-        <span>Dashboard</span>
-      </a>
-    </li><!-- End Dashboard Nav -->
-
-    <li class="nav-item">
-      <a class="nav-link collapsed" data-bs-target="#components-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-box-seam fs-5"></i><span>Sản phẩm</span><i
-              class="bi bi-chevron-down ms-auto"></i>
-      </a>
-      <ul id="components-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-        <li>
-          <a href="product">
-            <i class="bi bi-list-ul fs-5"></i><span>Danh sách sản phẩm</span>
-          </a>
-        </li>
-        <li>
-          <a href="supplier">
-            <i class="bi bi-truck fs-5"></i><span>Nhà cung cấp</span>
-          </a>
-        </li>
-      </ul>
-    </li><!-- End Components Nav -->
-
-    <li class="nav-item">
-      <a class="nav-link collapsed" data-bs-target="#charts-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-people-fill fs-5"></i><span>Khách hàng</span><i
-              class="bi bi-chevron-down ms-auto"></i>
-      </a>
-      <ul id="charts-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-        <li>
-          <a href="customer">
-            <i class="bi bi-person-lines-fill fs-5"></i><span>Danh sách khách hàng</span>
-          </a>
-        </li>
-        <li>
-          <a href="account">
-            <i class="bi bi-person-x fs-5"></i><span>Khóa/Mở tài khoản khách hàng</span>
-          </a>
-        </li>
-      </ul>
-    </li><!-- End Charts Nav -->
-
-    <li class="nav-item">
-      <a class="nav-link collapsed" data-bs-target="#tables-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-cart-check fs-5"></i><span>Giao dịch</span><i
-              class="bi bi-chevron-down ms-auto"></i>
-      </a>
-      <ul id="tables-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-        <li>
-          <a href="order">
-            <i class="bi bi-receipt fs-5"></i><span>Đơn hàng</span>
-          </a>
-        </li>
-        <li>
-          <a href="stock">
-            <i class="bi bi-box-arrow-in-down fs-5"></i><span>Nhập hàng</span>
-          </a>
-        </li>
-      </ul>
-    </li><!-- End Tables Nav -->
-
-
-
-    <li class="nav-item">
-      <a class="nav-link collapsed" data-bs-target="#icons-nav" data-bs-toggle="collapse" href="#">
-        <i class="bi bi-bar-chart-line fs-5"></i><span>Thống kê</span><i
-              class="bi bi-chevron-down ms-auto"></i>
-      </a>
-      <ul id="icons-nav" class="nav-content collapse " data-bs-parent="#sidebar-nav">
-        <li>
-          <a href="report-day">
-            <i class="bi bi-calendar-check fs-5"></i><span>Cuối ngày</span>
-          </a>
-        </li>
-        <li>
-          <a href="report-product">
-            <i class="bi bi-box fs-5"></i><span>Hàng hoá</span>
-          </a>
-        </li>
-        <li>
-          <a href="report-customer">
-            <i class="bi bi-people fs-5"></i><span>Khách hàng</span>
-          </a>
-        </li>
-        <li>
-          <a href="report-finance">
-            <i class="bi bi-cash-coin fs-5"></i><span>Tài chính</span>
-          </a>
-        </li>
-      </ul>
-    </li><!-- End Icons Nav -->
-
-    <li class="nav-heading">Pages</li>
-
-    <li class="nav-item">
-      <a class="nav-link collapsed" href="users-profile.html">
-        <i class="bi bi-person fs-5"></i>
-        <span>Thông tin cá nhân</span>
-      </a>
-    </li><!-- End Profile Page Nav -->
-
-    <li class="nav-item">
-      <a class="nav-link collapsed" href="pages-faq.html">
-        <i class="bi bi-question-circle fs-5"></i>
-        <span>F.A.Q</span>
-      </a>
-    </li><!-- End F.A.Q Page Nav -->
-
-    <li class="nav-item">
-      <a class="nav-link collapsed" href="pages-contact.html">
-        <i class="bi bi-envelope fs-5"></i>
-        <span>Liên hệ</span>
-      </a>
-    </li><!-- End Contact Page Nav -->
-
-    <li class="nav-item">
-      <a class="nav-link collapsed" href="pages-register.html">
-        <i class="bi bi-person-plus fs-5"></i>
-        <span>Đăng ký</span>
-      </a>
-    </li><!-- End Register Page Nav -->
-
-    <li class="nav-item">
-      <a class="nav-link collapsed" href="pages-login.html">
-        <i class="bi bi-box-arrow-in-right fs-5"></i>
-        <span>Đăng nhập</span>
-      </a>
-    </li><!-- End Login Page Nav -->
-
-  </ul>
-
-</aside><!-- End Sidebar-->
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
+<style>
+  /* Tùy chỉnh bảng */
+  .table-hover tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+
+  .table th,
+  .table td {
+    vertical-align: middle;
+    text-align: center;
+  }
+
+  /* Thêm style cho header của bảng */
+  .table thead tr:first-child {
+    background-color: #fff3cd;
+    font-weight: bold;
+  }
+
+  /* Tùy chỉnh nút */
+  .btn-success,
+  .btn-primary,
+  .btn-secondary {
+    margin-left: 5px;
+  }
+
+  .form-check-input:checked+.form-check-label::before {
+    background-color: #198754;
+    border-color: #198754;
+  }
+
+  #company:checked+.form-check-label::before {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+  }
+
+  #individual:checked+.form-check-label::after {
+    content: '\\f26e';
+    font-family: bootstrap-icons !important;
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    color: white;
+    font-size: 0.8em;
+  }
+
+  #company:checked+.form-check-label::after {
+    content: '\\f283';
+    font-family: bootstrap-icons !important;
+    position: absolute;
+    left: 4px;
+    top: 1px;
+    color: white;
+    font-size: 0.8em;
+  }
+
+  /* Style cho phần chi tiết khách hàng */
+  .customer-detail-container {
+    background-color: #f8f9fc;
+    border-top: 1px solid #dee2e6;
+  }
+
+  .customer-detail-row td {
+    border-top: none !important;
+  }
+
+  #customer-table-body tr:not(.total-row):not(.customer-detail-row):hover {
+    cursor: pointer;
+    background-color: #e9ecef;
+  }
+
+  #customer-table-body tr.table-active {
+    background-color: #cfe2ff !important;
+  }
+
+  .nav-tabs .nav-link {
+    color: #6c757d;
+    border-bottom-width: 2px;
+  }
+
+  .nav-tabs .nav-link.active {
+    color: #0d6efd;
+    border-color: #dee2e6 #dee2e6 #0d6efd;
+  }
+
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+
+  .pagination-container .page-item {
+    margin: 0 5px;
+  }
+
+  .pagination-container .page-link {
+    padding: 8px 12px;
+    text-decoration: none;
+    color: #0d6efd;
+    border: 1px solid #dee2e6; /* Loại bỏ viền */
+    border-radius: 0; /* Loại bỏ bo góc */
+    background: none; /* Loại bỏ nền */
+    transition: color 0.2s;
+  }
+
+  .pagination-container .page-link:hover {
+    color: #0056b3;
+    background: none;
+  }
+
+  .pagination-container .page-item.active .page-link {
+    color: black;
+    font-weight: bold;
+    background: none;
+    border: none;
+  }
+
+  .pagination-container .page-item.disabled .page-link {
+    color: #6c757d;
+    pointer-events: none;
+    background: none;
+    border: none;
+  }
+
+  /* Loại bỏ gạch chân cho li */
+  ul li {
+    text-decoration: none;
+    list-style: none; /* Loại bỏ dấu đầu dòng nếu có */
+  }
+</style>
+
+<jsp:include page="head.jsp" />
+<jsp:include page="header.jsp" />
+<div class="sidebar">
+  <jsp:include page="sidebar.jsp" />
+</div>
 
 <main id="main" class="main">
-
   <div class="pagetitle">
     <h1>Danh sách khách hàng</h1>
     <nav>
@@ -538,80 +155,50 @@
   <section class="section mt-4">
     <div class="row">
       <div class="col-lg-12">
-
         <!-- Controls Bar (Search and Actions) - Made Sticky -->
-        <div id="customer-controls" class="bg-light p-3 mb-3 sticky-top shadow-sm"
-             style="z-index: 990;">
-          <!-- Added z-index -->
+        <div id="customer-controls" class="bg-light p-3 mb-3 sticky-top shadow-sm" style="z-index: 990;">
           <div class="d-flex justify-content-between align-items-center flex-wrap">
-            <!-- Removed mb-3, Added flex-wrap -->
-            <!-- Left side: Search and new inline filters -->
             <div class="d-flex align-items-center gap-2 flex-grow-1 me-sm-2 me-md-3 mb-2 mb-sm-0">
-              <!-- flex-grow-1 and margin for spacing, mb for wrap -->
-              <!-- Search Bar -->
               <div class="input-group input-group-sm" style="flex: 1; min-width: 110px;">
                 <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control" placeholder="Mã, tên, SĐT"
-                       id="customerSearchInput">
+                <input type="text" class="form-control" placeholder="Mã, tên, SĐT" id="customerSearchInput">
               </div>
-
-              <!-- Filter: Nhóm khách hàng -->
               <div class="input-group input-group-sm" style="flex: 1; min-width: 110px;">
-                <select class="form-select form-select-sm" id="customerGroupFilterInline"
-                        aria-label="Nhóm khách hàng">
-                  <option selected value="">Tất cả nhóm</option>
-                  <option value="vip">VIP</option>
-                  <option value="regular">Thường</option>
-                  <option value="new">Mới</option>
-                  <!-- Các nhóm khác có thể được thêm bằng JS -->
+                <select class="form-select form-select-sm" id="customerGenderFilterInline" aria-label="Giới tính">
+                  <option selected value="">Tất cả giới tính</option>
+                  <option value="Nam">Nam</option>
+                  <option value="Nữ">Nữ</option>
                 </select>
               </div>
-
-              <!-- Filter: Ngày tạo -->
               <div class="input-group input-group-sm" style="flex: 1; min-width: 110px;">
-                <select class="form-select form-select-sm" id="creationDateFilterInline"
-                        aria-label="Ngày tạo">
+                <select class="form-select form-select-sm" id="creationDateFilterInline" aria-label="Ngày tạo">
                   <option selected value="">Toàn thời gian</option>
                   <option value="today">Hôm nay</option>
                   <option value="this_week">Tuần này</option>
                   <option value="this_month">Tháng này</option>
                   <option value="custom">Tùy chọn...</option>
-                  <!-- JS có thể hiển thị datepicker nếu "Tùy chọn..." được chọn -->
                 </select>
               </div>
             </div>
-            <!-- Right side: Action buttons -->
-            <div> <!-- mb-2 mb-sm-0 to align if wrapped -->
-              <div class="d-flex align-items-stretch"> <!-- Flex container for buttons -->
-                <button class="btn btn-success action-btn me-1" data-bs-toggle="modal"
-                        data-bs-target="#addCustomerModal"> <!-- Added margin -->
+            <div>
+              <div class="d-flex align-items-stretch">
+                <button class="btn btn-success action-btn me-1" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
                   <i class="bi bi-plus"></i> Khách hàng
                 </button>
-                <div class="btn-group me-1"> <!-- Use btn-group for dropdown -->
-                  <button class="btn btn-primary action-btn dropdown-toggle" type="button"
-                          data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="btn-group me-1">
+                  <button class="btn btn-primary action-btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                     <i class="bi bi-file-earmark"></i> File
                   </button>
                   <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#" id="exportCustomerCsvBtn">Xuất
-                      CSV</a>
-                    </li>
-                    <li><a class="dropdown-item" href="#" id="importCustomerCsvBtn">Nhập
-                      CSV</a>
-                    </li>
+                    <li><a class="dropdown-item" href="#" id="exportCustomerCsvBtn">Xuất CSV</a></li>
+                    <li><a class="dropdown-item" href="#" id="importCustomerCsvBtn">Nhập CSV</a></li>
                   </ul>
                 </div>
-                <!-- Column Selection Dropdown -->
                 <div class="btn-group">
-                  <button class="btn btn-secondary action-btn dropdown-toggle" type="button"
-                          id="columnToggler" data-bs-toggle="dropdown"
-                          data-bs-auto-close="outside" aria-expanded="false">
+                  <button class="btn btn-secondary action-btn dropdown-toggle" type="button" id="columnToggler" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-expanded="false">
                     <i class="bi bi-list"></i>
                   </button>
-                  <ul class="dropdown-menu dropdown-menu-end p-2"
-                      aria-labelledby="columnToggler" id="columnSelectionDropdown"
-                      style="min-width: 250px; max-height: 300px; overflow-y: auto;">
-                    <!-- Checkboxes will be populated by JavaScript -->
+                  <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="columnToggler" id="columnSelectionDropdown" style="min-width: 250px; max-height: 300px; overflow-y: auto;">
                   </ul>
                 </div>
               </div>
@@ -628,121 +215,112 @@
               <!-- Headers will be populated by JavaScript -->
               </thead>
               <tbody id="customer-table-body">
-              <!-- Dữ liệu mẫu giống ảnh, bổ sung data attributes -->
-              <tr data-code="KH000005" data-name="Anh Giang - Kim Mã" data-phone=""
-                  data-email="" data-address="Kim Mã" data-creator="admin"
-                  data-created="01/05/2025" data-group="VIP" data-birthday=""
-                  data-gender="Nam" data-note="Khách hàng thân thiết" data-type="Cá nhân"
-                  data-debt="0" data-total-sale="140,738,600" data-net-sale="140,738,600"
-                  data-facebook="">
-                <td><input type="checkbox"></td>
-                <td>KH000005</td>
-                <td>Anh Giang - Kim Mã</td>
-                <td></td> <!-- Điện thoại trống -->
-                <td>0</td>
-                <td>140,738,600</td>
-                <td>140,738,600</td>
-              </tr>
-              <tr data-code="KH000004" data-name="Anh Hoàng - Sài Gòn" data-phone=""
-                  data-email="hoang.sg@example.com" data-address="Sài Gòn"
-                  data-creator="admin" data-created="05/05/2025" data-group="VIP"
-                  data-birthday="" data-gender="Nam" data-note="Khách hàng tiềm năng"
-                  data-facebook="facebook.com/hoangsg" data-type="Cá nhân" data-debt="0"
-                  data-total-sale="194,193,800" data-net-sale="194,193,800">
-                <td><input type="checkbox"></td>
-                <td>KH000004</td>
-                <td>Anh Hoàng - Sài Gòn</td>
-                <td></td> <!-- Điện thoại trống -->
-                <td>0</td>
-                <td>194,193,800</td>
-                <td>194,193,800</td>
-              </tr>
-              <tr data-code="KH000003" data-name="Tuấn - Hà Nội" data-phone="0987654321"
-                  data-email="tuan.hn@example.com" data-address="Hà Nội"
-                  data-creator="nhanvien1" data-created="04/05/2025" data-group="Thân thiết"
-                  data-birthday="10/10/1990" data-gender="Nam" data-note="" data-facebook=""
-                  data-type="Cá nhân" data-debt="0" data-total-sale="86,564,200"
-                  data-net-sale="86,564,200">
-                <td><input type="checkbox"></td>
-                <td>KH000003</td>
-                <td>Tuấn - Hà Nội</td>
-                <td>0987654321</td>
-                <td>0</td>
-                <td>86,564,200</td>
-                <td>86,564,200</td>
-              </tr>
-              <tr data-code="KH000002" data-name="Phạm Thu Hương" data-phone="0123456789"
-                  data-email="huong.pt@example.com" data-address="Đà Nẵng"
-                  data-creator="admin" data-created="03/05/2025" data-group=""
-                  data-birthday="15/05/1988" data-gender="Nữ"
-                  data-note="Thường xuyên mua hàng online" data-facebook=""
-                  data-type="Cá nhân" data-debt="0" data-total-sale="157,097,400"
-                  data-net-sale="157,097,400">
-                <td><input type="checkbox"></td>
-                <td>KH000002</td>
-                <td>Phạm Thu Hương</td>
-                <td>0123456789</td>
-                <td>0</td>
-                <td>157,097,400</td>
-                <td>157,097,400</td>
-              </tr>
-              <tr data-code="KH000001" data-name="Nguyễn Văn Hải" data-phone="0912345678"
-                  data-email="hai.nv@example.com" data-address="Hải Phòng"
-                  data-creator="manager" data-created="02/05/2025" data-group=""
-                  data-birthday="20/11/1985" data-gender="Nam" data-note=""
-                  data-facebook="facebook.com/hainv" data-type="Công ty" data-debt="0"
-                  data-total-sale="190,866,000" data-net-sale="190,866,000">
-                <td><input type="checkbox"></td>
-                <td>KH000001</td>
-                <td>Nguyễn Văn Hải</td>
-                <td>0912345678</td>
-                <td>0</td>
-                <td>190,866,000</td>
-                <td>190,866,000</td>
-              </tr>
+              <c:if test="${not empty userList}">
+                <c:forEach var="user" items="${userList}" varStatus="loop">
+                  <tr data-code="${user.formattedUserCode}"
+                      data-name="${user.name}"
+                      data-phone="${user.phone}"
+                      data-email="${user.email}"
+                      data-address="${user.address}"
+                      data-creator="${user.creator}"
+                      data-created="${user.createdDate != null ? user.createdDate : ''}"
+                      data-group="${user.group}"
+                      data-birthday="${user.dob != null ? user.dob : ''}"
+                      data-gender="${user.gender != null ? user.gender : ''}"
+                      data-note="${user.note}"
+                      data-facebook="${user.facebook}"
+                      data-type="${user.customerType != null ? user.customerType : 'Cá nhân'}"
+                      data-debt="0"
+                      data-total-sale="0"
+                      data-net-sale="0"
+                      data-taxcode="${user.taxCode}"
+                      data-idcard="${user.idCard}">
+                    <td><input type="checkbox"></td>
+                    <td><c:out value="${user.formattedUserCode}" /></td>
+                    <td><c:out value="${user.name}" /></td>
+                    <td><c:out value="${user.phone}" /></td>
+                    <td>0</td> <!-- Debt: Bỏ fmt:formatNumber -->
+                    <td>0</td> <!-- Total Sale: Bỏ fmt:formatNumber -->
+                    <td>0</td> <!-- Net Sale: Bỏ fmt:formatNumber -->
+                  </tr>
+                </c:forEach>
+              </c:if>
+              <c:if test="${empty userList}">
+                <tr>
+                  <td colspan="7" class="text-center">Không có khách hàng nào.</td>
+                </tr>
+              </c:if>
               </tbody>
             </table>
+
+            <!-- Pagination -->
+            <!-- Pagination -->
+            <c:if test="${totalPages > 1}">
+              <nav aria-label="Page navigation">
+                <ul class="pagination-container">
+                  <c:set var="startPage" value="${currentPage - 1}"/>
+                  <c:set var="endPage" value="${currentPage + 1}"/>
+
+                  <c:if test="${startPage < 1}">
+                    <c:set var="endPage" value="${endPage + (1 - startPage)}"/>
+                    <c:set var="startPage" value="1"/>
+                  </c:if>
+                  <c:if test="${endPage > totalPages}">
+                    <c:set var="startPage" value="${startPage - (endPage - totalPages)}"/>
+                    <c:set var="endPage" value="${totalPages}"/>
+                    <c:if test="${startPage < 1}"><c:set var="startPage" value="1"/></c:if>
+                  </c:if>
+
+                  <c:if test="${startPage > 1}">
+                    <li class="page-item">
+                      <a class="page-link" href="customer?page=1">1</a>
+                    </li>
+                    <c:if test="${startPage > 2}">
+                      <li class="page-item disabled"><span class="page-link">...</span></li>
+                    </c:if>
+                  </c:if>
+
+                  <c:forEach begin="${startPage}" end="${endPage}" var="i">
+                    <li class="page-item <c:if test='${currentPage == i}'>active</c:if>">
+                      <a class="page-link" href="customer?page=${i}">${i}</a>
+                    </li>
+                  </c:forEach>
+                </ul>
+              </nav>
+            </c:if>
+            <!-- End Pagination -->
+            <!-- End Pagination -->
           </div>
         </div>
       </div>
     </div>
   </section>
-
 </main><!-- End #main -->
 
 <!-- Modal Thêm Khách Hàng -->
-<div class="modal fade" id="addCustomerModal" tabindex="-1" aria-labelledby="addCustomerModalLabel"
-     aria-hidden="true">
-  <div class="modal-dialog modal-xl"> <!-- Tăng kích thước modal -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="addCustomerModalLabel">Thêm khách hàng <span
-                class="text-muted small">|
-                                Chi nhánh tạo: Chi nhánh trung tâm</span></h5>
+        <h5 class="modal-title" id="addCustomerModalLabel">Thêm khách hàng <span class="text-muted small">| Chi nhánh tạo: Chi nhánh trung tâm</span></h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <form>
           <div class="row">
-            <!-- Cột trái -->
-            <div class="col-md-3"> <!-- Cột cho ảnh -->
+            <div class="col-md-3">
               <div class="mb-3 text-center">
-                <div id="imagePreviewArea"
-                     class="border rounded d-flex align-items-center justify-content-center mb-2"
-                     style="height: 150px; width: 150px; border-style: dashed!important; margin:auto; overflow: hidden;">
-                  <!-- Thêm ID và overflow -->
-                  <!-- Placeholder cho ảnh -->
+                <div id="imagePreviewArea" class="border rounded d-flex align-items-center justify-content-center mb-2" style="height: 150px; width: 150px; border-style: dashed!important; margin:auto; overflow: hidden;">
                   <span class="text-muted">Ảnh</span>
                 </div>
                 <label for="customerImage" class="btn btn-success btn-sm">Chọn ảnh</label>
                 <input type="file" class="form-control d-none" id="customerImage">
               </div>
             </div>
-            <div class="col-md-4"> <!-- Cột cho thông tin cơ bản -->
+            <div class="col-md-4">
               <div class="mb-3">
                 <label for="customerCode" class="form-label small">Mã khách hàng</label>
-                <input type="text" class="form-control form-control-sm" id="customerCode"
-                       placeholder="Mã mặc định">
+                <input type="text" class="form-control form-control-sm" id="customerCode" placeholder="Mã mặc định">
               </div>
               <div class="mb-3">
                 <label for="customerName" class="form-label small">Tên khách hàng</label>
@@ -753,22 +331,17 @@
                 <input type="text" class="form-control form-control-sm" id="customerPhone">
               </div>
               <div class="mb-3">
-                <label for="customerBirthdate" class="form-label small d-block">Ngày
-                  sinh</label>
-                <!-- d-block để label chiếm full width -->
+                <label for="customerBirthdate" class="form-label small d-block">Ngày sinh</label>
                 <div class="input-group input-group-sm">
-                  <input type="text" class="form-control form-control-sm datepicker"
-                         id="customerBirthdate" placeholder="dd/mm/yyyy">
+                  <input type="text" class="form-control form-control-sm datepicker" id="customerBirthdate" placeholder="dd/mm/yyyy">
                   <span class="input-group-text"><i class="bi bi-calendar-event"></i></span>
-                  <div class="ms-3 d-inline-flex align-items-center"> <!-- Giới tính -->
+                  <div class="ms-3 d-inline-flex align-items-center">
                     <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="gender" id="male"
-                             value="Nam">
+                      <input class="form-check-input" type="radio" name="gender" id="male" value="Nam">
                       <label class="form-check-label small" for="male">Nam</label>
                     </div>
                     <div class="form-check form-check-inline">
-                      <input class="form-check-input" type="radio" name="gender"
-                             id="female" value="Nữ">
+                      <input class="form-check-input" type="radio" name="gender" id="female" value="Nữ">
                       <label class="form-check-label small" for="female">Nữ</label>
                     </div>
                   </div>
@@ -782,31 +355,26 @@
                 <label for="customerRegion" class="form-label small">Khu vực</label>
                 <div class="input-group input-group-sm">
                   <span class="input-group-text"><i class="bi bi-search"></i></span>
-                  <input type="text" class="form-control form-control-sm" id="customerRegion"
-                         placeholder="Chọn Tỉnh/TP - Quận/Huyện">
+                  <input type="text" class="form-control form-control-sm" id="customerRegion" placeholder="Chọn Tỉnh/TP - Quận/Huyện">
                 </div>
               </div>
               <div class="mb-3">
                 <label for="customerWard" class="form-label small">Phường xã</label>
                 <div class="input-group input-group-sm">
                   <span class="input-group-text"><i class="bi bi-search"></i></span>
-                  <input type="text" class="form-control form-control-sm" id="customerWard"
-                         placeholder="Chọn Phường/Xã">
+                  <input type="text" class="form-control form-control-sm" id="customerWard" placeholder="Chọn Phường/Xã">
                 </div>
               </div>
             </div>
-            <!-- Cột phải -->
             <div class="col-md-5">
               <div class="mb-3">
                 <label class="form-label small d-block">Loại khách</label>
                 <div class="form-check form-check-inline custom-radio">
-                  <input class="form-check-input" type="radio" name="customerType"
-                         id="individual" value="Cá nhân" checked>
+                  <input class="form-check-input" type="radio" name="customerType" id="individual" value="Cá nhân" checked>
                   <label class="form-check-label small" for="individual">Cá nhân</label>
                 </div>
                 <div class="form-check form-check-inline custom-radio">
-                  <input class="form-check-input" type="radio" name="customerType"
-                         id="company" value="Công ty">
+                  <input class="form-check-input" type="radio" name="customerType" id="company" value="Công ty">
                   <label class="form-check-label small" for="company">Công ty</label>
                 </div>
               </div>
@@ -833,8 +401,7 @@
               <div class="mb-3">
                 <label for="note" class="form-label small">Ghi chú</label>
                 <div class="input-group input-group-sm">
-                                            <textarea class="form-control form-control-sm" id="note"
-                                                      rows="2"></textarea>
+                  <textarea class="form-control form-control-sm" id="note" rows="2"></textarea>
                   <span class="input-group-text"><i class="bi bi-pencil"></i></span>
                 </div>
               </div>
@@ -843,18 +410,15 @@
         </form>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-success btn-sm" id="saveCustomerBtn"><i
-                class="bi bi-save me-1"></i> Lưu (F9)</button>
-        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i
-                class="bi bi-x-circle me-1"></i> Bỏ qua</button>
+        <button type="button" class="btn btn-success btn-sm" id="saveCustomerBtn"><i class="bi bi-save me-1"></i> Lưu (F9)</button>
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal"><i class="bi bi-x-circle me-1"></i> Bỏ qua</button>
       </div>
     </div>
   </div>
 </div>
 
 <!-- Modal Thêm Địa Chỉ Nhận Hàng -->
-<div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel"
-     aria-hidden="true">
+<div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -870,55 +434,47 @@
                 <input type="text" class="form-control form-control-sm" id="addressName">
               </div>
               <div class="mb-3">
-                <label for="recipientName" class="form-label form-label-sm">Tên người
-                  nhận</label>
+                <label for="recipientName" class="form-label form-label-sm">Tên người nhận</label>
                 <input type="text" class="form-control form-control-sm" id="recipientName">
               </div>
               <div class="mb-3">
-                <label for="recipientPhone" class="form-label form-label-sm">Số điện
-                  thoại</label>
+                <label for="recipientPhone" class="form-label form-label-sm">Số điện thoại</label>
                 <input type="text" class="form-control form-control-sm" id="recipientPhone">
               </div>
             </div>
             <div class="col-md-6">
               <div class="mb-3">
-                <label for="shippingAddress" class="form-label form-label-sm">Địa chỉ
-                  nhận</label>
+                <label for="shippingAddress" class="form-label form-label-sm">Địa chỉ nhận</label>
                 <input type="text" class="form-control form-control-sm" id="shippingAddress">
               </div>
               <div class="mb-3">
                 <label for="shippingRegion" class="form-label form-label-sm">Khu vực:</label>
                 <div class="input-group input-group-sm">
                   <span class="input-group-text"><i class="bi bi-search"></i></span>
-                  <input type="text" class="form-control" id="shippingRegion"
-                         placeholder="Tìm Tỉnh/Thành phố - Quận/Huyện">
+                  <input type="text" class="form-control" id="shippingRegion" placeholder="Tìm Tỉnh/Thành phố - Quận/Huyện">
                 </div>
               </div>
               <div class="mb-3">
                 <label for="shippingWard" class="form-label form-label-sm">Phường/Xã:</label>
                 <div class="input-group input-group-sm">
                   <span class="input-group-text"><i class="bi bi-search"></i></span>
-                  <input type="text" class="form-control" id="shippingWard"
-                         placeholder="Tìm Phường/Xã">
+                  <input type="text" class="form-control" id="shippingWard" placeholder="Tìm Phường/Xã">
                 </div>
               </div>
             </div>
           </div>
-          <!-- Input ẩn để lưu mã khách hàng -->
           <input type="hidden" id="addAddressCustomerCode">
         </form>
       </div>
       <div class="modal-footer justify-content-end">
-        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Bỏ
-          qua</button> <!-- Đổi sang outline -->
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Bỏ qua</button>
         <button type="button" class="btn btn-primary btn-sm" id="saveAddressBtn">Xong</button>
       </div>
     </div>
   </div>
 </div>
 
-<a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i
-        class="bi bi-arrow-up-short"></i></a>
+<a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
 
 <!-- Vendor JS Files -->
 <script src="${pageContext.request.contextPath}/assets/vendor/apexcharts/apexcharts.min.js"></script>
@@ -936,19 +492,19 @@
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const tableBody = document.getElementById('customer-table-body');
-    let activeDetailRow = null; // Lưu trữ hàng chi tiết đang mở
-    let activeClickedRow = null; // Lưu trữ hàng được click để mở chi tiết
+    let activeDetailRow = null;
+    let activeClickedRow = null;
 
     const addCustomerModalElement = document.getElementById('addCustomerModal');
     const addCustomerModal = bootstrap.Modal.getOrCreateInstance(addCustomerModalElement);
     const saveCustomerBtn = document.getElementById('saveCustomerBtn');
-    const addCustomerForm = addCustomerModalElement.querySelector('form'); // Lấy form trong modal
+    const addCustomerForm = addCustomerModalElement.querySelector('form');
     const modalTitle = document.getElementById('addCustomerModalLabel');
-    let editMode = false; // Trạng thái modal: false = Thêm mới, true = Chỉnh sửa
-    let customerCodeToEdit = null; // Lưu mã KH khi chỉnh sửa
+    let editMode = false;
+    let customerCodeToEdit = null;
 
-    // --- "Chọn tất cả" cho bảng khách hàng ---
-    const mainTable = document.querySelector('.card .table'); // Tìm bảng chính
+    // "Chọn tất cả" logic
+    const mainTable = document.querySelector('.card .table');
     const headerCheckbox = mainTable ? mainTable.querySelector('thead input[type="checkbox"]') : null;
     const tableBodyForSelectAll = document.getElementById('customer-table-body');
 
@@ -960,38 +516,34 @@
         });
       });
 
-      // Optional: Cập nhật trạng thái header checkbox khi các checkbox con thay đổi
       tableBodyForSelectAll.addEventListener('change', (event) => {
         if (event.target.type === 'checkbox') {
           const bodyCheckboxes = tableBodyForSelectAll.querySelectorAll('tbody input[type="checkbox"]');
           const allChecked = Array.from(bodyCheckboxes).every(cb => cb.checked);
           const someChecked = Array.from(bodyCheckboxes).some(cb => cb.checked);
 
-          if (bodyCheckboxes.length > 0) { // Chỉ cập nhật nếu có checkbox
+          if (bodyCheckboxes.length > 0) {
             headerCheckbox.checked = allChecked;
-            // Có thể thêm indeterminate state nếu muốn
-            // headerCheckbox.indeterminate = !allChecked && someChecked;
           }
         }
       });
     }
-    // --- End "Chọn tất cả" ---
 
-    // --- Modal Thêm địa chỉ ---
+    // Modal Thêm địa chỉ
     const addAddressModalElement = document.getElementById('addAddressModal');
     const addAddressModal = addAddressModalElement ? bootstrap.Modal.getOrCreateInstance(addAddressModalElement) : null;
     const saveAddressBtn = document.getElementById('saveAddressBtn');
     const addAddressForm = document.getElementById('addAddressForm');
     const addAddressCustomerCodeInput = document.getElementById('addAddressCustomerCode');
 
-    // --- START: Column Toggling Logic ---
+    // Column Toggling Logic
     const columnConfiguration = {
       colCode: { label: 'Mã khách hàng', dataAttr: 'code', defaultChecked: true },
       colName: { label: 'Tên khách hàng', dataAttr: 'name', defaultChecked: true },
       colType: { label: 'Loại khách', dataAttr: 'type', defaultChecked: false },
       colPhone: { label: 'Điện thoại', dataAttr: 'phone', defaultChecked: true },
       colGroup: { label: 'Nhóm khách hàng', dataAttr: 'group', defaultChecked: false },
-      colGender: { label: 'Giới tính', dataAttr: 'gender', defaultChecked: false },
+      colGender: { label: 'Giới tính', dataAttr: 'gender', defaultChecked: true },
       colAddress: { label: 'Địa chỉ', dataAttr: 'address', defaultChecked: false },
       colCreator: { label: 'Người tạo', dataAttr: 'creator', defaultChecked: false },
       colCreatedDate: { label: 'Ngày tạo', dataAttr: 'created', defaultChecked: false },
@@ -999,25 +551,40 @@
       colDebt: { label: 'Nợ hiện tại', dataAttr: 'debt', defaultChecked: true },
       colTotalSale: { label: 'Tổng bán', dataAttr: 'totalSale', defaultChecked: true },
       colNetSale: { label: 'Tổng bán trừ trả hàng', dataAttr: 'netSale', defaultChecked: true }
-      // Đã loại bỏ colBirthday, colEmail, colFacebook
     };
+
+    // Load saved column selections from localStorage
+    function getSavedColumns() {
+      const saved = localStorage.getItem('customerTableColumns');
+      return saved ? JSON.parse(saved) : Object.keys(columnConfiguration).filter(key => columnConfiguration[key].defaultChecked);
+    }
+
+    // Save column selections to localStorage
+    function saveColumns(columns) {
+      localStorage.setItem('customerTableColumns', JSON.stringify(columns));
+    }
 
     const columnSelectionDropdown = document.getElementById('columnSelectionDropdown');
     const customerTable = document.getElementById('customerTable');
     const customerTableHead = customerTable ? customerTable.querySelector('thead') : null;
-    // customerTableBody is already defined for filtering
+    const columnToggler = document.getElementById('columnToggler');
 
     function renderColumnSelectionCheckboxes() {
-      if (!columnSelectionDropdown) return;
-      columnSelectionDropdown.innerHTML = ''; // Clear existing
+      if (!columnSelectionDropdown) {
+        console.error("Column selection dropdown not found!");
+        return;
+      }
+      columnSelectionDropdown.innerHTML = '';
+      const savedColumns = getSavedColumns();
+
       Object.keys(columnConfiguration).forEach(key => {
         const colConfig = columnConfiguration[key];
         const li = document.createElement('li');
-        li.classList.add('dropdown-item'); // Use dropdown-item for styling consistency
+        li.classList.add('dropdown-item');
 
         let inputHtml = '<div class="form-check">' +
                 '<input class="form-check-input column-toggle-checkbox" type="checkbox" value="' + key + '" id="checkbox-' + key + '"';
-        if (colConfig.defaultChecked) {
+        if (savedColumns.includes(key)) {
           inputHtml += ' checked';
         }
         inputHtml += '>' +
@@ -1027,39 +594,42 @@
                 '</div>';
         li.innerHTML = inputHtml;
 
-        // Prevent dropdown from closing when clicking on the checkbox or label
         li.addEventListener('click', (e) => e.stopPropagation());
         columnSelectionDropdown.appendChild(li);
       });
 
       const checkboxes = columnSelectionDropdown.querySelectorAll('.column-toggle-checkbox');
       checkboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', renderTable);
+        checkbox.addEventListener('change', () => {
+          const visibleColumns = Array.from(columnSelectionDropdown.querySelectorAll('.column-toggle-checkbox:checked')).map(cb => cb.value);
+          saveColumns(visibleColumns);
+          renderTable();
+          filterCustomerRows();
+        });
       });
     }
 
     function getVisibleColumns() {
-      const visibleCols = [];
-      const checkboxes = columnSelectionDropdown.querySelectorAll('.column-toggle-checkbox:checked');
-      checkboxes.forEach(cb => visibleCols.push(cb.value));
-      return visibleCols;
+      const savedColumns = getSavedColumns();
+      return savedColumns.filter(col => columnConfiguration[col]);
     }
 
     function renderTable() {
-      if (!customerTableHead || !customerTableBody) return;
+      if (!customerTableHead || !tableBody) {
+        console.error("Table head or body not found!");
+        return;
+      }
 
       const visibleColumnKeys = getVisibleColumns();
 
-      // 1. Render Headers
-      customerTableHead.innerHTML = ''; // Clear existing headers
+      customerTableHead.innerHTML = '';
       const headerRow = customerTableHead.insertRow();
 
-      // Always add the main checkbox header
       const thCheckbox = document.createElement('th');
       thCheckbox.scope = 'col';
       const mainCheckbox = document.createElement('input');
       mainCheckbox.type = 'checkbox';
-      mainCheckbox.id = 'selectAllCustomersCheckbox'; // Add ID for select all functionality
+      mainCheckbox.id = 'selectAllCustomersCheckbox';
       thCheckbox.appendChild(mainCheckbox);
       headerRow.appendChild(thCheckbox);
 
@@ -1073,23 +643,19 @@
         }
       });
 
-      // Re-attach select all event listener if header checkbox is re-created
       const newHeaderCheckbox = document.getElementById('selectAllCustomersCheckbox');
-      if (newHeaderCheckbox && tableBodyForSelectAll) { // tableBodyForSelectAll from previous select-all logic
+      if (newHeaderCheckbox && tableBody) {
         newHeaderCheckbox.addEventListener('change', () => {
-          const bodyCheckboxes = tableBodyForSelectAll.querySelectorAll('tbody tr:not(.customer-detail-row) input[type="checkbox"]');
+          const bodyCheckboxes = tableBody.querySelectorAll('tbody tr:not(.customer-detail-row) input[type="checkbox"]');
           bodyCheckboxes.forEach(checkbox => {
             checkbox.checked = newHeaderCheckbox.checked;
           });
         });
       }
 
-
-      // 2. Render Body Rows
-      const dataRows = customerTableBody.querySelectorAll('tr:not(.customer-detail-row)');
+      const dataRows = tableBody.querySelectorAll('tr:not(.customer-detail-row)');
       dataRows.forEach(row => {
         const cells = Array.from(row.cells);
-        // Keep the first cell (checkbox), remove others
         for (let i = cells.length - 1; i > 0; i--) {
           row.deleteCell(i);
         }
@@ -1099,13 +665,9 @@
           if (colConfig) {
             const cell = row.insertCell();
             let cellValue = row.dataset[colConfig.dataAttr] || '';
-            // Special formatting for money-like values
             if (['colDebt', 'colTotalSale', 'colNetSale'].includes(key) && cellValue) {
-              // Attempt to format as currency - this is a simple version
-              const num = parseFloat(String(cellValue).replace(/,/g, '')); // Ensure cellValue is a string
-              if (!isNaN(num)) {
-                cellValue = num.toLocaleString('vi-VN');
-              }
+              const num = parseFloat(String(cellValue).replace(/,/g, ''));
+              cellValue = isNaN(num) ? cellValue : Math.round(num).toString();
             }
             if (['colTotalSale', 'colNetSale'].includes(key) && cellValue) {
               cell.innerHTML = '<strong>' + cellValue + '</strong>';
@@ -1116,7 +678,6 @@
         });
       });
 
-      // 3. Adjust colspan for any open detail row
       if (activeDetailRow) {
         const newColspan = headerRow.cells.length;
         const detailCell = activeDetailRow.querySelector('td');
@@ -1124,24 +685,20 @@
           detailCell.colSpan = newColspan;
         }
       }
-      // Apply filtering after re-rendering
-      filterCustomerRows();
     }
-    // --- END: Column Toggling Logic ---
 
-    // --- START: Customer Table Filtering Logic ---
+    // Customer Table Filtering Logic
     const searchInput = document.getElementById('customerSearchInput');
-    const groupFilterSelect = document.getElementById('customerGroupFilterInline');
+    const genderFilterSelect = document.getElementById('customerGenderFilterInline');
     const dateFilterSelect = document.getElementById('creationDateFilterInline');
-    const customerTableBody = document.getElementById('customer-table-body');
 
-    function parseDateDDMMYYYY(dateString) {
+    function parseDateYYYYMMDD(dateString) {
       if (!dateString) return null;
-      const parts = dateString.split('/');
+      const parts = dateString.split('-');
       if (parts.length === 3) {
-        const day = parseInt(parts[0], 10);
-        const month = parseInt(parts[1], 10) - 1; // JS months are 0-indexed
-        const year = parseInt(parts[2], 10);
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
         if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
           return new Date(year, month, day);
         }
@@ -1150,24 +707,24 @@
     }
 
     function filterCustomerRows() {
-      if (!customerTableBody) return;
+      if (!tableBody) return;
 
-      const searchTerm = searchInput.value.toLowerCase().trim();
-      const selectedGroup = groupFilterSelect.value;
-      const selectedDateOption = dateFilterSelect.value;
+      const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+      const selectedGender = genderFilterSelect ? genderFilterSelect.value.toLowerCase() : '';
+      const selectedDateOption = dateFilterSelect ? dateFilterSelect.value : '';
 
-      const rows = customerTableBody.getElementsByTagName('tr');
+      const rows = tableBody.getElementsByTagName('tr');
 
       for (const row of rows) {
         if (row.classList.contains('total-row') || row.classList.contains('customer-detail-row')) {
-          continue; // Skip total row and detail rows
+          continue;
         }
 
         const code = (row.getAttribute('data-code') || '').toLowerCase();
         const name = (row.getAttribute('data-name') || '').toLowerCase();
         const phone = (row.getAttribute('data-phone') || '').toLowerCase();
-        const group = (row.getAttribute('data-group') || '').toLowerCase(); // Chuyển sang chữ thường
-        const createdDateStr = row.getAttribute('data-created');
+        const gender = (row.getAttribute('data-gender') || '').toLowerCase();
+        const createdDateStr = row.getAttribute('data-created') || '';
 
         let matchesSearch = true;
         if (searchTerm) {
@@ -1176,14 +733,14 @@
                   phone.includes(searchTerm);
         }
 
-        let matchesGroup = true;
-        if (selectedGroup) {
-          matchesGroup = group === selectedGroup; // So sánh group đã được chuyển sang chữ thường
+        let matchesGender = true;
+        if (selectedGender) {
+          matchesGender = gender === selectedGender;
         }
 
         let matchesDate = true;
         if (selectedDateOption && createdDateStr) {
-          const rowDate = parseDateDDMMYYYY(createdDateStr);
+          const rowDate = parseDateYYYYMMDD(createdDateStr);
           if (rowDate) {
             const today = new Date();
             today.setHours(0, 0, 0, 0);
@@ -1193,7 +750,6 @@
             } else if (selectedDateOption === 'this_week') {
               const currentDay = today.getDay();
               const firstDayOfWeek = new Date(today);
-              // Set to Monday of the current week
               firstDayOfWeek.setDate(today.getDate() - (currentDay === 0 ? 6 : currentDay - 1));
               firstDayOfWeek.setHours(0, 0, 0, 0);
 
@@ -1207,33 +763,29 @@
               monthEnd.setHours(23, 59, 59, 999);
               matchesDate = rowDate >= monthStart && rowDate <= monthEnd;
             }
-            // "Toàn thời gian" (empty value) or "custom" (if not handled further) implies matchesDate remains true
           } else {
-            matchesDate = false; // Could not parse date, so treat as no match for specific date filters
+            matchesDate = false;
           }
         }
 
-
-        if (matchesSearch && matchesGroup && matchesDate) {
+        if (matchesSearch && matchesGender && matchesDate) {
           row.style.display = '';
         } else {
           row.style.display = 'none';
         }
+
+        const nextRow = row.nextElementSibling;
+        if (nextRow && nextRow.classList.contains('customer-detail-row')) {
+          nextRow.style.display = row.style.display;
+        }
       }
     }
 
-    if (searchInput) {
-      searchInput.addEventListener('input', filterCustomerRows);
-    }
-    if (groupFilterSelect) {
-      groupFilterSelect.addEventListener('change', filterCustomerRows);
-    }
-    if (dateFilterSelect) {
-      dateFilterSelect.addEventListener('change', filterCustomerRows);
-    }
-    // --- END: Customer Table Filtering Logic ---
+    // Attach event listeners
+    if (searchInput) searchInput.addEventListener('input', filterCustomerRows);
+    if (genderFilterSelect) genderFilterSelect.addEventListener('change', filterCustomerRows);
+    if (dateFilterSelect) dateFilterSelect.addEventListener('change', filterCustomerRows);
 
-    // --- Hàm reset modal về trạng thái Thêm mới ---
     const resetModalToAddMode = () => {
       modalTitle.innerHTML = 'Thêm khách hàng <span class="text-muted small">| Chi nhánh tạo: Chi nhánh trung tâm</span>';
       saveCustomerBtn.innerHTML = '<i class="bi bi-save me-1"></i> Lưu (F9)';
@@ -1244,15 +796,12 @@
       customerCodeToEdit = null;
     };
 
-    // --- Sự kiện khi modal đóng ---
     if (addCustomerModalElement) {
       addCustomerModalElement.addEventListener('hidden.bs.modal', resetModalToAddMode);
     }
 
-    // --- START: tableBody click listener for detail rows, edit, delete, add address ---
     if (tableBody) {
       tableBody.addEventListener('click', (event) => {
-        // --- Xử lý click nút Chỉnh sửa trong phần chi tiết ---
         if (event.target.classList.contains('edit-customer-detail-btn') || event.target.closest('.edit-customer-detail-btn')) {
           if (!activeClickedRow) return;
 
@@ -1312,7 +861,6 @@
           return;
         }
 
-        // --- Xử lý click nút Xóa trong phần chi tiết ---
         if (event.target.classList.contains('delete-customer-detail-btn') || event.target.closest('.delete-customer-detail-btn')) {
           if (!activeClickedRow) return;
           const customerCode = activeClickedRow.dataset.code;
@@ -1329,7 +877,6 @@
           return;
         }
 
-        // --- Xử lý click nút Thêm địa chỉ mới trong phần chi tiết ---
         if (event.target.classList.contains('add-new-address-btn') || event.target.closest('.add-new-address-btn')) {
           if (!activeClickedRow) return;
           const customerCode = activeClickedRow.dataset.code;
@@ -1339,7 +886,6 @@
           return;
         }
 
-        // --- Logic xử lý mở/đóng detail row ---
         let clickedRow = event.target.closest('tr');
         if (!clickedRow || !clickedRow.parentElement || clickedRow.parentElement.tagName !== 'TBODY' || !clickedRow.dataset.code) {
           if (event.target.closest('.customer-detail-row')) return;
@@ -1458,17 +1004,22 @@
         }
       });
     }
-    // --- END: tableBody click listener ---
 
-    // Initialize column selection and render table on load
-    renderColumnSelectionCheckboxes();
-    renderTable();
+    // Initialize column toggling
+    if (columnToggler) {
+      columnToggler.addEventListener('click', (e) => {
+        e.preventDefault();
+        renderColumnSelectionCheckboxes();
+        const dropdown = new bootstrap.Dropdown(columnToggler);
+        dropdown.show();
+      });
+    } else {
+      console.error("Column toggler button not found!");
+    }
 
-    // --- Event listener cho nút Lưu / Cập nhật khách hàng ---
     if (saveCustomerBtn && tableBody && addCustomerForm) {
       saveCustomerBtn.addEventListener('click', () => {
-        // Lấy dữ liệu từ form (tương tự như cũ)
-        const customerCode = document.getElementById('customerCode').value.trim(); // Lấy mã (dù bị disabled khi edit)
+        const customerCode = document.getElementById('customerCode').value.trim();
         const customerName = document.getElementById('customerName').value.trim();
         const customerPhone = document.getElementById('customerPhone').value.trim();
         const customerBirthdate = document.getElementById('customerBirthdate').value.trim();
@@ -1484,13 +1035,11 @@
         const group = document.getElementById('group').value.trim();
         const note = document.getElementById('note').value.trim();
 
-        // --- Kiểm tra dữ liệu cơ bản ---
         if (!customerName) {
           alert('Vui lòng nhập tên khách hàng.');
           document.getElementById('customerName').focus();
           return;
         }
-        // Khi thêm mới, mã là bắt buộc. Khi sửa, mã lấy từ customerCodeToEdit
         if (!editMode && !customerCode) {
           alert('Vui lòng nhập mã khách hàng.');
           document.getElementById('customerCode').focus();
@@ -1498,30 +1047,26 @@
         }
 
         if (editMode && customerCodeToEdit) {
-          // --- Chế độ Cập nhật ---
           const rowToUpdate = tableBody.querySelector(`tr[data-code="${customerCodeToEdit}"]`);
           if (rowToUpdate) {
-            // Cập nhật data attributes
             rowToUpdate.setAttribute('data-name', customerName);
             rowToUpdate.setAttribute('data-phone', customerPhone);
             rowToUpdate.setAttribute('data-email', email);
-            rowToUpdate.setAttribute('data-address', customerAddress); // Cần gộp nếu cần
+            rowToUpdate.setAttribute('data-address', customerAddress);
             rowToUpdate.setAttribute('data-group', group);
             rowToUpdate.setAttribute('data-birthday', customerBirthdate);
             rowToUpdate.setAttribute('data-gender', customerGender);
             rowToUpdate.setAttribute('data-note', note);
             rowToUpdate.setAttribute('data-facebook', facebook);
-            rowToUpdate.setAttribute('data-type', customerType); // Lưu lại loại khách
+            rowToUpdate.setAttribute('data-type', customerType);
             rowToUpdate.setAttribute('data-taxcode', taxCode);
             rowToUpdate.setAttribute('data-idcard', idCard);
-            // Cập nhật nội dung hiển thị trong các ô <td>
+
             const cells = rowToUpdate.getElementsByTagName('td');
-            if (cells.length > 3) { // Đảm bảo đủ ô
+            if (cells.length > 3) {
               cells[2].textContent = customerName;
               cells[3].textContent = customerPhone;
-              // Cập nhật các ô khác nếu cần (Nợ, Tổng bán...) - Hiện tại giữ nguyên
             }
-            // Đóng detail view nếu đang mở cho hàng này
             if (activeClickedRow === rowToUpdate && activeDetailRow) {
               activeDetailRow.remove();
               activeDetailRow = null;
@@ -1530,7 +1075,6 @@
             }
           }
         } else {
-          // --- Chế độ Thêm mới (Logic cũ) ---
           const newRow = document.createElement('tr');
           newRow.setAttribute('data-code', customerCode);
           newRow.setAttribute('data-name', customerName);
@@ -1559,16 +1103,14 @@
           tableBody.appendChild(newRow);
         }
 
-        // Đóng modal (Trạng thái sẽ tự reset bởi sự kiện hidden.bs.modal)
         addCustomerModal.hide();
       });
     }
 
-    // --- Event listener cho nút Xong trong modal Thêm địa chỉ ---
     if (saveAddressBtn && addAddressModalElement) {
       saveAddressBtn.addEventListener('click', () => {
         const customerCode = addAddressCustomerCodeInput ? addAddressCustomerCodeInput.value : null;
-        if (!customerCode) return; // Cần mã khách hàng
+        if (!customerCode) return;
 
         const addressName = document.getElementById('addressName').value.trim();
         const recipientName = document.getElementById('recipientName').value.trim();
@@ -1577,16 +1119,12 @@
         const shippingRegion = document.getElementById('shippingRegion').value.trim();
         const shippingWard = document.getElementById('shippingWard').value.trim();
 
-        console.log("Thêm địa chỉ cho KH:", customerCode);
-        // ... (các console.log khác nếu cần) ...
-
-        // --- Cập nhật UI (Tạm thời) ---
         const addressTableBody = document.querySelector(`#address-content-${customerCode} tbody`);
-        const noAddressMessage = document.querySelector(`#address-content-${customerCode}.no-address-message`);
+        const noAddressMessage = document.querySelector(`#address-content-${customerCode} .no-address-message`);
 
         if (addressTableBody) {
           if (noAddressMessage) {
-            noAddressMessage.style.display = 'none'; // Ẩn thông báo không tìm thấy
+            noAddressMessage.style.display = 'none';
           }
           const newAddressRow = document.createElement('tr');
           const currentDate = new Date().toLocaleDateString('vi-VN');
@@ -1599,19 +1137,14 @@
           addressTableBody.appendChild(newAddressRow);
         }
 
-        // TODO: Gửi dữ liệu lên server
-
         const currentAddressModalInstance = bootstrap.Modal.getInstance(addAddressModalElement);
-        if (currentAddressModalInstance) currentAddressModalInstance.hide(); // Đóng modal
+        if (currentAddressModalInstance) currentAddressModalInstance.hide();
       });
-    } else {
-      if (!saveAddressBtn) console.error("Không tìm thấy nút #saveAddressBtn");
-      if (!addAddressModalElement) console.error("Không tìm thấy modal #addAddressModal");
     }
+
+    // Initial filter and column setup
+    renderColumnSelectionCheckboxes();
+    renderTable();
+    filterCustomerRows();
   });
 </script>
-
-
-</body>
-
-</html>

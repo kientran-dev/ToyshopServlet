@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-
 import java.time.LocalDate;
 
 @Entity
@@ -45,6 +44,41 @@ public class User extends AbstractEntity<String> {
     @JoinColumn(name = "role_id", nullable = false)
     Role role;
 
+    @Column(name = "address")
+    String address;
+
+    @Column(name = "group_name")
+    String group;
+
+    @Column(name = "note")
+    String note;
+
+    @Column(name = "facebook")
+    String facebook;
+
+    @Column(name = "customer_type")
+    String customerType; // "Cá nhân" or "Công ty"
+
+    @Column(name = "tax_code")
+    String taxCode;
+
+    @Column(name = "id_card")
+    String idCard;
+
+    @Column(name = "created_date")
+    LocalDate createdDate;
+
+    @Column(name = "creator")
+    String creator;
+
     @Column(name = "is_deleted")
-    boolean isDeleted ; // Trạng thái xóa mềm, mặc định là false (không bị xóa)
+    boolean isDeleted; // Soft delete flag, default false
+
+    // Method to format user code
+    public String getFormattedUserCode() {
+        if (this.getId() != null && this.getId().length() >= 8) {
+            return "KH" + this.getId().substring(4, 8).toUpperCase();
+        }
+        return "KH-N/A";
+    }
 }

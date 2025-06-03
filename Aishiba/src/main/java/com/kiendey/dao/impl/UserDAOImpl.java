@@ -5,6 +5,8 @@ import com.kiendey.model.User;
 import com.kiendey.utils.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
+
 import java.util.List;
 
 public class UserDAOImpl implements UserDAO {
@@ -84,6 +86,28 @@ public class UserDAOImpl implements UserDAO {
                     .list();
         } catch (Exception e) {
             throw new RuntimeException("Error searching Users by name: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<User> getUsersByPage(int pageNumber, int pageSize) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<User> query = session.createQuery("FROM User u WHERE u.isDeleted = false ORDER BY u.name ASC", User.class);
+            query.setFirstResult((pageNumber - 1) * pageSize);
+            query.setMaxResults(pageSize);
+            return query.list();
+        } catch (Exception e) {
+            throw new RuntimeException("Error retrieving Users by page: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public long getTotalUserCount() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("SELECT COUNT(u.id) FROM User u WHERE u.isDeleted = false", Long.class)
+                    .uniqueResult();
+        } catch (Exception e) {
+            throw new RuntimeException("Error counting Users: " + e.getMessage(), e);
         }
     }
 }
