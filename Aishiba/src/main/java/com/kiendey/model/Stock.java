@@ -28,4 +28,11 @@ public class Stock extends AbstractEntity<String>{
 
     @OneToMany(mappedBy = "stock", fetch = FetchType.LAZY)
     List<StockItem> stockItems = new java.util.ArrayList<>();
+
+    public String getFormattedStockCode() {
+        if (this.getId() != null && this.getId().length() >= 8) {
+            return "DN" + this.getId().substring(0, 4).toUpperCase();
+        }
+        return "DN-N/A"; // Hoặc một giá trị mặc định khác nếu id không hợp lệ
+    }
 }

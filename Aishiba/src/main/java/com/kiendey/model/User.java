@@ -72,6 +72,7 @@ public class User extends AbstractEntity<String> {
     String creator;
 
     @Column(name = "is_deleted")
+<<<<<<< Updated upstream
     boolean isDeleted; // Soft delete flag, default false
 
     // Method to format user code
@@ -82,3 +83,12 @@ public class User extends AbstractEntity<String> {
         return "KH-N/A";
     }
 }
+=======
+    boolean isDeleted ; // Trạng thái xóa mềm, mặc định là false (không bị xóa)
+
+    public User(String customerId) {
+        super();
+        this.setId(customerId);
+    }
+}
+>>>>>>> Stashed changes

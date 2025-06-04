@@ -1,6 +1,7 @@
 package com.kiendey.model;
 
 import com.kiendey.common.DeliveryMethodName;
+import com.kiendey.utils.DeliveryMethodNameConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -15,7 +16,8 @@ import java.util.List;
 @AllArgsConstructor
 public class DeliveryMethod extends AbstractEntity<String>{
 
-    @Enumerated(EnumType.STRING)
+    //@Enumerated(EnumType.STRING)
+    @Convert(converter = DeliveryMethodNameConverter.class)
     @Column(name = "method_name", nullable = false)
     DeliveryMethodName deliveryMethodName;
 
@@ -27,4 +29,9 @@ public class DeliveryMethod extends AbstractEntity<String>{
 
     @OneToMany(mappedBy = "deliveryMethod", fetch = FetchType.LAZY)
     List<Order> orders;
+
+    public DeliveryMethod(String deliveryMethodId) {
+        super();
+        this.setId(deliveryMethodId);
+    }
 }

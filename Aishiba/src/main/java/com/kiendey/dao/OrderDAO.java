@@ -1,6 +1,7 @@
 package com.kiendey.dao;
 
 import com.kiendey.model.Order;
+import com.kiendey.model.OrderItem;
 import com.kiendey.model.Supplier;
 
 import java.time.LocalDateTime;
@@ -9,6 +10,7 @@ import java.util.Map; // Import Map
 
 public interface OrderDAO {
     void createOrder(Order order);
+    boolean createOrderWithItems(Order order, List<OrderItem> orderItems);
     Order readOrder(String id);
     void updateOrder(Order order);
     void deleteOrder(String id);
@@ -17,11 +19,11 @@ public interface OrderDAO {
     List<Order> searchOrdersByStatus(String status);
     List<Order> getOrdersByDate(LocalDateTime startDate, LocalDateTime endDate);
     Order getOrderById(String id);
-    double getTotalOrderAmount(String userId);
+    double getTotalOrderAmount(String userId);//Tinh tong tien cua tat ca don hang cua user
     double getFinalAmount(String orderId);
     // Phương thức mới cho phân trang
     List<Order> getOrdersByPage(int pageNumber, int pageSize);
-    long getTotalOrderCount();
+    int getTotalOrderCount();
     // New methods for customer reports
     /**
      * Lấy số lượng đơn hàng của mỗi khách hàng, sắp xếp giảm dần.

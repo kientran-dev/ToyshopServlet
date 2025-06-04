@@ -68,7 +68,7 @@ public class Toy {
     boolean isDeleted ; // Trạng thái xóa mềm, mặc định là false (không bị xóa)
 
     // Thêm phương thức này
-    public String getFormattedIdDisplay() {
+    public String getFormattedIdToy() {
         if (this.getId() != null && this.getId().length() >= 8) {
             return "TOY" + this.getId().substring(0, 4).toUpperCase();
         }

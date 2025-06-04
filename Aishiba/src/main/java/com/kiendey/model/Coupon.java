@@ -28,6 +28,11 @@ public class Coupon extends AbstractEntity<String>{
 
     @OneToMany(mappedBy = "coupon")
     List<Order> orders;
+
+    public Coupon(String couponId) {
+        super();
+        this.setId(couponId);
+    }
     @PrePersist
     @PreUpdate
     private void toUpperCase() {

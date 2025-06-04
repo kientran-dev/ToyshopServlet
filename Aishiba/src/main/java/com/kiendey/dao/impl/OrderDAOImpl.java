@@ -34,11 +34,46 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
-    public Order readOrder(String id) {
+    public boolean createOrderWithItems(Order order, List<OrderItem> orderItems) {
+        Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.get(Order.class, id);
+            transaction = session.beginTransaction();
+            session.persist(order);
+            for (OrderItem item : orderItems) {
+                item.setOrder(order);
+                session.persist(item);
+            }
+            transaction.commit();
+            return true;
         } catch (Exception e) {
-            throw new RuntimeException("Error reading Order: " + e.getMessage(), e);
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    @Override
+    public Order readOrder(String orderId) {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        try {
+            // Sử dụng JOIN FETCH để tải trước User, OrderItems và Toy
+            String hql = "FROM Order o " +
+                    "LEFT JOIN FETCH o.user " +
+                    "LEFT JOIN FETCH o.orderItems oi " +
+                    "LEFT JOIN FETCH oi.toy " +
+                    "LEFT JOIN FETCH o.paymentMethod " +
+                    "LEFT JOIN FETCH o.deliveryMethod " +
+                    "WHERE o.id = :orderId";
+            Query<com.kiendey.model.Order> query = session.createQuery(hql, com.kiendey.model.Order.class);
+            query.setParameter("orderId", orderId);
+            return query.uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            session.close();
         }
     }
 
@@ -127,7 +162,7 @@ public class OrderDAOImpl implements OrderDAO {
                     .uniqueResult();
             return totalAmount != null ? totalAmount : 0.0;
         } catch (Exception e) {
-            throw new RuntimeException("Error getting total order amount: " + e.getMessage(), e);
+            throw new RuntimeException("Error getting total order amount for User: " + e.getMessage(), e);
         }
     }
 
@@ -158,11 +193,11 @@ public class OrderDAOImpl implements OrderDAO {
     }
 
     @Override
-    public long getTotalOrderCount() {
+    public int getTotalOrderCount() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             String hql = "SELECT COUNT(o.id) FROM Order o";
             Long count = session.createQuery(hql, Long.class).uniqueResult();
-            return count != null ? count : 0;
+            return count != null ? count.intValue() : 0;
         } catch (Exception e) {
             throw new RuntimeException("Error getting total order count: " + e.getMessage(), e);
         }
