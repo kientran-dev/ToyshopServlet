@@ -47,23 +47,7 @@
     .form-control, .form-select {
         border-radius: 8px !important;
     }
-    .product-detail-card {
-        max-width: 1000px;
-        margin: 0 auto;
-        background: #fff;
-        border-radius: 16px;
-        box-shadow: 0 2px 16px rgba(0,0,0,0.06);
-    }
-    .product-detail-card h2 {
-        font-size: 2rem;
-    }
-    .product-detail-card .btn {
-        min-width: 120px;
-    }
-    .star-outline {
-        color: #ffc107;
-        cursor: pointer;
-    }
+
     .btn-sm {
         padding: 2px 6px;
         font-size: 0.9em;
@@ -137,12 +121,12 @@
         text-decoration: none;
         color: #0d6efd; /* Bootstrap primary color */
         border: 1px solid #dee2e6; /* Bootstrap border color */
-        border-radius: 4px;
+        border-radius: 0px;
         transition: background-color 0.2s, color 0.2s;
     }
 
     .pagination-container .page-link:hover {
-        background-color: #e9ecef; /* Bootstrap hover color */
+        background-color: #e9ecef;
     }
 
     .pagination-container .page-item.active .page-link {
@@ -156,6 +140,10 @@
         pointer-events: none;
         background-color: #fff;
         border-color: #dee2e6;
+    }
+    ul li {
+        text-decoration: none;
+        list-style: none; /* Loại bỏ dấu đầu dòng nếu có */
     }
 </style>
 
@@ -196,9 +184,21 @@
                                 </li>
                             </ul>
                         </div>
-                        <button class="btn btn-danger btn-sm" onclick="deleteSelectedSuppliers()" title="Xóa" id="deleteSelectedBtn">
-                            <i class="bi bi-trash me-1"></i> Xóa
+                        <button class="btn btn-danger btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-file-earmark me-1"></i> Xóa
                         </button>
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="deleteSelectedSuppliersTemp()">
+                                    <i class="bi bi-trash me-2"></i>Chuyển vô thùng rác
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="deleteSelectedSuppliersForever()">
+                                    <i class="bi bi-file-trash me-2"></i>Xóa hoàn toàn
+                                </a>
+                            </li>
+                        </ul>
                         <div class="dropdown">
                             <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
                                 <i class="bi bi-arrow-repeat me-1"></i> Trạng thái hợp tác
@@ -234,9 +234,6 @@
                             <th style="width:40px">
                                 <input type="checkbox" class="form-check-input" id="selectAllSupplier" title="Chọn tất cả" onclick="toggleSelectAllSupplier(this)">
                             </th>
-                            <th style="width:40px">
-                                <i class="bi bi-star header-star text-warning" id="selectAllSupplierStars" title="Chọn/Bỏ chọn tất cả nổi bật" onclick="toggleSelectAllSupplierStars()"></i>
-                            </th>
                             <th>Mã NCC</th>
                             <th>Tên nhà cung cấp</th>
                             <th>Số điện thoại</th>
@@ -252,7 +249,6 @@
                             <c:forEach var="supplier" items="${supplierList}" varStatus="loop">
                                 <tr>
                                     <td><input type="checkbox" class="form-check-input supplier-checkbox" title="Chọn nhà cung cấp này" onclick="event.stopPropagation();"></td>
-                                    <td><i class="bi bi-star star-outline" onclick="toggleSupplierStar(this, event)"></i></td>
                                     <td style="color: #0D6EFD"><c:out value="${supplier.formattedSupplierCode}" /></td> <%-- Giả sử mã NCC là id --%>
                                     <td><c:out value="${supplier.name}" /></td>
                                     <td><c:out value="${supplier.phoneNumber}" /></td>
@@ -277,16 +273,23 @@
                     <nav aria-label="Page navigation">
                         <ul class="pagination-container">
                                 <%-- Nút Previous --%>
-                            <li class="page-item <c:if test='${currentPage == 1}'>disabled</c:if>">
-                                <a class="page-link" href="supplier?page=${currentPage - 1}" aria-label="Previous">
-                                    <span aria-hidden="true">&laquo;</span>
-                                </a>
-                            </li>
+                            <c:if test="${currentPage >1}">
+                                <li class="page-item ">
+                                    <a class="page-link" href="supplier?page=${startPage}" aria-label="Homepage">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="supplier?page=${currentPage - 1}" aria-label="Previous">
+                                        <span aria-hidden="true">&lsaquo;</span>
+                                    </a>
+                                </li>
+                            </c:if>
 
                                 <%-- Các nút số trang --%>
                                 <%-- Logic hiển thị số trang (ví dụ: hiển thị 5 trang xung quanh trang hiện tại) --%>
-                            <c:set var="startPage" value="${currentPage - 2}"/>
-                            <c:set var="endPage" value="${currentPage + 2}"/>
+                            <c:set var="startPage" value="${currentPage - 1}"/>
+                            <c:set var="endPage" value="${currentPage + 1}"/>
 
                             <c:if test="${startPage < 1}">
                                 <c:set var="endPage" value="${endPage + (1 - startPage)}"/>
@@ -325,11 +328,18 @@
                             </c:if>
 
                                 <%-- Nút Next --%>
-                            <li class="page-item <c:if test='${currentPage == totalPages || totalPages == 0}'>disabled</c:if>">
-                                <a class="page-link" href="supplier?page=${currentPage + 1}" aria-label="Next">
-                                    <span aria-hidden="true">&raquo;</span>
-                                </a>
-                            </li>
+                            <c:if test="${currentPage < endPage and currentPage >=1}">
+                                <li class="page-item">
+                                    <a class="page-link" href="supplier?page=${currentPage + 1}" aria-label="Next">
+                                        <span aria-hidden="true">&rsaquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="supplier?page=${currentPage == totalPage-1}" aria-label="EndPage">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                            </c:if>
                         </ul>
                     </nav>
                 </c:if>
@@ -337,24 +347,6 @@
 
             </div>
 
-            </div>
-            <div id="supplierDetail" class="product-detail-card p-4 mt-4" style="display:none;">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2 class="fw-bold text-primary mb-0" id="detailSupplierName">Tên nhà cung cấp</h2>
-                    <button class="btn btn-outline-secondary" onclick="closeSupplierDetail()"><i class="bi bi-x-lg"></i> Đóng</button>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-2"><strong>Mã NCC:</strong> <span id="detailSupplierCode"></span></div>
-                        <div class="mb-2"><strong>Số điện thoại:</strong> <span id="detailSupplierPhone"></span></div>
-                        <div class="mb-2"><strong>Email:</strong> <span id="detailSupplierEmail"></span></div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-2"><strong>Địa chỉ:</strong> <span id="detailSupplierAddress"></span></div>
-                        <div class="mb-2"><strong>Trạng thái:</strong> <span id="detailSupplierStatus"></span></div>
-                        <div class="mb-2"><strong>Ghi chú:</strong> <span id="detailSupplierNote"></span></div>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
@@ -406,356 +398,10 @@
         </div>
     </div>
 </main><!-- End #main -->
-<a href="#" class="back-to-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
-<!-- Vendor JS Files -->
-<script src="assets/vendor/apexcharts/apexcharts.min.js" defer></script>
-<script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js" defer></script>
-<script src="assets/vendor/chart.js/chart.umd.js" defer></script>
-<script src="assets/vendor/echarts/echarts.min.js" defer></script>
-<script src="assets/vendor/quill/quill.js" defer></script>
-<script src="assets/vendor/simple-datatables/simple-datatables.js" defer></script>
-<script src="assets/vendor/tinymce/tinymce.min.js" defer></script>
-<script src="assets/vendor/php-email-form/validate.js" defer></script>
-<!-- Template Main JS File -->
-<script src="assets/js/main.js"></script>
+<script src="${pageContext.request.contextPath}assets/js/main.js"></script>
 <script>
-    function toggleSelectAll(checkbox) {
-        document.querySelectorAll('.product-checkbox').forEach(cb => cb.checked = checkbox.checked);
-    }
-    function toggleSelectAllStars() {
-        const stars = document.querySelectorAll('tbody .star-outline');
-        const selectAll = Array.from(stars).some(star => !star.classList.contains('text-warning'));
-        stars.forEach(star => {
-            if (selectAll) {
-                star.classList.add('text-warning', 'bi-star-fill');
-                star.classList.remove('bi-star');
-            } else {
-                star.classList.remove('text-warning', 'bi-star-fill');
-                star.classList.add('bi-star');
-            }
-        });
-    }
-    function toggleStar(star, event) {
-        event.stopPropagation();
-        star.classList.toggle('text-warning');
-        star.classList.toggle('bi-star-fill');
-        star.classList.toggle('bi-star');
-    }
-    let currentProduct = null;
+    let currentSupplier = null;
 
-    function showProductDetailByRow(row) {
-        // Lấy dữ liệu từ các cột
-        const tds = row.querySelectorAll('td');
-        const data = {
-            code: tds[2].innerText,
-            name: tds[3].innerText,
-            price: tds[4].innerText,
-            cost: tds[5].innerText,
-            stock: tds[6].innerText,
-            status: tds[7].innerText.trim(),
-            business: tds[8].innerText.trim(),
-            created: tds[9].innerText,
-            // Thêm các trường mô tả, barcode, orderNote, supplier nếu có
-            barcode: tds[2].innerText + "BAR", // demo
-            category: "Đồ chơi", // demo
-            description: "Mô tả sản phẩm " + tds[3].innerText,
-            orderNote: "Giao hàng nhanh",
-            supplier: "Nhà cung cấp A",
-            image: "https://via.placeholder.com/200x200?text=" + encodeURIComponent(tds[3].innerText)
-        };
-        currentProduct = data;
-        showProductDetail(data);
-    }
-
-    function showProductDetail(data) {
-        document.getElementById('productDetail').style.display = 'block';
-        document.getElementById('detailTitle').textContent = data.name;
-        document.getElementById('detailCategory').textContent = data.category;
-        document.getElementById('detailImage').src = data.image || '';
-        document.getElementById('detailCode').textContent = data.code;
-        document.getElementById('detailBarcode').textContent = data.barcode;
-        document.getElementById('detailCategory2').textContent = data.category;
-        document.getElementById('detailStock').textContent = data.stock;
-        document.getElementById('detailPrice').textContent = data.price;
-        document.getElementById('detailCost').textContent = data.cost;
-        document.getElementById('detailDescription').textContent = data.description;
-        document.getElementById('detailOrderNote').textContent = data.orderNote;
-        document.getElementById('detailSupplier').textContent = data.supplier;
-    }
-
-    function closeProductDetail() {
-        document.getElementById('productDetail').style.display = 'none';
-        currentProduct = null;
-    }
-
-    function editProductDetail() {
-        if (!currentProduct) return;
-        // Mở modal sửa và điền dữ liệu
-        document.getElementById('editProductModal').querySelector('#productName').value = currentProduct.name;
-        document.getElementById('editProductModal').querySelector('#productPrice').value = currentProduct.price.replace(/[^0-9]/g, '');
-        document.getElementById('editProductModal').querySelector('#productCost').value = currentProduct.cost.replace(/[^0-9]/g, '');
-        document.getElementById('editProductModal').querySelector('#productStock').value = currentProduct.stock;
-        var modal = new bootstrap.Modal(document.getElementById('editProductModal'));
-        modal.show();
-    }
-
-    function saveProductChanges() {
-        if (!currentProduct) return;
-        // Lấy dữ liệu mới từ form
-        const name = document.getElementById('productName').value;
-        const price = document.getElementById('productPrice').value;
-        const cost = document.getElementById('productCost').value;
-        const stock = document.getElementById('productStock').value;
-        // Cập nhật lại chi tiết
-        currentProduct.name = name;
-        currentProduct.price = price;
-        currentProduct.cost = cost;
-        currentProduct.stock = stock;
-        showProductDetail(currentProduct);
-        // Đóng modal
-        var modal = bootstrap.Modal.getInstance(document.getElementById('editProductModal'));
-        modal.hide();
-        // Cập nhật lại bảng (nếu muốn)
-        // (Bạn có thể thêm code để cập nhật lại dòng trong bảng nếu cần)
-    }
-
-    function printProductLabel() {
-        if (!currentProduct) return;
-        alert('In tem mã cho: ' + currentProduct.name + '\nMã: ' + currentProduct.code);
-    }
-
-    function copyProductDetail() {
-        if (!currentProduct) return;
-        const text = `
-Tên: ${currentProduct.name}
-Mã: ${currentProduct.code}
-Giá bán: ${currentProduct.price}
-Tồn kho: ${currentProduct.stock}
-Mô tả: ${currentProduct.description}
-      `;
-        navigator.clipboard.writeText(text.trim());
-        alert('Đã sao chép thông tin sản phẩm!');
-    }
-
-    function toggleBusinessStatus() {
-        if (!currentProduct) return;
-        if (currentProduct.status === "Ngừng kinh doanh") {
-            currentProduct.status = "Còn hàng";
-            alert("Đã mở lại kinh doanh cho sản phẩm!");
-        } else {
-            currentProduct.status = "Ngừng kinh doanh";
-            alert("Đã ngừng kinh doanh sản phẩm!");
-        }
-        showProductDetail(currentProduct);
-    }
-
-    function deleteProductDetail() {
-        if (!currentProduct) return;
-        if (confirm('Xóa sản phẩm này?')) {
-            // Ẩn chi tiết
-            closeProductDetail();
-            // Xóa dòng trong bảng (demo: xóa theo mã)
-            const rows = document.querySelectorAll('tbody tr');
-            rows.forEach(row => {
-                if (row.children[2] && row.children[2].innerText === currentProduct.code) {
-                    row.remove();
-                }
-            });
-            alert('Đã xóa sản phẩm!');
-        }
-    }
-
-    function getProductDataFromRow(row) {
-        const tds = row.querySelectorAll('td');
-        return {
-            code: tds[2].innerText,
-            name: tds[3].innerText,
-            price: tds[4].innerText,
-            cost: tds[5].innerText,
-            stock: tds[6].innerText,
-            status: tds[7].innerText.trim(),
-            business: tds[8].innerText.trim(),
-            created: tds[9].innerText,
-            barcode: tds[2].innerText + "BAR",
-            category: "Đồ chơi",
-            description: "Mô tả sản phẩm " + tds[3].innerText,
-            orderNote: "Giao hàng nhanh",
-            supplier: "Nhà cung cấp A",
-            image: "https://via.placeholder.com/200x200?text=" + encodeURIComponent(tds[3].innerText)
-        };
-    }
-
-    function editProductFromList(event, btn) {
-        event.stopPropagation();
-        const row = btn.closest('tr');
-        currentProduct = getProductDataFromRow(row);
-        editProductDetail();
-    }
-
-    function deleteProductFromList(event, btn) {
-        event.stopPropagation();
-        const row = btn.closest('tr');
-        if (confirm('Xóa sản phẩm này?')) {
-            row.remove();
-            closeProductDetail();
-            alert('Đã xóa sản phẩm!');
-        }
-    }
-
-    function copyProductFromList(event, btn) {
-        event.stopPropagation();
-        const row = btn.closest('tr');
-        const data = getProductDataFromRow(row);
-        const text = `
-Tên: ${data.name}
-Mã: ${data.code}
-Giá bán: ${data.price}
-Tồn kho: ${data.stock}
-Mô tả: ${data.description}
-      `;
-        navigator.clipboard.writeText(text.trim());
-        alert('Đã sao chép thông tin sản phẩm!');
-    }
-
-    function toggleBusinessStatusFromList(event, btn) {
-        event.stopPropagation();
-        const row = btn.closest('tr');
-        const td = row.children[8];
-        if (td.innerText.trim() === "Kinh doanh") {
-            td.innerHTML = '<span class="badge bg-danger">Ngừng KD</span>';
-            alert("Đã ngừng kinh doanh sản phẩm!");
-        } else {
-            td.innerHTML = '<span class="badge bg-success">Kinh doanh</span>';
-            alert("Đã mở lại kinh doanh cho sản phẩm!");
-        }
-    }
-
-    function printProductLabelFromList(event, btn) {
-        event.stopPropagation();
-        const row = btn.closest('tr');
-        const data = getProductDataFromRow(row);
-        alert('In tem mã cho: ' + data.name + '\nMã: ' + data.code);
-    }
-
-    function addProduct() {
-        // Lấy dữ liệu từ form
-        const name = document.getElementById('newProductName').value;
-        const price = document.getElementById('newProductPrice').value;
-        const cost = document.getElementById('newProductCost').value;
-        const stock = document.getElementById('newProductStock').value;
-        const description = document.getElementById('newProductDescription').value;
-        // Tạo mã hàng tự động (demo)
-        const code = "SP" + Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-        // Thêm vào bảng
-        const tbody = document.querySelector('tbody');
-        const now = new Date();
-        const created = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
-        const tr = document.createElement('tr');
-        tr.setAttribute('onclick', 'showProductDetailByRow(this)');
-        tr.innerHTML = `
-        <td><input type="checkbox" class="product-checkbox" title="Chọn sản phẩm này" onclick="event.stopPropagation();"></td>
-        <td><i class="bi bi-star star-outline" onclick="toggleStar(this, event)"></i></td>
-        <td>${code}</td>
-        <td>${name}</td>
-        <td>${price}</td>
-        <td>${cost}</td>
-        <td>${stock}</td>
-        <td><span class="badge bg-success">Còn hàng</span></td>
-        <td><span class="badge bg-success">Kinh doanh</span></td>
-        <td>${created}</td>
-      `;
-        tbody.prepend(tr);
-        // Đóng modal
-        var modal = bootstrap.Modal.getInstance(document.getElementById('addProductModal'));
-        modal.hide();
-        // Reset form
-        document.getElementById('addProductForm').reset();
-        alert('Đã thêm sản phẩm mới!');
-    }
-
-    function handleImport(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const lines = e.target.result.split('\n');
-            lines.forEach(line => {
-                const [code, name, price, cost, stock, status, business, created] = line.split(',');
-                if (name && price) {
-                    const tbody = document.querySelector('tbody');
-                    const tr = document.createElement('tr');
-                    tr.setAttribute('onclick', 'showProductDetailByRow(this)');
-                    tr.innerHTML = `
-              <td><input type="checkbox" class="product-checkbox" title="Chọn sản phẩm này" onclick="event.stopPropagation();"></td>
-              <td><i class="bi bi-star star-outline" onclick="toggleStar(this, event)"></i></td>
-              <td>${code || ''}</td>
-              <td>${name}</td>
-              <td>${price}</td>
-              <td>${cost || ''}</td>
-              <td>${stock || ''}</td>
-              <td><span class="badge bg-success">${status || 'Còn hàng'}</span></td>
-              <td><span class="badge bg-success">${business || 'Kinh doanh'}</span></td>
-              <td>${created || ''}</td>
-            `;
-                    tbody.appendChild(tr);
-                }
-            });
-            alert('Đã nhập file thành công!');
-        };
-        reader.readAsText(file);
-    }
-
-    function importProducts() {
-        document.getElementById('importFile').click();
-    }
-
-    function exportProducts() {
-        let csv = '';
-        document.querySelectorAll('tbody tr').forEach(tr => {
-            const tds = tr.querySelectorAll('td');
-            const row = [
-                tds[2]?.innerText, tds[3]?.innerText, tds[4]?.innerText, tds[5]?.innerText,
-                tds[6]?.innerText, tds[7]?.innerText, tds[8]?.innerText, tds[9]?.innerText
-            ].join(',');
-            csv += row + '\n';
-        });
-        const blob = new Blob([csv], {type: 'text/csv'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'products.csv';
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    function filterByDate() {
-        const date = document.getElementById('filterDate').value;
-        document.querySelectorAll('tbody tr').forEach(tr => {
-            const created = tr.children[9]?.innerText || '';
-            if (!date || created.startsWith(date.split('-').reverse().join('/'))) {
-                tr.style.display = '';
-            } else {
-                tr.style.display = 'none';
-            }
-        });
-    }
-
-    function filterProducts() {
-        const search = document.getElementById('searchInput').value.toLowerCase();
-        const category = document.getElementById('filterCategory').value;
-        const status = document.getElementById('filterStatus').value;
-        document.querySelectorAll('tbody tr').forEach(tr => {
-            const code = tr.children[2]?.innerText.toLowerCase() || '';
-            const name = tr.children[3]?.innerText.toLowerCase() || '';
-            const group = tr.children[3]?.innerText; // Giả sử nhóm hàng lưu ở tên hoặc bạn có thể thêm cột nhóm hàng riêng
-            const stat = tr.children[7]?.innerText || '';
-            let show = true;
-            if (search && !code.includes(search) && !name.includes(search)) show = false;
-            if (category && group !== category) show = false;
-            if (status && stat !== status) show = false;
-            tr.style.display = show ? '' : 'none';
-        });
-    }
 
     function filterSuppliers() {
         const search = document.getElementById('searchSupplierInput').value.toLowerCase();
@@ -792,107 +438,50 @@ Mô tả: ${data.description}
         }
     }
 
-    document.getElementById('supplierForm').onsubmit = function(e) {
-        e.preventDefault();
-        const code = document.getElementById('supplierCode').value;
-        const name = document.getElementById('supplierName').value;
-        const phone = document.getElementById('supplierPhone').value;
-        const email = document.getElementById('supplierEmail').value;
-        const address = document.getElementById('supplierAddress').value;
-        const status = document.getElementById('supplierStatus').value;
-        const note = document.getElementById('supplierNote').value;
-        const tbody = document.getElementById('supplierTableBody');
-        const editingCode = this.getAttribute('data-editing');
-        if (editingCode) {
-            // Sửa dòng
-            const tr = tbody.rows[editingCode-1];
-            tr.children[0].innerText = code;
-            tr.children[1].innerText = name;
-            tr.children[2].innerText = phone;
-            tr.children[3].innerText = email;
-            tr.children[4].innerText = address;
-            tr.children[5].innerHTML = status === 'Đang hợp tác' ? '<span class="badge bg-success">Đang hợp tác</span>' : '<span class="badge bg-danger">Ngừng hợp tác</span>';
-            tr.children[6].innerText = note;
-            this.removeAttribute('data-editing');
-        } else {
-            // Thêm mới
-            const tr = document.createElement('tr');
-            tr.setAttribute('onclick', 'showSupplierDetailByRow(this)');
-            tr.innerHTML = `
-          <td><input type="checkbox" class="form-check-input supplier-checkbox" title="Chọn nhà cung cấp này" onclick="event.stopPropagation();"></td>
-          <td><i class="bi bi-star star-outline" onclick="toggleSupplierStar(this, event)"></i></td>
-          <td>${code}</td>
-          <td>${name}</td>
-          <td>${phone}</td>
-          <td>${email}</td>
-          <td>${address}</td>
-          <td>${status == 'Đang hợp tác' ? '<span class="badge bg-success">Đang hợp tác</span>' : '<span class="badge bg-danger">Ngừng hợp tác</span>'}</td>
-          <td>${note}</td>
-        `;
-            // Dòng chi tiết
-            const detailTr = document.createElement('tr');
-            detailTr.className = 'supplier-detail-row';
-            detailTr.style.display = 'none';
-            detailTr.innerHTML = `
-          <td colspan="10">
-            <div class="supplier-detail-content p-4 bg-light rounded-4 border">
-              <div class="row">
-                <div class="col-md-6">
-                  <div class="mb-2"><strong>Mã NCC:</strong> <span id="detailSupplierCode"></span></div>
-                  <div class="mb-2"><strong>Tên nhà cung cấp:</strong> <span id="detailSupplierName"></span></div>
-                  <div class="mb-2"><strong>Số điện thoại:</strong> <span id="detailSupplierPhone"></span></div>
-                  <div class="mb-2"><strong>Email:</strong> <span id="detailSupplierEmail"></span></div>
-                  <div class="mb-2"><strong>Địa chỉ:</strong> <span id="detailSupplierAddress"></span></div>
-                </div>
-                <div class="col-md-6">
-                  <div class="mb-2"><strong>Trạng thái:</strong> <span id="detailSupplierStatus"></span></div>
-                  <div class="mb-2"><strong>Ghi chú:</strong> <span id="detailSupplierNote"></span></div>
-                  <div class="d-flex gap-2 mt-3">
-                    <button class="btn btn-success" onclick="editSupplierDetail()"><i class="bi bi-pencil"></i> Cập nhật</button>
-                    <button class="btn btn-warning" onclick="toggleSupplierStatus()"><i class="bi bi-arrow-repeat"></i> Đổi trạng thái</button>
-                    <button class="btn btn-danger" onclick="deleteSupplierDetail()"><i class="bi bi-trash"></i> Xóa</button>
-                    <button class="btn btn-secondary" onclick="closeSupplierDetail()"><i class="bi bi-x-lg"></i> Đóng</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </td>
-        `;
-            tbody.appendChild(tr);
-            tbody.appendChild(detailTr);
-        }
-        var modal = bootstrap.Modal.getInstance(document.getElementById('addSupplierModal'));
-        modal.hide();
-        this.reset();
-    };
-
     function toggleSelectAllSupplier(checkbox) {
         document.querySelectorAll('.supplier-checkbox').forEach(cb => cb.checked = checkbox.checked);
     }
-    function toggleSelectAllSupplierStars() {
-        const stars = document.querySelectorAll('#supplierTableBody .star-outline');
-        const selectAll = Array.from(stars).some(star => !star.classList.contains('text-warning'));
-        stars.forEach(star => {
-            if (selectAll) {
-                star.classList.add('text-warning', 'bi-star-fill');
-                star.classList.remove('bi-star');
-            } else {
-                star.classList.remove('text-warning', 'bi-star-fill');
-                star.classList.add('bi-star');
-            }
-        });
-    }
-    function toggleSupplierStar(star, event) {
-        event.stopPropagation();
-        star.classList.toggle('text-warning');
-        star.classList.toggle('bi-star-fill');
-        star.classList.toggle('bi-star');
-    }
-    function deleteSelectedSuppliers() {
-        if (confirm('Bạn có chắc muốn xóa các nhà cung cấp đã chọn?')) {
-            document.querySelectorAll('.supplier-checkbox:checked').forEach(cb => {
-                cb.closest('tr').remove();
+
+    function deleteSelectedSuppliersForever() {
+        if (!confirm('Bạn có chắc muốn xóa hoàn toàn các nhà cung cấp đã chọn?')) return;
+
+        const selectedIds=Array.from(document.querySelectorAll('.supplier-checkbox:checked')).map(cb => cb.value);
+
+        if(selectedIds.length === 0){
+            alert("Vui lòng chọn ít nhất 1 nhà cung cấp");
+            return;
+        }
+
+        const formData = new URLSearchParams();
+        selectedIds.forEach(id => formData.append('supplierCode', id));
+        formData.append('action', 'deleteForever');
+
+        fetch('supplier', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: formData.toString()
+        })
+            .then(response => {
+                if (response.ok) {
+                    selectedIds.forEach(id => {
+                        const row = document.querySelector(`.supplier-checkbox[value="${id}"]`).closest('tr');
+                        row.remove();
+                    });
+                } else {
+                    alert('Lỗi khi xóa.');
+                }
+            })
+            .catch(error => {
+                console.error('Lỗi:', error);
             });
+    }
+    function deleteSelectedSuppliersTemp(){
+        if(confirm('Bạn có muốn xóa các nhà cung cấp đã chọn')){
+            document.querySelectorAll('.supplier-checkbox:checked').forEach(cb => {
+
+            })
         }
     }
     function exportSuppliers() {
@@ -932,7 +521,6 @@ Mô tả: ${data.description}
                             const tr = document.createElement('tr');
                             tr.innerHTML = `
                   <td><input type="checkbox" class="form-check-input supplier-checkbox" title="Chọn nhà cung cấp này" onclick="event.stopPropagation();"></td>
-                  <td><i class="bi bi-star star-outline" onclick="toggleSupplierStar(this, event)"></i></td>
                   <td>${code}</td>
                   <td>${name}</td>
                   <td>${phone || ''}</td>
@@ -977,26 +565,34 @@ Mô tả: ${data.description}
                     // Tạo dòng chi tiết
                     const detailTr = document.createElement('tr');
                     detailTr.className = 'supplier-detail-row';
-                    detailTr.innerHTML = `<td colspan="9">
-              <div class="product-detail-card p-4 mt-0" style="animation: slideDown .3s;">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h2 class="fw-bold text-primary mb-0" id="detailSupplierName">${tds[3].textContent}</h2>
-                  <button class="btn btn-outline-secondary btn-sm" onclick="this.closest('tr').remove();window.currentDetailRow=null;window.currentRow=null;event.stopPropagation();"><i class="bi bi-x-lg"></i> Đóng</button>
-                </div>
-                <div class="row">
-                  <div class="col-md-6">
-                    <div class="mb-2"><strong>Mã NCC:</strong> <span>${tds[2].textContent}</span></div>
-                    <div class="mb-2"><strong>Số điện thoại:</strong> <span>${tds[4].textContent}</span></div>
-                    <div class="mb-2"><strong>Email:</strong> <span>${tds[5].textContent}</span></div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="mb-2"><strong>Địa chỉ:</strong> <span>${tds[6].textContent}</span></div>
-                    <div class="mb-2"><strong>Trạng thái:</strong> <span>${tds[7].innerHTML}</span></div>
-                    <div class="mb-2"><strong>Ghi chú:</strong> <span>${tds[8].textContent}</span></div>
-                  </div>
-                </div>
-              </div>
-            </td>`;
+                    detailTr.innerHTML =
+                        `<td colspan="9">
+                          <div class="supplier-detail-card p-4 mt-0" style="animation: slideDown .3s;">
+                            <c:if test="${not empty supplierList}">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                              <h2 class="fw-bold text-primary mb-0">${supplier.name}</h2>
+                              <button class="btn btn-outline-secondary btn-sm" onclick="this.closest('tr').remove();window.currentDetailRow=null;window.currentRow=null;event.stopPropagation();"><i class="bi bi-x-lg"></i> Đóng</button>
+                            </div>
+                            <div class="row">
+                              <div class="col-md-6">
+                                <div class="mb-2"><strong>Mã NCC:</strong> <span>${supplier.formattedSupplierCode}</span></div>
+                                <div class="mb-2"><strong>Số điện thoại:</strong> <span>${supplier.phoneNumber}</span></div>
+                                <div class="mb-2"><strong>Email:</strong> <span>${supplier.email}</span></div>
+                              </div>
+                              <div class="col-md-6">
+                                <div class="mb-2"><strong>Địa chỉ:</strong> <span>${supplier.address}</span></div>
+                                <div class="mb-2"><strong>Trạng thái:</strong> <span>${tds[7].innerHTML}</span></div>
+                                <div class="mb-2"><strong>Ghi chú:</strong> <span>${supplier.description}</span></div>
+                              </div>
+                            </div>
+                            <div class="d-flex justify-content-end mt-3">
+                              <button class="btn btn-primary btn-sm" onclick="editSupplier(this);event.stopPropagation();"><i class="bi bi-pencil-square me-1"></i> Sửa</button>
+                              <button class="btn btn-danger btn-sm" onclick="deleteSupplier(this);event.stopPropagation();"><i class="bi bi-trash me-1"></i> Xóa</button>
+
+                            </div>
+                            </c:if>
+                          </div>
+                        </td>`;
                     // Chèn sau dòng hiện tại
                     this.parentNode.insertBefore(detailTr, this.nextSibling);
                     currentDetailRow = detailTr;
