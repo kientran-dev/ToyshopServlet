@@ -127,11 +127,10 @@
                     <c:forEach var="toy" items="${unsoldProducts}" varStatus="status">
                       <tr style="height: 40px;">
                         <th scope="row">${status.count}</th>
-                        <td><c:out value="${toy.formattedIdDisplay}" /></td>
+                        <td><c:out value="${toy.formattedIdToy}" /></td>
                         <td><c:out value="${toy.formattedToyName}" /></td>
                       </tr>
                     </c:forEach>
-                    </tbody>
                   </table>
                 </div>
               </c:when>
