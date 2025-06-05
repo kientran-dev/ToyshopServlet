@@ -1,5 +1,6 @@
 package com.kiendey.dao.impl;
 
+import com.kiendey.common.OrderStatus;
 import com.kiendey.dao.OrderDAO;
 import com.kiendey.model.Order;
 import com.kiendey.model.OrderItem; // Thêm import cho OrderItem
@@ -202,6 +203,27 @@ public class OrderDAOImpl implements OrderDAO {
             throw new RuntimeException("Error getting total order count: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    public boolean updateOrderStatus(String orderId, OrderStatus status) {
+        Transaction tx = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            tx = session.beginTransaction();
+            Order order = session.get(Order.class, orderId);
+            if (order != null) {
+                order.setStatus(status);
+                session.merge(order);
+                tx.commit();
+                return true;
+            }
+            return false;
+        } catch (Exception e) {
+            if (tx != null) tx.rollback();
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     @Override
     public List<Order> getOrdersByDate(LocalDateTime startDate, LocalDateTime endDate) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

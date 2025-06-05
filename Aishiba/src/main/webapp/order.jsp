@@ -53,14 +53,13 @@
                   </div>
                 </div>
                 <label>
-                  <select class="form-select" style="width: auto;">
+                  <select id='searchStatus' class="form-select" style="width: auto;">
                     <option value="">Tất cả trạng thái</option>
                     <option value="PENDING">Chờ xử lý</option>
                     <option value="CONFIRMED">Đã xác nhận</option>
                     <option value="SHIPPING">Đang giao hàng</option>
                     <option value="COMPLETED">Hoàn thành</option>
                     <option value="CANCELLED">Đã hủy</option>
-                    <option value="RETURNED">Đã trả hàng</option>
                   </select>
                 </label>
                 <input type="date" class="form-control" style="width: auto;" title="Lọc theo ngày đặt hàng">
@@ -82,6 +81,7 @@
                   <th>Khách hàng</th>
                   <th>Địa chỉ nhận hàng</th>
                   <th class="text-lg-center">Tổng tiền hàng</th>
+                  <th class="text-center">Trạng thái</th>
                 </tr>
                 </thead>
                 <tbody id="orderTableBody">
@@ -120,12 +120,30 @@
                           N/A
                         </c:if>
                       </td>
+                      <td class="text-center">
+                        <c:if test="${not empty order.status}">
+                          <%-- Sử dụng class 'status-badge' và class màu tương ứng --%>
+                          <span class="status-badge status-${order.status}">
+                            <c:choose>
+                              <c:when test="${order.status == 'CHO_XU_LY'}">Chờ xử lý</c:when>
+                              <c:when test="${order.status == 'DA_XAC_NHAN'}">Đã xác nhận</c:when>
+                              <c:when test="${order.status == 'DANG_GIAO_HANG'}">Đang giao hàng</c:when>
+                              <c:when test="${order.status == 'HOAN_THANH'}">Hoàn thành</c:when>
+                              <c:when test="${order.status == 'DA_HUY'}">Đã hủy</c:when>
+                              <c:otherwise><c:out value="${order.status}" /></c:otherwise>
+                            </c:choose>
+                          </span>
+                        </c:if>
+                        <c:if test="${empty order.status}">
+                          N/A
+                        </c:if>
+                      </td>
                     </tr>
                   </c:forEach>
                 </c:if>
                 <c:if test="${empty orderList}">
                   <tr>
-                    <td colspan="9" class="text-center">Không có đơn hàng nào.</td>
+                    <td colspan="8" class="text-center">Không có đơn hàng nào.</td> {/* Tăng colspan lên 8 */}
                   </tr>
                 </c:if>
                 </tbody>
@@ -300,6 +318,7 @@
   </div>
 </div>
 
+
 <!-- Modal Chi tiết đơn hàng -->
 <div class="modal fade" id="orderDetailModal" tabindex="-1" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
@@ -319,7 +338,22 @@
             <p><strong>Ngày đặt:</strong> <span id="detailOrderDate"></span></p>
             <p><strong>Phương thức thanh toán:</strong> <span id="detailPaymentMethod"></span></p>
             <p><strong>Phương thức giao hàng:</strong> <span id="detailDeliveryMethod"></span></p>
-            <p><strong>Trạng thái:</strong> <span id="detailStatus"></span></p>
+            <p> <%-- Bỏ thẻ div không cần thiết ở đây --%>
+              <strong>Trạng thái:</strong>
+              <span class="status-wrapper"> <%-- Wrapper chính cho cả display và select --%>
+            <span id="statusDisplay" class="status-display"></span>
+            <input type="hidden" id="detailStatus" value=""> <%-- Input ẩn lưu giá trị trạng thái --%>
+            <div class="status-select-wrapper"> <%-- Wrapper này có thể dùng để định vị select --%>
+                <label for="statusSelect"></label><select id="statusSelect" class="form-select status-select"> <%-- Ban đầu ẩn bằng CSS, class 'show' để hiện --%>
+                    <option value="CHO_XU_LY" class="status-option status-CHO_XU_LY">Chờ xử lý</option>
+                    <option value="DA_XAC_NHAN" class="status-option status-DA_XAC_NHAN">Đã xác nhận</option>
+                    <option value="DANG_GIAO_HANG" class="status-option status-DANG_GIAO_HANG">Đang giao hàng</option>
+                    <option value="HOAN_THANH" class="status-option status-HOAN_THANH">Đã giao tới khách</option>
+                    <option value="DA_HUY" class="status-option status-DA_HUY">Đã hủy</option>
+                </select>
+            </div>
+        </span>
+            </p>
           </div>
         </div>
         <h6 class="mb-3">Danh sách sản phẩm</h6>
@@ -344,6 +378,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+        <button id="updateStatusButton" type="button" class="btn btn-primary">Cập nhật trạng thái</button>
       </div>
     </div>
   </div>
@@ -389,36 +424,6 @@
     border-color: #dee2e6;
   }
 
-  .form-select option[value="PENDING"] {
-    background-color: #fff3cd;
-    color: #664d03;
-  }
-
-  .form-select option[value="CONFIRMED"] {
-    background-color: #cff4fc;
-    color: #084298;
-  }
-
-  .form-select option[value="SHIPPING"] {
-    background-color: #e8f4f8;
-    color: #055160;
-  }
-
-  .form-select option[value="COMPLETED"] {
-    background-color: #d1e7dd;
-    color: #0f5132;
-  }
-
-  .form-select option[value="CANCELLED"] {
-    background-color: #f8d7da;
-    color: #842029;
-  }
-
-  .form-select option[value="RETURNED"] {
-    background-color: #e2e3e5;
-    color: #41464b;
-  }
-
   .header-star,
   .bi-star,
   .bi-star-fill {
@@ -455,6 +460,99 @@
   }
   #productTable .btn-danger {
     padding: 0.25rem 0.5rem;
+  }
+  /* ... (CSS hiện có của bạn) ... */
+
+  .status-wrapper {
+    position: relative; /* Cần thiết để status-select-wrapper định vị đúng */
+    display: inline-block;
+    min-width: 170px; /* Tăng một chút nếu cần */
+    vertical-align: middle;
+  }
+
+  .status-display {
+    display: inline-block;
+    padding: 6px 12px; /* Đồng nhất padding */
+    border-radius: 4px;
+    color: white;
+    font-size: 14px;
+    cursor: pointer;
+    width: 100%; /* Cho phép nó chiếm toàn bộ chiều rộng của wrapper */
+    text-align: center;
+    border: 1px solid transparent;
+    box-sizing: border-box;
+  }
+
+  /* Các lớp màu nền cho status-display (giữ nguyên hoặc điều chỉnh nếu cần) */
+  .status-display.status-CHO_XU_LY { background-color: #6c757d; }
+  .status-display.status-DA_XAC_NHAN { background-color: #0d6efd; }
+  .status-display.status-DANG_GIAO_HANG { background-color: #ffc107; color: #000; }
+  .status-display.status-HOAN_THANH { background-color: #198754; }
+  .status-display.status-DA_HUY { background-color: #dc3545; }
+
+
+  .status-select-wrapper {
+    position: relative;
+    top: -23px;
+    left: 0;
+    width: 100%; /* SỬA LẠI: Cho wrapper chiếm toàn bộ chiều rộng của status-wrapper */
+    z-index: 1055; /* Giữ nguyên z-index */
+  }
+
+  .status-select {
+    /*display: none; !* Ban đầu ẩn *!*/
+    width: 100%;  /* Cho select chiếm toàn bộ chiều rộng của wrapper của nó */
+    /* Bootstrap class 'form-select' đã xử lý nhiều style cơ bản */
+    /* Bỏ background-color: transparent và color: white mặc định cho select */
+    /* Thay vào đó, mỗi option sẽ có màu riêng */
+  }
+
+  .status-select.show {
+    display: block; /* Hiện select khi có class 'show' */
+  }
+
+  /* Định nghĩa màu nền cho các option trong select */
+  /* Các class này đã có trong CSS của bạn, đảm bảo chúng đúng */
+  .status-select option.status-CHO_XU_LY { background-color: #6c757d; color: white; }
+  .status-select option.status-DA_XAC_NHAN { background-color: #0d6efd; color: white; }
+  .status-select option.status-DANG_GIAO_HANG { background-color: #ffc107; color: black; } /* Chú ý màu text */
+  .status-select option.status-HOAN_THANH { background-color: #198754; color: white; }
+  .status-select option.status-DA_HUY { background-color: #dc3545; color: white; }
+
+  /* Thêm style để chính thẻ select cũng có màu nền tương ứng với option được chọn */
+  .status-select.selected-CHO_XU_LY { background-color: #6c757d !important; color: white !important; }
+  .status-select.selected-DA_XAC_NHAN { background-color: #0d6efd !important; color: white !important; }
+  .status-select.selected-DANG_GIAO_HANG { background-color: #ffc107 !important; color: black !important; }
+  .status-select.selected-HOAN_THANH { background-color: #198754 !important; color: white !important; }
+  .status-select.selected-DA_HUY { background-color: #dc3545 !important; color: white !important; }
+
+  /* ... (Style hiện có của bạn) ... */
+
+  /* Style cho nhãn trạng thái trong bảng */
+  .status-badge {
+    display: inline-block;
+    padding: 0.35em 0.65em; /* Tương tự padding của Bootstrap badge */
+    font-size: 0.85em;     /* Kích thước chữ nhỏ hơn một chút */
+    font-weight: 600;
+    line-height: 1;
+    color: #fff;            /* Màu chữ mặc định là trắng */
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .375rem; /* Bo góc */
+  }
+
+  /* Áp dụng các màu nền đã có cho .status-badge */
+  /* Các class này nên giống với các class bạn dùng cho .status-display */
+  .status-badge.status-CHO_XU_LY { background-color: #6c757d; }
+  .status-badge.status-DA_XAC_NHAN { background-color: #0d6efd; }
+  .status-badge.status-DANG_GIAO_HANG { background-color: #ffc107; color: #000; } /* Chú ý màu text cho nền vàng */
+  .status-badge.status-HOAN_THANH { background-color: #198754; }
+  .status-badge.status-DA_HUY { background-color: #dc3545; }
+
+  /* Đảm bảo text-center cho cột trạng thái nếu muốn căn giữa */
+  .table th.text-center, .table td.text-center {
+    text-align: center;
   }
 </style>
 
@@ -554,7 +652,7 @@
     });
 
     // Script cho lọc trạng thái và ngày
-    const statusFilter = document.querySelector('select');
+    const statusFilter = document.getElementById('searchStatus');
     const dateFilter = document.querySelector('input[type="date"]');
     statusFilter.addEventListener('change', filterOrders);
     dateFilter.addEventListener('change', filterOrders);
@@ -677,7 +775,7 @@
     const quantityInput = row.querySelector('.product-quantity');
 
     if (toyId) {
-      fetch(`/order?action=getToy&id=${toyId}`)
+      fetch(`/Aishiba/order?action=getToy&id=${toyId}`)
               .then(response => response.json())
               .then(data => {
                 if (data.toy) {
@@ -839,6 +937,61 @@
     modal.hide();
   }
 
+  //Script cho chi tiết đơn hàng
+  const statusDisplayNames = {
+    'CHO_XU_LY': 'Chờ xử lý',
+    'DA_XAC_NHAN': 'Đã xác nhận',
+    'DANG_GIAO_HANG': 'Đang giao hàng',
+    'HOAN_THANH': 'Đã giao tới khách',
+    'DA_HUY': 'Đã hủy'
+  };
+
+  function updateStatusDisplay(status) {
+    const statusDisplay = document.getElementById('statusDisplay');
+    const statusInput = document.getElementById('detailStatus');
+    const statusSelect = document.getElementById('statusSelect');
+    if (statusDisplay && statusInput && statusSelect) {
+      statusDisplay.textContent = statusDisplayNames[status] || status;
+      statusDisplay.className = 'status-display status-' + status;
+      statusInput.value = status;
+      statusSelect.value = status;
+    }
+  }
+  function updateOrderStatus(orderId, status) {
+    const url = '/Aishiba/order?action=updateStatus';
+    const data = {
+      orderId: orderId,
+      status: status
+    };
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+            .then(response => {
+              console.log('Mã trạng thái HTTP:', response.status);
+              if (!response.ok) {
+                throw new Error('HTTP error: ' + response.status);
+              }
+              return response.json();
+            })
+            .then(result => {
+              if (result.success) {
+                alert('Cập nhật trạng thái thành công!');
+                updateStatusDisplay(status);
+                window.location.reload();
+              } else {
+                alert('Cập nhật trạng thái thất bại: ' + (result.error || ''));
+              }
+            })
+            .catch(error => {
+              console.error('Lỗi khi cập nhật trạng thái:', error);
+              alert('Lỗi khi cập nhật trạng thái: ' + error.message);
+            });
+  }
   function fetchOrderDetails(orderId) {
     if (!orderId || orderId.trim() === '') {
       console.error('Lỗi: orderId không hợp lệ hoặc rỗng:', orderId);
@@ -853,14 +1006,19 @@
             .then(response => {
               console.log('Mã trạng thái HTTP:', response.status);
               if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                throw new Error('HTTP error! Status: ' + response.status);
+              }
+              const contentType = response.headers.get('Content-Type');
+              if (!contentType || !contentType.includes('application/json')) {
+                throw new Error('Phản hồi không phải JSON: ' + contentType);
               }
               return response.text();
             })
             .then(text => {
               console.log('Phản hồi từ server:', text);
               try {
-                const data = JSON.parse(text);
+                const cleanedText = text.trim().replace(/^\uFEFF/, '').replace(/[\x00-\x1F\x7F]/g, '');
+                const data = JSON.parse(cleanedText);
                 if (data.order) {
                   document.getElementById('detailOrderCode').textContent = data.order.id || 'N/A';
                   document.getElementById('detailCustomer').textContent = data.order.user.name || 'N/A';
@@ -876,18 +1034,31 @@
                           }) : 'N/A';
                   document.getElementById('detailPaymentMethod').textContent = data.order.paymentMethod || 'N/A';
                   document.getElementById('detailDeliveryMethod').textContent = data.order.deliveryMethod || 'N/A';
-                  document.getElementById('detailStatus').textContent = data.order.status || 'N/A';
+
+                  // Cập nhật trạng thái với màu nền
+                  const statusInput = document.getElementById('detailStatus');
+                  if (statusInput) {
+                    const currentStatus = data.order.status || 'CHO_XU_LY';
+                    console.log('Trạng thái đơn hàng:', currentStatus);
+                    updateStatusDisplay(currentStatus);
+                  } else {
+                    console.error('Không tìm thấy phần tử detailStatus');
+                    alert('Lỗi: Không thể cập nhật trạng thái đơn hàng!');
+                    return;
+                  }
 
                   const tbody = document.getElementById('detailProductTableBody');
                   tbody.innerHTML = '';
                   let totalQuantity = 0;
                   let totalAmount = 0;
 
+                  console.log('Danh sách sản phẩm:', data.order.products);
+
                   if (data.order.products && data.order.products.length > 0) {
                     data.order.products.forEach(product => {
+                      console.log('Sản phẩm:', product);
                       const row = document.createElement('tr');
-                      const total = product.quantity * product.price;
-                      // Sử dụng chuỗi nối thay vì template literal
+                      const total = (product.quantity || 0) * (product.price || 0);
                       row.innerHTML = '<td>' + (product.toyId || 'N/A') + '</td>' +
                               '<td>' + (product.name || 'N/A') + '</td>' +
                               '<td>' + (product.quantity !== undefined ? product.quantity : 0) + '</td>' +
@@ -904,19 +1075,50 @@
                   document.getElementById('detailTotalQuantity').textContent = totalQuantity;
                   document.getElementById('detailTotalAmount').textContent = totalAmount.toLocaleString('vi-VN');
 
+                  // Gán sự kiện cho trạng thái và dropdown
+                  const updateButton = document.getElementById('updateStatusButton');
+                  const statusDisplay = document.getElementById('statusDisplay');
+                  const statusSelect = document.getElementById('statusSelect');
+                  const statusSelectWrapper = document.querySelector('.status-select-wrapper');
+                  if (updateButton && statusDisplay && statusSelect && statusSelectWrapper) {
+                    statusDisplay.onclick = function() {
+                      statusDisplay.style.display = 'none';
+                      statusSelect.classList.add('show');
+                      statusSelect.focus();
+                    };
+                    statusSelect.onchange = function() {
+                      const newStatus = this.value;
+                      updateStatusDisplay(newStatus);
+                      statusDisplay.style.display = 'inline-block';
+                      statusSelect.classList.remove('show');
+                    };
+                    statusSelect.onblur = function() {
+                      statusDisplay.style.display = 'inline-block';
+                      statusSelect.classList.remove('show');
+                    };
+                    updateButton.onclick = function() {
+                      const newStatus = statusInput.value;
+                      updateOrderStatus(orderId, newStatus);
+                    };
+                  } else {
+                    console.error('Không tìm thấy phần tử cần thiết để gán sự kiện');
+                    alert('Lỗi: Không thể gán sự kiện cập nhật trạng thái!');
+                    return;
+                  }
+
                   const modal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
                   modal.show();
                 } else {
                   alert('Không tìm thấy thông tin đơn hàng!');
                 }
               } catch (e) {
-                console.error('Phản hồi không phải JSON:', text);
-                alert('Lỗi: Phản hồi từ máy chủ không đúng định dạng JSON!');
+                console.error('Lỗi xử lý phản hồi:', e.message);
+                alert('Lỗi: Không thể phân tích phản hồi từ server!');
               }
             })
             .catch(error => {
-              console.error('Lỗi khi lấy chi tiết đơn hàng:', error);
-              alert('Lỗi khi lấy thông tin đơn hàng: ' + error.message);
+              console.error('Lỗi khi lấy chi tiết:', error);
+              alert('Lỗi khi lấy thông tin: ' + error.message);
             });
   }
 </script>

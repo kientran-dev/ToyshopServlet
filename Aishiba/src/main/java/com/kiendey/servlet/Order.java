@@ -1,5 +1,6 @@
 package com.kiendey.servlet;
 
+import com.google.gson.JsonParser;
 import com.kiendey.dao.*;
 import com.kiendey.dao.impl.*;
 import com.kiendey.model.*;
@@ -7,6 +8,8 @@ import com.kiendey.common.OrderStatus;
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.*;
+
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
@@ -66,7 +69,7 @@ public class Order extends HttpServlet {
                         orderJson.addProperty("deliveryMethod", order.getDeliveryMethod() != null ?
                                 order.getDeliveryMethod().getDeliveryMethodName().getDisplayName() : null);
                         orderJson.addProperty("status", order.getStatus() != null ?
-                                order.getStatus().getDisplayName() : null);
+                                order.getStatus().name(): null);
 
                         // Thông tin khách hàng
                         JsonObject userJson = new JsonObject();
@@ -195,16 +198,58 @@ public class Order extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        // [Mã doPost giữ nguyên như bạn đã cung cấp]
         resp.setContentType("application/json;charset=UTF-8");
         PrintWriter out = resp.getWriter();
         JsonObject jsonResponse = new JsonObject();
 
         String action = req.getParameter("action");
+
         if ("create".equals(action)) {
             // [Logic tạo đơn hàng giữ nguyên]
             // ...
+        } else if ("updateStatus".equals(action)) {
+            try {
+                // Đọc JSON từ body request
+                BufferedReader reader = req.getReader();
+                JsonObject requestJson = JsonParser.parseReader(reader).getAsJsonObject();
+                String orderId = requestJson.has("orderId") ? requestJson.get("orderId").getAsString() : null;
+                String status = requestJson.has("status") ? requestJson.get("status").getAsString() : null;
+
+                if (orderId != null && status != null) {
+                    // Kiểm tra trạng thái hợp lệ
+                    try {
+                        OrderStatus orderStatus = OrderStatus.valueOf(status);
+                        // Cập nhật trạng thái trong cơ sở dữ liệu
+                        boolean updated = orderDAO.updateOrderStatus(orderId, orderStatus);
+                        if (updated) {
+                            jsonResponse.addProperty("success", true);
+                        } else {
+                            jsonResponse.addProperty("success", false);
+                            jsonResponse.addProperty("error", "Không tìm thấy đơn hàng với ID: " + orderId);
+                            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                        }
+                    } catch (IllegalArgumentException e) {
+                        jsonResponse.addProperty("success", false);
+                        jsonResponse.addProperty("error", "Trạng thái không hợp lệ: " + status);
+                        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    }
+                } else {
+                    jsonResponse.addProperty("success", false);
+                    jsonResponse.addProperty("error", "Thiếu orderId hoặc status");
+                    resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                }
+            } catch (Exception e) {
+                jsonResponse.addProperty("success", false);
+                jsonResponse.addProperty("error", "Lỗi khi cập nhật trạng thái: " + e.getMessage());
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                e.printStackTrace();
+            }
+        } else {
+            jsonResponse.addProperty("success", false);
+            jsonResponse.addProperty("error", "Hành động không hợp lệ: " + action);
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         }
+
         out.print(jsonResponse.toString());
         out.flush();
     }
