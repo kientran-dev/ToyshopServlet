@@ -3,6 +3,7 @@ package com.kiendey.dao;
 import com.kiendey.dto.ProductSaleStat;
 import com.kiendey.model.OrderItem;
 
+import java.time.LocalDateTime; // Thêm import này
 import java.util.List;
 
 public interface OrderItemDAO {
@@ -18,5 +19,7 @@ public interface OrderItemDAO {
      * @return Danh sách các đối tượng ProductSaleStat.
      */
     List<ProductSaleStat> getProductSalesStatistics();
-    // Additional methods can be added as needed
+
+    // Thêm phương thức để lấy ProductSalesStatistics trong một khoảng thời gian
+    List<ProductSaleStat> getProductSalesStatisticsByDate(LocalDateTime startDate, LocalDateTime endDate);
 }

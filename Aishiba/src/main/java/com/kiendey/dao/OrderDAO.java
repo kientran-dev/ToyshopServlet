@@ -36,4 +36,30 @@ public interface OrderDAO {
      * Key là userId, Value là tổng giá trị.
      */
     Map<String, Double> getCustomerTotalPurchaseValues();
+
+    // **************************** NEW METHODS FOR FINANCIAL REPORT ****************************
+
+    /**
+     * Lấy tổng doanh thu bán hàng trong một khoảng thời gian cụ thể.
+     * Chỉ tính các đơn hàng có trạng thái là 'Hoàn thành'.
+     * @param startDate Thời gian bắt đầu.
+     * @param endDate Thời gian kết thúc.
+     * @return Tổng doanh thu bán hàng.
+     */
+    double getTotalSalesRevenue(LocalDateTime startDate, LocalDateTime endDate);
+
+    /**
+     * Lấy tổng giá trị các đơn hàng bị hủy hoặc trả lại trong một khoảng thời gian cụ thể.
+     * @param startDate Thời gian bắt đầu.
+     * @param endDate Thời gian kết thúc.
+     * @return Tổng giá trị bị hủy hoặc trả lại.
+     */
+    double getTotalCancelledOrRefundedAmount(LocalDateTime startDate, LocalDateTime endDate);
+
+    /**
+     * Lấy tổng số lượng tồn kho hiện tại của tất cả các đồ chơi.
+     * @return Tổng số lượng tồn kho.
+     */
+    double getTotalCurrentStockQuantity();
+    // ******************************************************************************************
 }

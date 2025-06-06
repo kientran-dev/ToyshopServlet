@@ -256,6 +256,53 @@ public class OrderDAOImpl implements OrderDAO {
         }
     }
 
+    // **************************** NEW METHODS FOR FINANCIAL REPORT ****************************
+
+    @Override
+    public double getTotalSalesRevenue(LocalDateTime startDate, LocalDateTime endDate) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Only count orders with status 'completed'
+            String hql = "SELECT SUM(oi.quantity * oi.toy.price) FROM Order o JOIN o.orderItems oi " +
+                    "WHERE o.orderDate BETWEEN :startDate AND :endDate AND o.status = 'HOAN_THANH'"; //
+            Double totalRevenue = session.createQuery(hql, Double.class)
+                    .setParameter("startDate", startDate)
+                    .setParameter("endDate", endDate)
+                    .uniqueResult();
+            return totalRevenue != null ? totalRevenue : 0.0;
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting total sales revenue: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public double getTotalCancelledOrRefundedAmount(LocalDateTime startDate, LocalDateTime endDate) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Assuming 'cancelled' or 'refunded' are statuses for returned/cancelled orders
+            String hql = "SELECT SUM(oi.quantity * oi.toy.price) FROM Order o JOIN o.orderItems oi " +
+                    "WHERE o.orderDate BETWEEN :startDate AND :endDate AND (o.status = 'DA_HUY' OR o.status = 'CHO_XU_LY')"; //
+            Double totalAmount = session.createQuery(hql, Double.class)
+                    .setParameter("startDate", startDate)
+                    .setParameter("endDate", endDate)
+                    .uniqueResult();
+            return totalAmount != null ? totalAmount : 0.0;
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting total cancelled or refunded amount: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public double getTotalCurrentStockQuantity() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Assuming Toy model has a 'stock' field directly, if not, adjust based on stock_items.
+            // Based on screenshot, 'toys' table has 'stock' (int4) column.
+            String hql = "SELECT SUM(t.stock) FROM Toy t WHERE t.isDeleted = false"; //
+            Long totalStock = session.createQuery(hql, Long.class).uniqueResult();
+            return totalStock != null ? totalStock.doubleValue() : 0.0;
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting total current stock quantity: " + e.getMessage(), e);
+        }
+    }
+
     // Các phương thức OrderItemDAOImpl (nếu có)
     // Các phương thức này không liên quan trực tiếp đến yêu cầu chuyển từ ID sang tên khách hàng trên biểu đồ,
     // nhưng chúng được bao gồm để hoàn thiện lớp OrderDAOImpl dựa trên ngữ cảnh ban đầu.

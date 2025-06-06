@@ -10,6 +10,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import java.time.LocalDateTime; // Import LocalDateTime
 import java.util.Collections;
 import java.util.List;
 
@@ -53,18 +54,12 @@ public class OrderItemDAOImpl implements OrderItemDAO {
     @Override
     public OrderItem readOrderItem(String orderId, String toyId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Toy toy = session.get(Toy.class, toyId);
-            if (toy == null) {
-                throw new RuntimeException("Toy not found with ID: " + toyId);
-            }
-            Order order = session.get(Order.class, orderId);
-            if (order == null) {
-                throw new RuntimeException("Order not found with ID: " + orderId);
-            }
-            OrderItem orderItem = new OrderItem();
-            orderItem.setToy(toy);
-            orderItem.setOrder(order);
-            return orderItem;
+            // Corrected readOrderItem to actually query the database for the OrderItem
+            String hql = "FROM OrderItem oi WHERE oi.order.id = :orderId AND oi.toy.id = :toyId";
+            Query<OrderItem> query = session.createQuery(hql, OrderItem.class);
+            query.setParameter("orderId", orderId);
+            query.setParameter("toyId", toyId);
+            return query.uniqueResult();
         } catch (Exception e) {
             throw new RuntimeException("Error reading OrderItem: " + e.getMessage(), e);
         }
@@ -76,17 +71,10 @@ public class OrderItemDAOImpl implements OrderItemDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
 
-            Toy toy = session.get(Toy.class, toyId);
-            if (toy == null) {
-                throw new RuntimeException("Toy not found with ID: " + toyId);
+            OrderItem orderItem = readOrderItem(orderId, toyId); // Use the correct readOrderItem to find the existing item
+            if (orderItem == null) {
+                throw new RuntimeException("OrderItem not found for Order ID: " + orderId + " and Toy ID: " + toyId);
             }
-            Order order = session.get(Order.class, orderId);
-            if (order == null) {
-                throw new RuntimeException("Order not found with ID: " + orderId);
-            }
-            OrderItem orderItem = new OrderItem();
-            orderItem.setToy(toy);
-            orderItem.setOrder(order);
             orderItem.setQuantity(quantity);
             session.merge(orderItem);
 
@@ -105,17 +93,10 @@ public class OrderItemDAOImpl implements OrderItemDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
 
-            Toy toy = session.get(Toy.class, toyId);
-            if (toy == null) {
-                throw new RuntimeException("Toy not found with ID: " + toyId);
+            OrderItem orderItem = readOrderItem(orderId, toyId); // Use the correct readOrderItem to find the existing item
+            if (orderItem == null) {
+                throw new RuntimeException("OrderItem not found for Order ID: " + orderId + " and Toy ID: " + toyId);
             }
-            Order order = session.get(Order.class, orderId);
-            if (order == null) {
-                throw new RuntimeException("Order not found with ID: " + orderId);
-            }
-            OrderItem orderItem = new OrderItem();
-            orderItem.setToy(toy);
-            orderItem.setOrder(order);
             session.remove(orderItem);
 
             transaction.commit();
@@ -130,20 +111,33 @@ public class OrderItemDAOImpl implements OrderItemDAO {
     @Override
     public List<ProductSaleStat> getProductSalesStatistics() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            // Sử dụng HQL với constructor expression để tạo đối tượng ProductSaleStat
-            // Model OrderItem có thuộc tính 'toy' kiểu Toy, và Toy có 'id', 'name'.
-            // OrderItem có thuộc tính 'quantity' kiểu int.
             String hql = "SELECT new com.kiendey.dto.ProductSaleStat(oi.toy.id, oi.toy.name, SUM(oi.quantity)) " +
-                    "FROM OrderItem oi " + // [cite: 9]
-                    "GROUP BY oi.toy.id, oi.toy.name " + // [cite: 9]
-                    "ORDER BY SUM(oi.quantity) DESC"; // [cite: 9]
+                    "FROM OrderItem oi " + //
+                    "GROUP BY oi.toy.id, oi.toy.name " + //
+                    "ORDER BY SUM(oi.quantity) DESC"; //
             Query<ProductSaleStat> query = session.createQuery(hql, ProductSaleStat.class);
             return query.list();
         } catch (Exception e) {
-            e.printStackTrace(); // Xử lý exception phù hợp
+            e.printStackTrace();
             return Collections.emptyList();
         }
     }
 
-
+    @Override
+    public List<ProductSaleStat> getProductSalesStatisticsByDate(LocalDateTime startDate, LocalDateTime endDate) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT new com.kiendey.dto.ProductSaleStat(oi.toy.id, oi.toy.name, SUM(oi.quantity)) " +
+                    "FROM OrderItem oi JOIN oi.order o " +
+                    "WHERE o.orderDate BETWEEN :startDate AND :endDate " +
+                    "GROUP BY oi.toy.id, oi.toy.name " +
+                    "ORDER BY SUM(oi.quantity) DESC";
+            Query<ProductSaleStat> query = session.createQuery(hql, ProductSaleStat.class);
+            query.setParameter("startDate", startDate);
+            query.setParameter("endDate", endDate);
+            return query.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
 }
