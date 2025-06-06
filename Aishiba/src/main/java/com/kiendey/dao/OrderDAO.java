@@ -1,5 +1,6 @@
 package com.kiendey.dao;
 
+import com.kiendey.common.OrderStatus;
 import com.kiendey.model.Order;
 import com.kiendey.model.OrderItem;
 import com.kiendey.model.Supplier;
@@ -24,6 +25,7 @@ public interface OrderDAO {
     // Phương thức mới cho phân trang
     List<Order> getOrdersByPage(int pageNumber, int pageSize);
     int getTotalOrderCount();
+    boolean updateOrderStatus(String orderId, OrderStatus status);
     // New methods for customer reports
     /**
      * Lấy số lượng đơn hàng của mỗi khách hàng, sắp xếp giảm dần.
