@@ -13,4 +13,5 @@ public interface ToyDAO {
     List<Toy> getAllToys();
     List<Toy> getToysByCategory(String categoryId);
     List<Toy> searchToysByName(String name);
+    List<Toy> searchToysByNameOrId(String term);
 }

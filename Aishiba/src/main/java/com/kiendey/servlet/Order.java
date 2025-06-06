@@ -1,6 +1,6 @@
 package com.kiendey.servlet;
 
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.kiendey.dao.*;
 import com.kiendey.dao.impl.*;
 import com.kiendey.model.*;
@@ -17,8 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+
 import com.google.gson.reflect.TypeToken;
 
 @WebServlet("/order")
@@ -28,7 +27,7 @@ public class Order extends HttpServlet {
     private UserDAO userDAO;
     private DeliveryMethodDAO deliveryMethodDAO;
     private PaymentMethodDAO paymentMethodDAO;
-    private static final int DEFAULT_PAGE_SIZE = 10;
+    private static final int DEFAULT_PAGE_SIZE = 15;
 
     @Override
     public void init() throws ServletException {
@@ -130,7 +129,43 @@ public class Order extends HttpServlet {
             out.print(json.toString());
             out.flush();
             return;
-        }
+        } else if ("searchCustomers".equals(action)) {
+            String term = req.getParameter("term"); // "term" là tham số mặc định của jQuery UI Autocomplete
+            List<User> users = userDAO.searchUsersByName(term);// Bạn sẽ cần tạo phương thức này trong DAO
+
+            Gson gson = new Gson();
+            List<JsonObject> result = new ArrayList<>();
+            for (User user : users) {
+                JsonObject obj = new JsonObject();
+                //label để trang trí cho đẹp
+                obj.addProperty("label", user.getName() + " (ID: " + user.getFormattedUserCode() + ")"); // Hiển thị cho người dùng
+                // value là giá trị sẽ được sử dụng trong form
+                obj.addProperty("value", user.getId()); // Giá trị sẽ được sử dụng (ID khách hàng)
+                obj.addProperty("name", user.getName()); // Tên khách hàng
+                result.add(obj);
+            }
+            resp.getWriter().write(gson.toJson(result));
+            return; // Kết thúc sớm
+
+        } else if ("searchProducts".equals(action)) {
+            String term = req.getParameter("term");
+            // Bạn sẽ cần tạo phương thức này trong DAO để tìm theo cả tên và mã
+            List<Toy> toys = toyDAO.searchToysByNameOrId(term);
+
+            Gson gson = new Gson();
+            List<JsonObject> result = new ArrayList<>();
+            for (Toy toy : toys) {
+                JsonObject obj = new JsonObject();
+                // Hiển thị cho người dùng cả tên và mã
+                obj.addProperty("label", toy.getFormattedToyName() + " (" + toy.getFormattedIdToy() + ")");
+                obj.addProperty("value", toy.getId()); // Giá trị chính là mã sản phẩm
+                obj.addProperty("name", toy.getFormattedToyName());
+                obj.addProperty("price", toy.getPrice());
+                result.add(obj);
+            }
+            resp.getWriter().write(gson.toJson(result));
+            return; // Kết thúc sớm
+        }    // ======== KẾT THÚC PHẦN MÃ MỚI ========
 
         // Hiển thị danh sách đơn hàng (mặc định)
         resp.setContentType("text/html;charset=UTF-8");
@@ -205,8 +240,87 @@ public class Order extends HttpServlet {
         String action = req.getParameter("action");
 
         if ("create".equals(action)) {
-            // [Logic tạo đơn hàng giữ nguyên]
-            // ...
+            try {
+                // 1. Đọc và phân tích chuỗi JSON từ request
+                BufferedReader reader = req.getReader();
+                Gson gson = new Gson();
+                JsonObject orderData = gson.fromJson(reader, JsonObject.class);
+
+                // 2. Tạo đối tượng Order mới (ID sẽ do Hibernate tự sinh)
+                com.kiendey.model.Order newOrder = new com.kiendey.model.Order();
+
+                newOrder.setAddress(orderData.get("address").getAsString());
+
+                // Chuyển đổi chuỗi ngày tháng sang LocalDateTime
+                String orderDateStr = orderData.get("orderDate").getAsString();
+                newOrder.setOrderDate(LocalDateTime.parse(orderDateStr + "T00:00:00"));
+
+                newOrder.setStatus(OrderStatus.valueOf(orderData.get("status").getAsString()));
+
+                // --- PHẦN SỬA ĐỔI QUAN TRỌNG ---
+                // Tạo các đối tượng liên quan bằng cách set ID (dạng String) cho chúng
+
+                // Tạo tham chiếu đến User
+                User user = new User();
+                // Sửa .getAsInt() -> .getAsString()
+                user.setId(orderData.get("customerId").getAsString());
+                newOrder.setUser(user);
+
+                // Tạo tham chiếu đến PaymentMethod
+                PaymentMethod paymentMethod = new PaymentMethod();
+                // Sửa .getAsInt() -> .getAsString()
+                paymentMethod.setId(orderData.get("paymentMethodId").getAsString());
+                newOrder.setPaymentMethod(paymentMethod);
+
+                // Tạo tham chiếu đến DeliveryMethod
+                DeliveryMethod deliveryMethod = new DeliveryMethod();
+                // Sửa .getAsInt() -> .getAsString()
+                deliveryMethod.setId(orderData.get("deliveryMethodId").getAsString());
+                newOrder.setDeliveryMethod(deliveryMethod);
+
+                // 3. Tạo danh sách OrderItem
+                List<OrderItem> orderItems = new ArrayList<>();
+                JsonArray productsArray = orderData.getAsJsonArray("products");
+
+                for (JsonElement productElement : productsArray) {
+                    JsonObject productJson = productElement.getAsJsonObject();
+
+                    OrderItem item = new OrderItem();
+                    item.setQuantity(productJson.get("quantity").getAsInt());
+
+                    // Tạo tham chiếu đến Toy
+                    Toy toy = new Toy();
+                    // Sửa .getAsInt() -> .getAsString()
+                    toy.setId(productJson.get("toyId").getAsString());
+                    item.setToy(toy);
+
+                    // Liên kết item này với đơn hàng của nó
+                    item.setOrder(newOrder);
+
+                    orderItems.add(item);
+                }
+                newOrder.setOrderItems(orderItems);
+
+                // 4. Gọi DAO để lưu vào cơ sở dữ liệu
+                // Hibernate sẽ tự động tạo UUID cho newOrder.id
+                // và dùng các ID dạng String bạn đã set để tạo khóa ngoại chính xác
+                boolean created = orderDAO.createOrder(newOrder);
+
+                if (created) {
+                    jsonResponse.addProperty("success", true);
+                } else {
+                    jsonResponse.addProperty("success", false);
+                    jsonResponse.addProperty("message", "Không thể tạo đơn hàng trong cơ sở dữ liệu.");
+                    resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                }
+
+            } catch (Exception e) {
+                jsonResponse.addProperty("success", false);
+                jsonResponse.addProperty("message", "Lỗi phía máy chủ: " + e.getMessage());
+                resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                e.printStackTrace();
+            }
+
         } else if ("updateStatus".equals(action)) {
             try {
                 // Đọc JSON từ body request
@@ -254,17 +368,4 @@ public class Order extends HttpServlet {
         out.flush();
     }
 
-    // DTO cho OrderItem
-    private static class OrderItemDTO {
-        private String toyId;
-        private int quantity;
-        private double price;
-
-        public String getToyId() { return toyId; }
-        public void setToyId(String toyId) { this.toyId = toyId; }
-        public int getQuantity() { return quantity; }
-        public void setQuantity(int quantity) { this.quantity = quantity; }
-        public double getPrice() { return price; }
-        public void setPrice(double price) { this.price = price; }
-    }
 }

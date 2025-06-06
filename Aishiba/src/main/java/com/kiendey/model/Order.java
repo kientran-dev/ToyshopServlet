@@ -26,8 +26,8 @@ public class Order extends AbstractEntity<String> {
     @Column(name = "address", nullable = false)
     String address;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "coupon_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "coupon_id")
     Coupon coupon;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
@@ -42,7 +42,7 @@ public class Order extends AbstractEntity<String> {
     @JoinColumn(name = "delivery_id", nullable = false)
     DeliveryMethod deliveryMethod;
 
-    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     List<OrderItem> orderItems = new java.util.ArrayList<>();
 
     public String getFormattedOrderCode() {

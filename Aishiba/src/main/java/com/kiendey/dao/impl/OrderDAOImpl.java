@@ -20,17 +20,40 @@ import com.kiendey.dto.ProductSaleStat; // Thêm import cho ProductSaleStat
 public class OrderDAOImpl implements OrderDAO {
 
     @Override
-    public void createOrder(Order order) {
+    public boolean createOrder(Order order) {
+        Session session = null;
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try {
+            // Mở Session một cách thủ công
+            session = HibernateUtil.getSessionFactory().openSession();
+            // Bắt đầu một Transaction
             transaction = session.beginTransaction();
+
+            // Thực hiện các thao tác với CSDL
+            // Khi bạn lưu Order, Hibernate sẽ tự động lưu các OrderItem liên quan
+            // nhờ vào cơ chế cascade (nếu bạn đã cấu hình trong file mapping).
             session.persist(order);
+
+            // Nếu không có lỗi nào xảy ra, commit transaction
             transaction.commit();
+            return true;
+
         } catch (Exception e) {
+            // Nếu có bất kỳ lỗi nào xảy ra trong khối try...
             if (transaction != null) {
+                // ...thì rollback transaction.
+                // Lúc này Session vẫn còn mở nên rollback sẽ thành công.
                 transaction.rollback();
             }
-            throw new RuntimeException("Error creating Order: " + e.getMessage(), e);
+            // In ra lỗi GỐC thực sự để chúng ta biết vấn đề là gì
+            e.printStackTrace();
+            return false;
+
+        } finally {
+            // Dù thành công hay thất bại, luôn luôn đóng Session trong khối finally
+            if (session != null) {
+                session.close();
+            }
         }
     }
 
