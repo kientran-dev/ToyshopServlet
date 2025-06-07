@@ -41,6 +41,9 @@ public class Supplier extends AbstractEntity<String>{
     @Column(name = "is_deleted")
     boolean isDeleted ; // Trạng thái xóa mềm, mặc định là false (không bị xóa)
 
+    @Column(name = "status")
+    boolean status;
+
     // Phương thức mới để định dạng mã nhà cung cấp
     public String getFormattedSupplierCode() {
         if (this.getId() != null && this.getId().length() >= 8) {
