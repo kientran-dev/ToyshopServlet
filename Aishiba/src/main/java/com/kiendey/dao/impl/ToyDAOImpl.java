@@ -8,6 +8,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class ToyDAOImpl implements ToyDAO {
@@ -130,5 +131,30 @@ public class ToyDAOImpl implements ToyDAO {
             e.printStackTrace();
         }
         return results;
+    }
+
+    @Override
+    public List<Toy> getToysByPage(int pageNumber, int pageSize) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Sắp xếp theo tên để đảm bảo thứ tự nhất quán giữa các trang
+            Query<Toy> query = session.createQuery("FROM Toy t ORDER BY t.name ASC", Toy.class);
+            query.setFirstResult((pageNumber - 1) * pageSize);
+            query.setMaxResults(pageSize);
+            return query.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
+        }
+    }
+
+    @Override
+    public long getTotalToyCount() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT COUNT(t.id) FROM Toy t WHERE t.isDeleted = false";
+            return session.createQuery(hql, Long.class).uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0L;
+        }
     }
 }

@@ -178,7 +178,7 @@
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td>Chi phí (6)</td>
+                                                        <td>Chi phí (3)</td>
                                                         <td class="text-end">
                                                             <fmt:formatNumber value="${totalExpenses}" type="number"
                                                                 pattern="#,##0" />
@@ -195,26 +195,6 @@
                                                             --%>
                                                     </tr>
                                                     <tr>
-                                                        <td class="sub-item">Xuất hủy hàng hóa</td>
-                                                        <td class="text-end">0</td> <%-- Placeholder, adjust as needed
-                                                            --%>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="sub-item">Giá trị thanh toán bằng điểm</td>
-                                                        <td class="text-end">0</td> <%-- Placeholder, adjust as needed
-                                                            --%>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="sub-item">Chiết khấu thanh toán cho khách</td>
-                                                        <td class="text-end">0</td> <%-- Placeholder, adjust as needed
-                                                            --%>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="sub-item">Chi trả lương NV</td>
-                                                        <td class="text-end">0</td> <%-- Placeholder, adjust as needed
-                                                            --%>
-                                                    </tr>
-                                                    <tr>
                                                         <td>Lợi nhuận từ hoạt động kinh doanh (7=5-6)</td>
                                                         <td class="text-end">
                                                             <fmt:formatNumber value="${operatingProfit}" type="number"
@@ -222,26 +202,11 @@
                                                         </td>
                                                     </tr>
                                                     <tr>
-                                                        <td>Thu nhập khác (8)</td>
+                                                        <td>Thu nhập khác</td>
                                                         <td class="text-end">
                                                             <fmt:formatNumber value="${otherIncome}" type="number"
                                                                 pattern="#,##0" />
                                                         </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="sub-item">Phí trả hàng</td>
-                                                        <td class="text-end">0</td> <%-- Placeholder, adjust as needed
-                                                            --%>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="sub-item">Chiết khấu thanh toán từ NCC</td>
-                                                        <td class="text-end">0</td> <%-- Placeholder, adjust as needed
-                                                            --%>
-                                                    </tr>
-                                                    <tr>
-                                                        <td class="sub-item">Chi phí khác (9)</td>
-                                                        <td class="text-end">0</td> <%-- Placeholder, adjust as needed
-                                                            --%>
                                                     </tr>
                                                     <tr>
                                                         <td>Lợi nhuận thuần (10=7+8-9)</td>

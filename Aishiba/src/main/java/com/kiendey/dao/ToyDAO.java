@@ -14,4 +14,6 @@ public interface ToyDAO {
     List<Toy> getToysByCategory(String categoryId);
     List<Toy> searchToysByName(String name);
     List<Toy> searchToysByNameOrId(String term);
+    List<Toy> getToysByPage(int pageNumber, int pageSize);
+    long getTotalToyCount();
 }

@@ -64,6 +64,9 @@ public class Toy {
     @UpdateTimestamp
     LocalDateTime updatedAt;
 
+    @Column(name = "status")
+    boolean status;
+
     @Column(name = "is_deleted")
     boolean isDeleted ; // Trạng thái xóa mềm, mặc định là false (không bị xóa)
 
