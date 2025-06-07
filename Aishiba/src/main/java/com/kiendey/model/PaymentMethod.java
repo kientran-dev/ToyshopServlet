@@ -26,8 +26,4 @@ public class PaymentMethod extends AbstractEntity <String>{
     @OneToMany(mappedBy = "paymentMethod", fetch = FetchType.LAZY)
     List<Order> orders;
 
-    public PaymentMethod(String paymentMethodId) {
-        super();
-        this.setId(paymentMethodId);
-    }
 }

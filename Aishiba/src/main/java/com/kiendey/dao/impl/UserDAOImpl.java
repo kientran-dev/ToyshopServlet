@@ -7,6 +7,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UserDAOImpl implements UserDAO {
@@ -79,14 +80,26 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public List<User> searchUsersByName(String name) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "FROM User u WHERE u.name LIKE :name";
-            return session.createQuery(hql, User.class)
-                    .setParameter("name", "%" + name + "%")
-                    .list();
-        } catch (Exception e) {
-            throw new RuntimeException("Error searching Users by name: " + e.getMessage(), e);
+        // Luôn trả về danh sách rỗng thay vì null để tránh lỗi
+        List<User> results = new ArrayList<>();
+        if (name == null || name.trim().isEmpty()) {
+            return results;
         }
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Sử dụng hàm lower() trong HQL để không phân biệt hoa thường
+            String hql = "FROM User u WHERE lower(u.name) LIKE :name";
+            Query<User> query = session.createQuery(hql, User.class);
+            // Chuyển tham số tìm kiếm về chữ thường
+            query.setParameter("name", "%" + name.toLowerCase() + "%");
+            // Tối ưu: Giới hạn 10 kết quả cho autocomplete
+            query.setMaxResults(10);
+            results = query.list();
+        } catch (Exception e) {
+            // Ghi log lỗi thay vì chỉ ném ra ngoài sẽ tốt hơn trong thực tế
+            e.printStackTrace();
+            // throw new RuntimeException("Error searching Users by name: " + e.getMessage(), e);
+        }
+        return results;
     }
 
     @Override

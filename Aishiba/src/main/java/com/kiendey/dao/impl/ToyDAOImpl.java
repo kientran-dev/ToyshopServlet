@@ -5,7 +5,9 @@ import com.kiendey.model.Toy;
 import com.kiendey.utils.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.query.Query;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ToyDAOImpl implements ToyDAO {
@@ -104,5 +106,29 @@ public class ToyDAOImpl implements ToyDAO {
             e.printStackTrace();
             return null;
         }
+    }
+
+    @Override
+    public List<Toy> searchToysByNameOrId(String term) {
+        // Luôn khởi tạo một danh sách rỗng để trả về, an toàn hơn là trả về null.
+        List<Toy> results = new ArrayList<>();
+        if (term == null || term.trim().isEmpty()) {
+            return results;
+        }
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "FROM Toy t WHERE (lower(t.name) LIKE :term OR lower(t.id) LIKE :term) AND t.isDeleted = false ORDER BY t.createdAt DESC";
+            // Tạo câu truy vấn
+            Query<Toy> query = session.createQuery(hql, Toy.class);
+            // Đặt tham số :term (đã được chuyển về chữ thường)
+            query.setParameter("term", "%" + term.toLowerCase() + "%");
+            // Tối ưu hiệu năng: Giới hạn số lượng kết quả trả về cho autocomplete là 10.
+            query.setMaxResults(10);
+            // Thực thi và lấy kết quả
+            results = query.list();
+        } catch (Exception e) {
+            // Trong một ứng dụng thực tế, bạn nên dùng một thư viện ghi log (logger) thay vì printStackTrace.
+            e.printStackTrace();
+        }
+        return results;
     }
 }

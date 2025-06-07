@@ -143,7 +143,7 @@
                 </c:if>
                 <c:if test="${empty orderList}">
                   <tr>
-                    <td colspan="8" class="text-center">Không có đơn hàng nào.</td> {/* Tăng colspan lên 8 */}
+                    <td colspan="8" class="text-center">Không có đơn hàng nào.</td>
                   </tr>
                 </c:if>
                 </tbody>
@@ -233,16 +233,11 @@
             <div class="col-md-6">
               <div class="mb-3">
                 <label for="orderCode" class="form-label">Mã đơn hàng</label>
-                <input type="text" class="form-control" id="orderCode" value="DH<%= System.currentTimeMillis() %>" readonly>
-              </div>
+                <input type="text" class="form-control" id="orderCode" placeholder="[Sẽ được tạo tự động sau khi lưu]" readonly>              </div>
               <div class="mb-3">
-                <label for="customer" class="form-label">Khách hàng <span class="text-danger">*</span></label>
-                <select class="form-select" id="customer" required>
-                  <option value="">Chọn khách hàng</option>
-                  <c:forEach var="customer" items="${customerList}">
-                    <option value="${customer.id}">${customer.name}</option>
-                  </c:forEach>
-                </select>
+                <label for="customerName" class="form-label">Khách hàng <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="customerName" placeholder="Nhập tên khách hàng để tìm kiếm..." required>
+                <input type="hidden" id="customerId" name="customerId">
               </div>
               <div class="mb-3">
                 <label for="address" class="form-label">Địa chỉ nhận hàng <span class="text-danger">*</span></label>
@@ -259,7 +254,7 @@
                 <select class="form-select" id="paymentMethod" required>
                   <option value="">Chọn phương thức</option>
                   <c:forEach var="payment" items="${paymentMethods}">
-                    <option value="${payment.id}">${payment.paymentMethod}</option>
+                    <option value="${payment.id}">${payment.paymentMethod.displayName}</option>
                   </c:forEach>
                 </select>
               </div>
@@ -268,7 +263,7 @@
                 <select class="form-select" id="deliveryMethod" required>
                   <option value="">Chọn phương thức</option>
                   <c:forEach var="delivery" items="${deliveryMethods}">
-                    <option value="${delivery.id}">${delivery.deliveryMethodName}</option>
+                    <option value="${delivery.id}">${delivery.deliveryMethodName.displayName}</option>
                   </c:forEach>
                 </select>
               </div>
@@ -276,7 +271,7 @@
           </div>
 
           <!-- Danh sách sản phẩm -->
-          <h6 class="mb-3">Danh sách sản phẩm</h6>
+          <h6 class="mb-3" style="font-size: 18px">Danh sách sản phẩm</h6>
           <div class="table-responsive">
             <table class="table table-bordered" id="productTable">
               <thead>
@@ -289,13 +284,14 @@
                 <th style="width: 5%;">Xóa</th>
               </tr>
               </thead>
+
               <tbody id="productTableBody">
               <tr>
-                <td>
-                  <input type="text" class="form-control product-id" placeholder="Nhập mã sản phẩm" oninput="fetchProduct(this)">
-                </td>
-                <td><input type="text" class="form-control product-name" readonly></td>
-                <td><input type="number" class="form-control product-quantity" min="1" value="1" oninput="calculateRowTotal(this)"></td>
+                <td><input type="text" class="form-control product-search product-id" placeholder="Nhập mã..."></td>
+
+                <td><input type="text" class="form-control product-search product-name" placeholder="hoặc gõ tên..."></td>
+
+                <td><input type="number" class="form-control product-quantity" min="1" value="0"></td>
                 <td><input type="number" class="form-control product-price" readonly></td>
                 <td><input type="number" class="form-control product-total" readonly></td>
                 <td><button type="button" class="btn btn-danger btn-sm" onclick="removeProductRow(this)">Xóa</button></td>
@@ -356,7 +352,7 @@
             </p>
           </div>
         </div>
-        <h6 class="mb-3">Danh sách sản phẩm</h6>
+        <h6 class="mb-3" style="font-size: 20px">Danh sách sản phẩm</h6>
         <div class="table-responsive">
           <table class="table table-bordered" id="detailProductTable">
             <thead>
@@ -461,6 +457,9 @@
   #productTable .btn-danger {
     padding: 0.25rem 0.5rem;
   }
+  .ui-autocomplete{
+    z-index: 9950 !important; /* Đảm bảo nó hiển thị trên các thành phần khác */
+  }
   /* ... (CSS hiện có của bạn) ... */
 
   .status-wrapper {
@@ -554,6 +553,7 @@
   .table th.text-center, .table td.text-center {
     text-align: center;
   }
+
 </style>
 
 <!-- Script -->
@@ -696,7 +696,7 @@
     dateFilter.insertAdjacentElement('afterend', resetButton);
     updateFilteredCount();
 
-    // Script cho ngôi sao
+// Script cho ngôi sao
     const headerStar = document.querySelector('#selectAllorderStars');
     const rowStars = document.querySelectorAll('tbody tr td:nth-child(2) i');
     headerStar.addEventListener('click', function() {
@@ -766,63 +766,97 @@
     });
   });
 
-  // Script cho modal tạo đơn hàng mới
-  function fetchProduct(input) {
-    const row = input.closest('tr');
-    const toyId = input.value.trim();
-    const nameInput = row.querySelector('.product-name');
-    const priceInput = row.querySelector('.product-price');
-    const quantityInput = row.querySelector('.product-quantity');
+  //Script cho thêm mới đơn hàng
+  // Đảm bảo mã chạy sau khi trang đã được tải xong
+  $(function() {
 
-    if (toyId) {
-      fetch(`/Aishiba/order?action=getToy&id=${toyId}`)
-              .then(response => response.json())
-              .then(data => {
-                if (data.toy) {
-                  nameInput.value = data.toy.name;
-                  priceInput.value = data.toy.price;
-                  quantityInput.value = quantityInput.value || 1;
-                  calculateRowTotal(quantityInput);
-                } else {
-                  nameInput.value = '';
-                  priceInput.value = '';
-                  quantityInput.value = '';
-                  row.querySelector('.product-total').value = '';
-                  alert('Sản phẩm không tồn tại hoặc đã bị xóa!');
-                }
-                updateOrderSummary();
-              })
-              .catch(error => {
-                console.error('Error fetching toy:', error);
-                alert('Lỗi khi tìm sản phẩm!');
-              });
-    } else {
-      nameInput.value = '';
-      priceInput.value = '';
-      quantityInput.value = '';
-      row.querySelector('.product-total').value = '';
-      updateOrderSummary();
-    }
-  }
+    // ===================================================
+    //  PHẦN 1: LOGIC CHO TÌM KIẾM KHÁCH HÀNG
+    // ===================================================
+    $("#customerName").autocomplete({
+      source: function(request, response) {
+        $.ajax({
+          url: "/Aishiba/order?action=searchCustomers",
+          dataType: "json",
+          data: { term: request.term },
+          success: function(data) {
+            response(data);
+          },
+          error: function() {
+            response([]); // Trả về mảng rỗng nếu có lỗi, tránh bị treo
+          }
+        });
+      },
+      minLength: 1,
+      appendTo: "#newOrderForm", // Rất quan trọng: Để hiển thị trên modal
+      select: function(event, ui) {
+        event.preventDefault();
+        $("#customerName").val(ui.item.name);
+        $("#customerId").val(ui.item.value);
+      }
+    });
 
-  function calculateRowTotal(input) {
-    const row = input.closest('tr');
-    const quantity = parseInt(input.value) || 0;
-    const price = parseFloat(row.querySelector('.product-price').value) || 0;
+    // ===================================================
+    //  PHẦN 2: LOGIC CHO BẢNG SẢN PHẨM
+    // ===================================================
+
+    // Dùng event delegation để gắn Autocomplete vào ô tìm kiếm sản phẩm
+    // Áp dụng cho cả các dòng được thêm vào sau này
+    $('#productTableBody').on('focus', '.product-search', function() {
+      $(this).autocomplete({
+        source: function(request, response) {
+          $.ajax({
+            url: "/Aishiba/order?action=searchProducts",
+            dataType: "json",
+            data: { term: request.term },
+            success: function(data) { response(data); },
+            error: function() { response([]); }
+          });
+        },
+        minLength: 1,
+        appendTo: "#newOrderForm",
+
+        // Sửa lại logic select để điền dữ liệu vào cả 2 ô
+        select: function(event, ui) {
+          event.preventDefault();
+          const row = $(this).closest('tr');
+
+          // Tìm đến các ô trong cùng một hàng và điền dữ liệu
+          row.find('.product-id').val(ui.item.value);     // Điền mã vào cột "Mã sản phẩm"
+          row.find('.product-name').val(ui.item.name);    // Điền tên vào cột "Tên sản phẩm"
+          row.find('.product-price').val(ui.item.price);
+          row.find('.product-quantity').val(1);
+
+          calculateRowTotal(row.find('.product-quantity')[0]);
+        }
+      });
+    });
+
+// Gắn sự kiện 'input' để tự động tính toán lại thành tiền khi sửa số lượng
+    $('#productTableBody').on('input', '.product-quantity', function() {
+      calculateRowTotal(this);
+    });
+  });
 
 
-    const total = quantity * price;
-    row.querySelector('.product-total').value = total;
-    updateOrderSummary();
-  }
+  // ===================================================
+  //  PHẦN 3: CÁC HÀM TIỆN ÍCH (Để ở ngoài $(function(){...}) )
+  //  Các hàm này được gọi bằng onclick="" từ HTML
+  // ===================================================
 
+  /**
+   * Hàm thêm một dòng sản phẩm mới vào bảng
+   */
+  // Trong file JavaScript của bạn
   function addProductRow() {
     const tbody = document.getElementById('productTableBody');
     const newRow = document.createElement('tr');
+
+    // Cập nhật innerHTML với cấu trúc mới
     newRow.innerHTML = `
-      <td><input type="text" class="form-control product-id" placeholder="Nhập mã sản phẩm" oninput="fetchProduct(this)"></td>
-      <td><input type="text" class="form-control product-name" readonly></td>
-<!--      <td><input type="number" class="form-control product-quantity" min="1" value="1" data-stock="0" oninput="calculateRowTotal(this)"></td>-->
+      <td><input type="text" class="form-control product-search product-id" placeholder="Gõ mã..."></td>
+      <td><input type="text" class="form-control product-search product-name" placeholder="hoặc gõ tên..."></td>
+      <td><input type="number" class="form-control product-quantity" min="1" value="0"></td>
       <td><input type="number" class="form-control product-price" readonly></td>
       <td><input type="number" class="form-control product-total" readonly></td>
       <td><button type="button" class="btn btn-danger btn-sm" onclick="removeProductRow(this)">Xóa</button></td>
@@ -830,75 +864,78 @@
     tbody.appendChild(newRow);
   }
 
+  /**
+   * Hàm xóa một dòng sản phẩm
+   * @param {HTMLButtonElement} button Nút "Xóa" được bấm
+   */
   function removeProductRow(button) {
-    const row = button.closest('tr');
-    row.remove();
+    $(button).closest('tr').remove();
     updateOrderSummary();
   }
 
-  function updateOrderSummary() {
-    const rows = document.querySelectorAll('#productTableBody tr');
-    let totalQuantity = 0;
-    let totalAmount = 0;
-    rows.forEach(row => {
-      const quantity = parseInt(row.querySelector('.product-quantity').value) || 0;
-      const total = parseFloat(row.querySelector('.product-total').value) || 0;
-      totalQuantity += quantity;
-      totalAmount += total;
-    });
-    document.getElementById('totalQuantity').textContent = totalQuantity;
-    document.getElementById('totalAmount').textContent = totalAmount.toLocaleString('vi-VN');
+  /**
+   * Hàm tính tổng tiền cho một dòng dựa trên số lượng và đơn giá
+   * @param {HTMLInputElement} input Ô input số lượng đang được thay đổi
+   */
+  function calculateRowTotal(input) {
+    const row = $(input).closest('tr');
+    const quantity = parseInt($(input).val()) || 0;
+    const price = parseFloat(row.find('.product-price').val()) || 0;
+    const total = quantity * price;
+    row.find('.product-total').val(total);
+    updateOrderSummary();
   }
 
+  /**
+   * Hàm cập nhật tổng số lượng và tổng tiền của cả đơn hàng
+   */
+  function updateOrderSummary() {
+    let totalQuantity = 0;
+    let totalAmount = 0;
+    $('#productTableBody tr').each(function() {
+      const row = $(this);
+      totalQuantity += parseInt(row.find('.product-quantity').val()) || 0;
+      totalAmount += parseFloat(row.find('.product-total').val()) || 0;
+    });
+    $('#totalQuantity').text(totalQuantity);
+    $('#totalAmount').text(totalAmount.toLocaleString('vi-VN'));
+  }
+
+
+  // ===================================================
+  //  PHẦN 4: HÀM GỬI ĐƠN HÀNG MỚI ĐẾN SERVER
+  // ===================================================
   function createNewOrder() {
-    const form = document.getElementById('newOrderForm');
-    const customerId = document.getElementById('customer').value;
+    // Thu thập dữ liệu từ các trường
+    const customerId = document.getElementById('customerId').value;
     const orderCode = document.getElementById('orderCode').value;
     const orderDate = document.getElementById('orderDate').value;
     const address = document.getElementById('address').value;
     const paymentMethodId = document.getElementById('paymentMethod').value;
     const deliveryMethodId = document.getElementById('deliveryMethod').value;
+
+    // Thu thập dữ liệu từ bảng sản phẩm
     const products = Array.from(document.querySelectorAll('#productTableBody tr')).map(row => ({
       toyId: row.querySelector('.product-id').value,
       quantity: parseInt(row.querySelector('.product-quantity').value) || 0,
       price: parseFloat(row.querySelector('.product-price').value) || 0
     }));
 
+    // Kiểm tra dữ liệu (Validation)
     if (!customerId) {
-      alert('Vui lòng chọn khách hàng!');
+      alert('Vui lòng tìm và chọn một khách hàng!');
       return;
     }
-    if (!orderCode) {
-      alert('Mã đơn hàng không được để trống!');
-      return;
-    }
-    if (!orderDate) {
-      alert('Vui lòng chọn ngày đặt hàng!');
-      return;
-    }
-    if (!address) {
+    if (!address.trim()) {
       alert('Vui lòng nhập địa chỉ nhận hàng!');
       return;
     }
-    if (!paymentMethodId) {
-      alert('Vui lòng chọn phương thức thanh toán!');
+    if (products.length === 0 || products.some(p => !p.toyId || p.quantity <= 0)) {
+      alert('Đơn hàng phải có ít nhất một sản phẩm hợp lệ với số lượng lớn hơn 0!');
       return;
-    }
-    if (!deliveryMethodId) {
-      alert('Vui lòng chọn phương thức giao hàng!');
-      return;
-    }
-    if (products.length === 0 || products.every(p => !p.toyId)) {
-      alert('Vui lòng thêm ít nhất một sản phẩm!');
-      return;
-    }
-    for (const product of products) {
-      if (!product.toyId || product.quantity <= 0 || product.price <= 0) {
-        alert('Vui lòng kiểm tra thông tin sản phẩm!');
-        return;
-      }
     }
 
+    // Tạo đối tượng JSON để gửi đi
     const orderData = {
       orderCode,
       customerId,
@@ -906,10 +943,12 @@
       address,
       paymentMethodId,
       deliveryMethodId,
-      status: 'PENDING',
+      status: 'CHO_XU_LY', // Trạng thái mặc định khi tạo đơn hàng mới
       products
     };
-    fetch('/order?action=create', {
+
+    // Gửi yêu cầu POST đến server
+    fetch('/Aishiba/order?action=create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(orderData)
@@ -917,16 +956,15 @@
             .then(response => response.json())
             .then(data => {
               if (data.success) {
-                alert('Đã tạo đơn hàng mới!');
-                bootstrap.Modal.getInstance(document.getElementById('newOrderModal')).hide();
-                window.location.reload();
+                alert('Đã tạo đơn hàng mới thành công!');
+                window.location.reload(); // Tải lại trang để cập nhật danh sách
               } else {
-                alert('Lỗi khi tạo đơn hàng: ' + data.message);
+                alert('Lỗi khi tạo đơn hàng: ' + (data.message || 'Lỗi không xác định từ server.'));
               }
             })
             .catch(error => {
-              console.error('Error creating order:', error);
-              alert('Lỗi khi tạo đơn hàng!');
+              console.error('Lỗi khi gửi yêu cầu tạo đơn hàng:', error);
+              alert('Đã có lỗi nghiêm trọng xảy ra. Vui lòng kiểm tra console (F12) để biết thêm chi tiết.');
             });
   }
 

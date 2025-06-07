@@ -3,14 +3,13 @@ package com.kiendey.dao;
 import com.kiendey.common.OrderStatus;
 import com.kiendey.model.Order;
 import com.kiendey.model.OrderItem;
-import com.kiendey.model.Supplier;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map; // Import Map
 
 public interface OrderDAO {
-    void createOrder(Order order);
+    boolean createOrder(Order order);
     boolean createOrderWithItems(Order order, List<OrderItem> orderItems);
     Order readOrder(String id);
     void updateOrder(Order order);
