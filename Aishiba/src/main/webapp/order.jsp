@@ -53,16 +53,21 @@
                   </div>
                 </div>
                 <label>
-                  <select id='searchStatus' class="form-select" style="width: auto;">
+                  <select id="searchStatus" class="form-select" style="width: auto;">
                     <option value="">Tất cả trạng thái</option>
-                    <option value="PENDING">Chờ xử lý</option>
-                    <option value="CONFIRMED">Đã xác nhận</option>
-                    <option value="SHIPPING">Đang giao hàng</option>
-                    <option value="COMPLETED">Hoàn thành</option>
-                    <option value="CANCELLED">Đã hủy</option>
+                    <%-- Đảm bảo các value này khớp 100% với tên hằng số trong file Enum --%>
+                    <option value="CHO_XU_LY">Chờ xử lý</option>
+                    <option value="DA_XAC_NHAN">Đã xác nhận</option>
+                    <option value="DANG_GIAO_HANG">Đang giao hàng</option>
+                    <option value="HOAN_THANH">Đã giao tới khách</option>
+                    <option value="DA_HUY">Đã hủy</option>
                   </select>
                 </label>
                 <input type="date" class="form-control" style="width: auto;" title="Lọc theo ngày đặt hàng">
+                <button type="button" class="btn btn-secondary" id="resetButton">
+                  <i class="bi bi-arrow-counterclockwise me-1"></i>
+                  Xóa lọc
+                </button>
               </div>
             </div>
 
@@ -80,72 +85,15 @@
                   <th>Thời gian</th>
                   <th>Khách hàng</th>
                   <th>Địa chỉ nhận hàng</th>
-                  <th class="text-lg-center">Tổng tiền hàng</th>
+                  <th class="text-end">Tổng tiền hàng</th>
                   <th class="text-center">Trạng thái</th>
                 </tr>
                 </thead>
                 <tbody id="orderTableBody">
-                <c:if test="${not empty orderList}">
-                  <c:forEach var="order" items="${orderList}" varStatus="loop">
-                    <tr>
-                      <td><input type="checkbox" class="form-check-input supplier-checkbox" title="Chọn nhà cung cấp này" onclick="event.stopPropagation();"></td>
-                      <td><i class="bi bi-star star-outline" onclick="toggleSupplierStar(this, event)"></i></td>
-                      <td style="color: #0D6EFD; cursor: pointer;" class="order-code" data-order-id="${order.id}"><c:out value="${order.formattedOrderCode}" /></td>
-                      <td>
-                        <c:choose>
-                          <c:when test="${not empty order.orderDate}">
-                            <fmt:formatDate value="${orderDateList[loop.index]}" pattern="dd/MM/yyyy HH:mm:ss" />
-                          </c:when>
-                          <c:otherwise>
-                            N/A
-                          </c:otherwise>
-                        </c:choose>
-                      </td>
-                      <td>
-                        <c:choose>
-                          <c:when test="${not empty order.user and not empty order.user.name}">
-                            <c:out value="${order.user.name}" />
-                          </c:when>
-                          <c:otherwise>
-                            N/A
-                          </c:otherwise>
-                        </c:choose>
-                      </td>
-                      <td><c:out value="${order.address}" /></td>
-                      <td class="text-end">
-                        <c:if test="${not empty totalAmountList[loop.index]}">
-                          <fmt:formatNumber value="${totalAmountList[loop.index]}" type="currency" currencyCode="VND" />
-                        </c:if>
-                        <c:if test="${empty totalAmountList[loop.index]}">
-                          N/A
-                        </c:if>
-                      </td>
-                      <td class="text-center">
-                        <c:if test="${not empty order.status}">
-                          <%-- Sử dụng class 'status-badge' và class màu tương ứng --%>
-                          <span class="status-badge status-${order.status}">
-                            <c:choose>
-                              <c:when test="${order.status == 'CHO_XU_LY'}">Chờ xử lý</c:when>
-                              <c:when test="${order.status == 'DA_XAC_NHAN'}">Đã xác nhận</c:when>
-                              <c:when test="${order.status == 'DANG_GIAO_HANG'}">Đang giao hàng</c:when>
-                              <c:when test="${order.status == 'HOAN_THANH'}">Hoàn thành</c:when>
-                              <c:when test="${order.status == 'DA_HUY'}">Đã hủy</c:when>
-                              <c:otherwise><c:out value="${order.status}" /></c:otherwise>
-                            </c:choose>
-                          </span>
-                        </c:if>
-                        <c:if test="${empty order.status}">
-                          N/A
-                        </c:if>
-                      </td>
-                    </tr>
-                  </c:forEach>
-                </c:if>
-                <c:if test="${empty orderList}">
-                  <tr>
-                    <td colspan="8" class="text-center">Không có đơn hàng nào.</td>
-                  </tr>
-                </c:if>
+                <%-- Để trống hoặc chỉ hiển thị trạng thái đang tải --%>
+                <tr>
+                  <td colspan="8" class="text-center">Đang tải dữ liệu...</td>
+                </tr>
                 </tbody>
               </table>
             </div>
@@ -329,6 +277,7 @@
             <p><strong>Mã đơn hàng:</strong> <span id="detailOrderCode"></span></p>
             <p><strong>Khách hàng:</strong> <span id="detailCustomer"></span></p>
             <p><strong>Địa chỉ:</strong> <span id="detailAddress"></span></p>
+            <p><strong>Khuyến mãi:</strong> <span id="detailCoupon"></span></p>
           </div>
           <div class="col-md-6">
             <p><strong>Ngày đặt:</strong> <span id="detailOrderDate"></span></p>
@@ -565,8 +514,63 @@
       const modal = new bootstrap.Modal(document.getElementById('newOrderModal'));
       modal.show();
       updateOrderSummary();
+    const closeModal = document.querySelector('.btn-close');
+      closeModal.addEventListener('click', function() {
+        $('#modal').modal('hide');
+      });
     });
 
+    /**
+     * Bật/tắt trạng thái chọn của tất cả các checkbox đơn hàng.
+     * @param {HTMLInputElement} masterCheckbox Checkbox tổng ở tiêu đề bảng.
+     */
+    function toggleSelectAllorder(masterCheckbox) {
+      // 1. Tìm tất cả các checkbox của từng đơn hàng trong tbody
+      //    Lưu ý: class '.supplier-checkbox' là class bạn đã dùng cho các checkbox ở dòng.
+      const rowCheckboxes = document.querySelectorAll('#orderTableBody .supplier-checkbox');
+
+      // 2. Lặp qua từng checkbox và đặt trạng thái 'checked' của nó
+      //    giống với trạng thái của checkbox tổng.
+      rowCheckboxes.forEach(checkbox => {
+        checkbox.checked = masterCheckbox.checked;
+      });
+    }
+
+    /**
+     * Bật/tắt trạng thái "đánh dấu sao" của tất cả các đơn hàng.
+     * @param {HTMLElement} masterStar Icon ngôi sao tổng ở tiêu đề bảng.
+     */
+    function toggleSelectAllorderStars(masterStar) {
+      // 1. Xác định xem hành động cần làm là "tô màu" hay "bỏ tô màu"
+      //    dựa vào trạng thái hiện tại của ngôi sao tổng.
+      //    Nếu ngôi sao tổng là rỗng (có class 'bi-star'), thì chúng ta cần tô màu.
+      const shouldBeFilled = masterStar.classList.contains('bi-star');
+
+      // 2. Tìm tất cả các icon ngôi sao của từng đơn hàng trong tbody
+      const rowStars = document.querySelectorAll('#orderTableBody .bi-star, #orderTableBody .bi-star-fill');
+
+      // 3. Lặp qua từng ngôi sao và thay đổi class của nó
+      rowStars.forEach(star => {
+        if (shouldBeFilled) {
+          // Tô màu ngôi sao
+          star.classList.remove('bi-star');
+          star.classList.add('bi-star-fill', 'text-warning'); // Thêm class màu vàng
+        } else {
+          // Bỏ tô màu ngôi sao
+          star.classList.remove('bi-star-fill', 'text-warning');
+          star.classList.add('bi-star');
+        }
+      });
+
+      // 4. Cập nhật lại chính ngôi sao tổng
+      if (shouldBeFilled) {
+        masterStar.classList.remove('bi-star');
+        masterStar.classList.add('bi-star-fill', 'text-warning');
+      } else {
+        masterStar.classList.remove('bi-star-fill', 'text-warning');
+        masterStar.classList.add('bi-star');
+      }
+    }
     // Script cho nút "Gộp đơn"
     const mergeOrderBtn = document.querySelector('.btn-success');
     mergeOrderBtn.addEventListener('click', function() {
@@ -635,66 +639,6 @@
       modal.show();
     });
 
-    // Script cho tìm kiếm và lọc
-    const searchInput = document.getElementById('searchInput');
-    const tableRows = document.querySelectorAll('table tbody tr');
-    searchInput.addEventListener('keyup', function() {
-      const searchTerm = this.value.toLowerCase();
-      tableRows.forEach(row => {
-        const orderCode = row.querySelector('td:nth-child(3)').textContent.toLowerCase();
-        const customer = row.querySelector('td:nth-child(5)').textContent.toLowerCase();
-        if (orderCode.includes(searchTerm) || customer.includes(searchTerm)) {
-          row.style.display = '';
-        } else {
-          row.style.display = 'none';
-        }
-      });
-    });
-
-    // Script cho lọc trạng thái và ngày
-    const statusFilter = document.getElementById('searchStatus');
-    const dateFilter = document.querySelector('input[type="date"]');
-    statusFilter.addEventListener('change', filterOrders);
-    dateFilter.addEventListener('change', filterOrders);
-
-    function filterOrders() {
-      const selectedStatus = statusFilter.value;
-      const selectedDate = dateFilter.value ? new Date(dateFilter.value) : null;
-      tableRows.forEach(row => {
-        const rowStatus = row.dataset.status || '';
-        const rowDate = new Date(row.cells[3].textContent);
-        const rowDateOnly = new Date(rowDate.getFullYear(), rowDate.getMonth(), rowDate.getDate());
-        const selectedDateOnly = selectedDate ? new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate()) : null;
-        const matchesStatus = !selectedStatus || rowStatus.toLowerCase() === selectedStatus.toLowerCase();
-        const matchesDate = !selectedDate || rowDateOnly.getTime() === selectedDateOnly.getTime();
-        row.style.display = (matchesStatus && matchesDate) ? '' : 'none';
-      });
-      updateFilteredCount();
-    }
-
-    function updateFilteredCount() {
-      const visibleRows = document.querySelectorAll('tbody tr:not([style*="none"])').length;
-      const totalRows = tableRows.length;
-      let counter = document.querySelector('.filter-counter');
-      if (!counter) {
-        counter = document.createElement('div');
-        counter.className = 'filter-counter text-muted mt-2';
-        document.querySelector('.table-responsive').insertAdjacentElement('beforebegin', counter);
-      }
-      counter.textContent = `Hiển thị ${visibleRows} / ${totalRows} đơn hàng`;
-    }
-
-    const resetButton = document.createElement('button');
-    resetButton.className = 'btn btn-outline-secondary';
-    resetButton.innerHTML = '<i class="bi bi-x-circle me-1"></i>Xóa bộ lọc';
-    resetButton.addEventListener('click', function() {
-      statusFilter.value = '';
-      dateFilter.value = '';
-      tableRows.forEach(row => row.style.display = '');
-      updateFilteredCount();
-    });
-    dateFilter.insertAdjacentElement('afterend', resetButton);
-    updateFilteredCount();
 
 // Script cho ngôi sao
     const headerStar = document.querySelector('#selectAllorderStars');
@@ -766,7 +710,7 @@
     });
   });
 
-  //Script cho thêm mới đơn hàng
+//Script cho thêm mới đơn hàng
   // Đảm bảo mã chạy sau khi trang đã được tải xong
   $(function() {
 
@@ -837,7 +781,6 @@
       calculateRowTotal(this);
     });
   });
-
 
   // ===================================================
   //  PHẦN 3: CÁC HÀM TIỆN ÍCH (Để ở ngoài $(function(){...}) )
@@ -972,10 +915,10 @@
     const modal = bootstrap.Modal.getInstance(document.getElementById('mergeOrderModal'));
     const note = modal.element.querySelector('textarea').value;
     alert(`Đã gộp ${orderId.split(',').length} đơn hàng thành công!`);
-    modal.hide();
+    $('#modal').modal('hide');
   }
 
-  //Script cho chi tiết đơn hàng
+//Script cho chi tiết đơn hàng
   const statusDisplayNames = {
     'CHO_XU_LY': 'Chờ xử lý',
     'DA_XAC_NHAN': 'Đã xác nhận',
@@ -1031,6 +974,9 @@
             });
   }
   function fetchOrderDetails(orderId) {
+    // Hiển thị một trạng thái tải đơn giản (tùy chọn)
+    $('#orderDetailsModalLabel').text('Đang tải chi tiết...');
+    $('#orderDetailsModal').modal('show'); // Hiển thị modal trước
     if (!orderId || orderId.trim() === '') {
       console.error('Lỗi: orderId không hợp lệ hoặc rỗng:', orderId);
       alert('Lỗi: Vui lòng cung cấp ID đơn hàng hợp lệ!');
@@ -1061,6 +1007,7 @@
                   document.getElementById('detailOrderCode').textContent = data.order.id || 'N/A';
                   document.getElementById('detailCustomer').textContent = data.order.user.name || 'N/A';
                   document.getElementById('detailAddress').textContent = data.order.address || 'N/A';
+                  document.getElementById('detailCoupon').textContent = data.order.coupon ? data.order.coupon : 'Không có';
                   document.getElementById('detailOrderDate').textContent = data.order.orderDate ?
                           new Date(data.order.orderDate).toLocaleString('vi-VN', {
                             day: '2-digit',
@@ -1159,4 +1106,228 @@
               alert('Lỗi khi lấy thông tin: ' + error.message);
             });
   }
+  // --- SỬ DỤNG EVENT DELEGATION ĐỂ GẮN SỰ KIỆN CLICK ---
+  // Đoạn code này thay thế cho code cũ của bạn
+  $('#orderTableBody').on('click', '.order-code', function() {
+    // `this` ở đây chính là thẻ <td> có class .order-code được click
+    const orderId = $(this).data('order-id');
+
+    if (orderId) {
+      // Gọi hàm fetchOrderDetails với ID lấy được
+      fetchOrderDetails(orderId);
+    } else {
+      console.error("Không tìm thấy order-id trên phần tử được click.");
+    }
+  });
+//Loc va tim kiem
+  $(document).ready(function() {
+
+    const searchInput = $('#searchInput');
+    const statusFilter = $('#searchStatus');
+    const dateFilter = $('input[type="date"]');
+    const tableBody = $('#orderTableBody');
+    // Thêm các element phân trang nếu có
+    const paginationContainer = $('.pagination-container'); // Thay .pagination-container bằng selector thực tế của bạn
+
+    let currentPage = 1;
+    let debounceTimeout;
+    // Hàm lấy class CSS cho badge trạng thái
+    // Hàm chính: Gọi AJAX để lấy dữ liệu và render lại bảng + phân trang
+    function fetchAndRenderOrders(page = 1) {
+      currentPage = page;
+      const searchTerm = searchInput.val();
+      const status = statusFilter.val();
+      const date = dateFilter.val();
+
+      // Hiển thị hiệu ứng tải (tùy chọn)
+      tableBody.html('<tr><td colspan="8" class="text-center">Đang tải dữ liệu...</td></tr>');
+
+      $.ajax({
+        url: 'order', // URL đến servlet
+        type: 'GET',
+        data: {
+          action: 'searchAndFilter', // Action mới đã định nghĩa ở servlet
+          searchTerm: searchTerm,
+          status: status,
+          date: date,
+          page: currentPage
+        },
+        dataType: 'json',
+        success: function(response) {
+          console.log("1. Success callback được gọi!"); // Log số 1
+          console.log("Dữ liệu nhận được:", response);  // Log số 2
+
+          tableBody.empty(); // Xóa nội dung cũ
+
+          // Render lại các hàng của bảng
+          if (response.orders && response.orders.length > 0) {
+            console.log("3. Bắt đầu lặp qua " + response.orders.length + " đơn hàng."); // Log số 3
+
+            $.each(response.orders, function(index, order) {
+              console.log("Đang xử lý đơn hàng:", order.formattedId); // Log mỗi lần lặp
+              const formattedAmount = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount);
+              const row = `
+        <tr>
+            <td><input type="checkbox" class="form-check-input supplier-checkbox" title="Chọn nhà cung cấp này" onclick="event.stopPropagation();"></td>
+            <td><i class="bi bi-star star-outline" onclick="toggleSupplierStar(this, event)"></i></td>
+            <td style="color: #0D6EFD; cursor: pointer;" class="order-code" data-order-id="\${order.id}">\${order.formattedId}</td>
+            <td>\${order.orderDate}</td>
+            <td>\${order.customerName}</td>
+
+            <%-- CỘT NÀY QUAN TRỌNG, CẦN DỮ LIỆU TỪ SERVER --%>
+            <td>\${order.address}</td>
+
+            <td class="text-end">\${formattedAmount}</td>
+            <td class="text-center">
+                <span class="status-badge status-\${order.status}">
+                    \${order.statusDisplay}
+                </span>
+            </td>
+        </tr>
+    `;
+
+              console.log("HTML của dòng được tạo:", row); // Log chuỗi HTML
+              tableBody.append(row);
+            });
+          } else {
+            console.log("3. Không có đơn hàng nào để hiển thị."); // Log nếu không có dữ liệu
+            tableBody.html('<tr><td colspan="8" class="text-center">Không tìm thấy đơn hàng nào khớp với điều kiện.</td></tr>');
+          }
+
+
+          // Render lại phần phân trang
+          renderPagination(response.totalPages, response.currentPage);
+        },
+        error: function(xhr, status, error) {
+          tableBody.html('<tr><td colspan="8" class="text-center text-danger">Có lỗi xảy ra khi tải dữ liệu.</td></tr>');
+          console.error("Lỗi AJAX: ", error);
+        }
+      });
+    }
+
+    // Hàm render lại các nút phân trang
+    // HÃY THAY THẾ TOÀN BỘ HÀM CŨ BẰNG HÀM NÀY
+
+    function renderPagination(totalPages, currentPage) {
+      // Chuyển đổi currentPage sang kiểu số để đảm bảo các phép toán chính xác
+      currentPage = parseInt(currentPage);
+
+      // Xóa các nút phân trang cũ
+      paginationContainer.empty();
+
+      // Nếu chỉ có 1 trang hoặc không có trang nào, không cần hiển thị phân trang
+      if (totalPages <= 1) {
+        return;
+      }
+
+      let paginationHtml = '<ul class="pagination">';
+
+      // 1. NÚT "TRƯỚC" (PREVIOUS)
+      paginationHtml += `<li class="page-item \${currentPage === 1 ? 'disabled' : ''}">
+                           <a class="page-link" href="#" data-page="\${currentPage - 1}">Trước</a>
+                       </li>`;
+
+      // 2. LOGIC HIỂN THỊ CÁC NÚT SỐ TRANG
+
+      // Ngưỡng để quyết định khi nào nên dùng dấu "..."
+      const pageThreshold = 7;
+
+      if (totalPages <= pageThreshold) {
+        // TRƯỜNG HỢP 1: TỔNG SỐ TRANG ÍT, HIỂN THỊ TẤT CẢ
+        for (let i = 1; i <= totalPages; i++) {
+          paginationHtml += `<li class="page-item \${i === currentPage ? 'active' : ''}">
+                                   <a class="page-link" href="#" data-page="\${i}">\${i}</a>
+                               </li>`;
+        }
+      } else {
+        // TRƯỜNG HỢP 2: TỔNG SỐ TRANG NHIỀU, DÙNG DẤU "..."
+        // Luôn hiển thị trang đầu tiên
+        paginationHtml += `<li class="page-item \${currentPage === 1 ? 'active' : ''}">
+                               <a class="page-link" href="#" data-page="1">1</a>
+                           </li>`;
+
+        // Xử lý dấu "..." bên trái
+        if (currentPage > 4) {
+          paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        }
+
+        // Xác định các trang ở giữa để hiển thị
+        let startPage, endPage;
+        if (currentPage <= 4) {
+          // Gần đầu: hiển thị từ 2 đến 5
+          startPage = 2;
+          endPage = 5;
+        } else if (currentPage >= totalPages - 3) {
+          // Gần cuối: hiển thị 4 trang cuối cùng trước trang cuối
+          startPage = totalPages - 4;
+          endPage = totalPages - 1;
+        } else {
+          // Ở giữa: hiển thị trang trước, trang hiện tại, và trang sau
+          startPage = currentPage - 1;
+          endPage = currentPage + 1;
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          paginationHtml += `<li class="page-item \${i === currentPage ? 'active' : ''}">
+                                   <a class="page-link" href="#" data-page="\${i}">\${i}</a>
+                               </li>`;
+        }
+
+        // Xử lý dấu "..." bên phải
+        if (currentPage < totalPages - 3) {
+          paginationHtml += `<li class="page-item disabled"><span class="page-link">...</span></li>`;
+        }
+
+        // Luôn hiển thị trang cuối cùng
+        paginationHtml += `<li class="page-item \${currentPage === totalPages ? 'active' : ''}">
+                               <a class="page-link" href="#" data-page="\${totalPages}">\${totalPages}</a>
+                           </li>`;
+      }
+
+      // 3. NÚT "SAU" (NEXT)
+      paginationHtml += `<li class="page-item \${currentPage === totalPages ? 'disabled' : ''}">
+                           <a class="page-link" href="#" data-page="\${currentPage + 1}">Sau</a>
+                       </li>`;
+
+      paginationHtml += '</ul>';
+
+      // Đưa HTML đã tạo vào container
+      paginationContainer.html(paginationHtml);
+    }
+    // Gán sự kiện cho các input
+    searchInput.on('keyup', function() {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(() => {
+        fetchAndRenderOrders(1); // Luôn tìm kiếm từ trang 1
+      }, 500); // Chờ 0.5s sau khi người dùng ngừng gõ
+    });
+
+    statusFilter.on('change', function() {
+      fetchAndRenderOrders(1);
+    });
+
+    dateFilter.on('change', function() {
+      fetchAndRenderOrders(1);
+    });
+
+    // Gán sự kiện cho các nút phân trang (sử dụng event delegation)
+    paginationContainer.on('click', '.page-link', function(e) {
+      e.preventDefault();
+      const page = $(this).data('page');
+      if (page) {
+        fetchAndRenderOrders(page);
+      }
+    });
+
+    // Xử lý nút xóa bộ lọc
+    $('#resetButton').on('click', function() { // Giả sử bạn có nút với id="resetButton"
+      searchInput.val('');
+      statusFilter.val('');
+      dateFilter.val('');
+      fetchAndRenderOrders(1); // Tải lại danh sách gốc
+    });
+
+    // Tải dữ liệu lần đầu khi trang được mở
+    fetchAndRenderOrders(1); // Bạn có thể bỏ dòng này nếu trang đã tải sẵn danh sách từ JSP
+  });
 </script>

@@ -26,7 +26,7 @@ public class Stock extends AbstractEntity<String>{
     @JoinColumn(name = "supplier_id", nullable = false)
     Supplier supplier;
 
-    @OneToMany(mappedBy = "stock", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "stock", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     List<StockItem> stockItems = new java.util.ArrayList<>();
 
     public String getFormattedStockCode() {

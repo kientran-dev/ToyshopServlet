@@ -122,7 +122,7 @@ public class ToyDAOImpl implements ToyDAO {
             // Đặt tham số :term (đã được chuyển về chữ thường)
             query.setParameter("term", "%" + term.toLowerCase() + "%");
             // Tối ưu hiệu năng: Giới hạn số lượng kết quả trả về cho autocomplete là 10.
-            query.setMaxResults(10);
+            query.setMaxResults(15);
             // Thực thi và lấy kết quả
             results = query.list();
         } catch (Exception e) {

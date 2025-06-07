@@ -10,10 +10,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.LinkedHashMap; // Để giữ thứ tự kết quả
+import java.util.*;
 
 import com.kiendey.dto.ProductSaleStat; // Thêm import cho ProductSaleStat
 
@@ -87,6 +84,7 @@ public class OrderDAOImpl implements OrderDAO {
                     "LEFT JOIN FETCH o.user " +
                     "LEFT JOIN FETCH o.orderItems oi " +
                     "LEFT JOIN FETCH oi.toy " +
+                    "LEFT JOIN FETCH o.coupon " +
                     "LEFT JOIN FETCH o.paymentMethod " +
                     "LEFT JOIN FETCH o.deliveryMethod " +
                     "WHERE o.id = :orderId";
@@ -246,7 +244,88 @@ public class OrderDAOImpl implements OrderDAO {
             return false;
         }
     }
+    // Phương thức này sẽ tìm kiếm và lọc các đơn hàng theo các điều kiện đã cho
+    @Override
+    public List<Order> searchAndFilterOrders(String searchTerm, String status, String dateStr, int page, int pageSize) {
+        List<Order> orders = new ArrayList<>();
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Xây dựng câu truy vấn HQL động
+            // Trong phương thức searchAndFilterOrders()
+            StringBuilder hql = new StringBuilder("FROM Order o " +
+                    "LEFT JOIN FETCH o.user " +
+                    "LEFT JOIN FETCH o.paymentMethod " +
+                    "LEFT JOIN FETCH o.deliveryMethod " +
+                    "WHERE 1=1");
+            Map<String, Object> parameters = new HashMap<>();
 
+            // 1. Thêm điều kiện tìm kiếm theo mã đơn hoặc tên khách hàng
+            if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+                hql.append(" AND (LOWER(o.id) LIKE LOWER(:searchTerm) OR LOWER(o.user.name) LIKE LOWER(:searchTerm))");
+                parameters.put("searchTerm", "%" + searchTerm + "%");
+            }
+
+            // 2. Thêm điều kiện lọc theo trạng thái
+            if (status != null && !status.trim().isEmpty()) {
+                hql.append(" AND o.status = :status");
+                parameters.put("status", OrderStatus.valueOf(status));
+            }
+
+            // 3. Thêm điều kiện lọc theo ngày
+            if (dateStr != null && !dateStr.trim().isEmpty()) {
+                // Chỉ so sánh phần DATE của cột orderDate (kiểu DATETIME)
+                hql.append(" AND FUNCTION('DATE', o.orderDate) = :orderDate");
+                parameters.put("orderDate", java.sql.Date.valueOf(dateStr));
+            }
+
+            hql.append(" ORDER BY o.orderDate DESC");
+
+            Query<Order> query = session.createQuery(hql.toString(), Order.class);
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                query.setParameter(entry.getKey(), entry.getValue());
+            }
+
+            // Phân trang
+            query.setFirstResult((page - 1) * pageSize);
+            query.setMaxResults(pageSize);
+
+            orders = query.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
+
+    // Bạn cũng cần một phương thức để đếm tổng số kết quả khớp điều kiện để phân trang
+    @Override
+    public int countFilteredOrders(String searchTerm, String status, String dateStr) {
+        long count = 0;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            StringBuilder hql = new StringBuilder("SELECT COUNT(o.id) FROM Order o WHERE 1=1");
+            Map<String, Object> parameters = new HashMap<>();
+
+            if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+                hql.append(" AND (LOWER(o.id) LIKE LOWER(:searchTerm) OR LOWER(o.user.name) LIKE LOWER(:searchTerm))");
+                parameters.put("searchTerm", "%" + searchTerm + "%");
+            }
+            if (status != null && !status.trim().isEmpty()) {
+                hql.append(" AND o.status = :status");
+                parameters.put("status", OrderStatus.valueOf(status));
+            }
+            if (dateStr != null && !dateStr.trim().isEmpty()) {
+                hql.append(" AND FUNCTION('DATE', o.orderDate) = :orderDate");
+                parameters.put("orderDate", java.sql.Date.valueOf(dateStr));
+            }
+
+            Query<Long> query = session.createQuery(hql.toString(), Long.class);
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                query.setParameter(entry.getKey(), entry.getValue());
+            }
+            count = query.uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return (int) count;
+    }
     @Override
     public List<Order> getOrdersByDate(LocalDateTime startDate, LocalDateTime endDate) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {

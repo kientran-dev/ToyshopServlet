@@ -69,7 +69,8 @@ public class Order extends HttpServlet {
                                 order.getDeliveryMethod().getDeliveryMethodName().getDisplayName() : null);
                         orderJson.addProperty("status", order.getStatus() != null ?
                                 order.getStatus().name(): null);
-
+                        orderJson.addProperty("coupon", order.getCoupon() != null ?
+                                order.getCoupon().getDescription() : null); // Lay decription cua coupon
                         // Thông tin khách hàng
                         JsonObject userJson = new JsonObject();
                         if (order.getUser() != null) {
@@ -165,7 +166,52 @@ public class Order extends HttpServlet {
             }
             resp.getWriter().write(gson.toJson(result));
             return; // Kết thúc sớm
-        }    // ======== KẾT THÚC PHẦN MÃ MỚI ========
+        } else if ("searchAndFilter".equals(action)) {
+            resp.setContentType("application/json");
+            resp.setCharacterEncoding("UTF-8");
+
+            String searchTerm = req.getParameter("searchTerm");
+            String status = req.getParameter("status");
+            String date = req.getParameter("date");
+            int page = 1;
+            try {
+                page = Integer.parseInt(req.getParameter("page"));
+            } catch (NumberFormatException e) {
+                page = 1;
+            }
+
+            // Lấy danh sách đơn hàng đã được lọc
+            List<com.kiendey.model.Order> orders = orderDAO.searchAndFilterOrders(searchTerm, status, date, page, DEFAULT_PAGE_SIZE);
+
+            // Lấy tổng số kết quả để tính toán phân trang
+            int totalOrders = orderDAO.countFilteredOrders(searchTerm, status, date);
+            int totalPages = (int) Math.ceil((double) totalOrders / DEFAULT_PAGE_SIZE);
+
+            // Chuyển đổi danh sách Order sang một định dạng JSON đơn giản để gửi về client
+            List<JsonObject> jsonOrders = new ArrayList<>();
+            for (com.kiendey.model.Order order : orders) {
+                JsonObject orderJson = new JsonObject();
+                orderJson.addProperty("id", order.getId()); // Gửi ID gốc để xử lý
+                orderJson.addProperty("formattedId", order.getFormattedOrderCode());
+                orderJson.addProperty("customerName", order.getUser() != null ? order.getUser().getName() : "N/A");
+                orderJson.addProperty("orderDate", order.getOrderDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+                orderJson.addProperty("totalAmount", orderDAO.getFinalAmount(order.getId()));
+                orderJson.addProperty("status", order.getStatus().name());
+                orderJson.addProperty("statusDisplay", order.getStatus().getDisplayName()); // Giả sử có hàm này
+                orderJson.addProperty("address", order.getAddress() != null ? order.getAddress() : "N/A");
+
+                jsonOrders.add(orderJson);
+            }
+
+            // Tạo đối tượng JSON cuối cùng chứa cả danh sách đơn hàng và thông tin phân trang
+            JsonObject jsonResponse = new JsonObject();
+            jsonResponse.add("orders", new Gson().toJsonTree(jsonOrders));
+            jsonResponse.addProperty("totalPages", totalPages);
+            jsonResponse.addProperty("currentPage", page);
+
+            resp.getWriter().write(jsonResponse.toString());
+            return; // Quan trọng: Kết thúc sớm để không chạy code hiển thị trang HTML bên dưới
+        }
 
         // Hiển thị danh sách đơn hàng (mặc định)
         resp.setContentType("text/html;charset=UTF-8");
@@ -277,6 +323,16 @@ public class Order extends HttpServlet {
                 // Sửa .getAsInt() -> .getAsString()
                 deliveryMethod.setId(orderData.get("deliveryMethodId").getAsString());
                 newOrder.setDeliveryMethod(deliveryMethod);
+
+                // Tạo tham chiếu đến Coupon
+                Coupon coupon = new Coupon();
+                if (orderData.has("couponId") && !orderData.get("couponId").isJsonNull()) {
+                    // Sửa .getAsInt() -> .getAsString()
+                    coupon.setId(orderData.get("couponId").getAsString());
+                    newOrder.setCoupon(coupon);
+                } else {
+                    newOrder.setCoupon(null); // Không có coupon
+                }
 
                 // 3. Tạo danh sách OrderItem
                 List<OrderItem> orderItems = new ArrayList<>();

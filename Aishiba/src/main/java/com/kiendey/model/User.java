@@ -81,8 +81,6 @@ public class User extends AbstractEntity<String> {
         }
         return "KH-N/A";
     }
-
-
 }
 
 

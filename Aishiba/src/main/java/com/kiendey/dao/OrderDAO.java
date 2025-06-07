@@ -25,6 +25,8 @@ public interface OrderDAO {
     List<Order> getOrdersByPage(int pageNumber, int pageSize);
     int getTotalOrderCount();
     boolean updateOrderStatus(String orderId, OrderStatus status);
+    List<Order> searchAndFilterOrders(String searchTerm, String status, String dateStr, int page, int pageSize);
+    int countFilteredOrders(String searchTerm, String status, String dateStr);
     // New methods for customer reports
     /**
      * Lấy số lượng đơn hàng của mỗi khách hàng, sắp xếp giảm dần.
