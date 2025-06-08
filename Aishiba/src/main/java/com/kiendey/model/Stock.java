@@ -22,7 +22,7 @@ public class Stock extends AbstractEntity<String>{
     @Column(name = "status", nullable = false)
     StockStatus status;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id", nullable = false)
     Supplier supplier;
 

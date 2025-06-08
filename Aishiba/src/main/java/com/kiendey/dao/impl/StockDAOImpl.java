@@ -219,131 +219,89 @@ public class StockDAOImpl implements StockDAO {
 
     @Override
     public List<Stock> searchAndFilterStocks(String searchTerm, String status, String date, int page, int pageSize) {
-        // Luôn trả về một danh sách rỗng nếu có lỗi, thay vì null
         List<Stock> stockList = new ArrayList<>();
-
-        // Sử dụng try-with-resources để đảm bảo session luôn được đóng
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
 
-            // 1. XÂY DỰNG CÂU TRUY VẤN ĐỘNG
-            // StringBuilder hiệu quả hơn khi nối chuỗi
-            StringBuilder queryString = new StringBuilder("SELECT s FROM Stock s JOIN FETCH s.supplier s_sup");
-
-            // Map để chứa các tham số, giúp tránh lỗi SQL Injection
+            // Bắt đầu với JOIN FETCH để lấy dữ liệu, không cần WHERE 1=1
+            StringBuilder queryString = new StringBuilder("SELECT s FROM Stock s JOIN FETCH s.supplier");
             Map<String, Object> parameters = new HashMap<>();
-
             StringBuilder whereClause = new StringBuilder();
 
-            // Thêm điều kiện tìm kiếm (searchTerm)
+            // Xây dựng mệnh đề WHERE
             if (searchTerm != null && !searchTerm.trim().isEmpty()) {
-                whereClause.append(" (LOWER(s.formattedStockCode) LIKE LOWER(:searchTerm) OR LOWER(s_sup.name) LIKE LOWER(:searchTerm))");
+                // SỬA LẠI: Tìm theo đúng trường mã định dạng (ví dụ: formattedId)
+                whereClause.append(" (LOWER(s.id) LIKE LOWER(:searchTerm) OR LOWER(s.supplier.name) LIKE LOWER(:searchTerm))");
                 parameters.put("searchTerm", "%" + searchTerm + "%");
             }
 
-            // Thêm điều kiện lọc theo trạng thái (status)
             if (status != null && !status.trim().isEmpty()) {
-                if (whereClause.length() > 0) {
-                    whereClause.append(" AND");
-                }
+                if (!whereClause.isEmpty()) whereClause.append(" AND");
                 whereClause.append(" s.status = :status");
-                parameters.put("status", StockStatus.valueOf(status)); // Chuyển String thành Enum
+                parameters.put("status", StockStatus.valueOf(status));
             }
 
-            // Thêm điều kiện lọc theo ngày (date)
             if (date != null && !date.trim().isEmpty()) {
-                if (whereClause.length() > 0) {
-                    whereClause.append(" AND");
-                }
-                LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE);
-                LocalDateTime startOfDay = localDate.atStartOfDay();
-                LocalDateTime endOfDay = localDate.plusDays(1).atStartOfDay();
-
-                whereClause.append(" s.stockDate >= :startDate AND s.stockDate < :endDate");
-                parameters.put("startDate", startOfDay);
-                parameters.put("endDate", endOfDay);
+                if (!whereClause.isEmpty()) whereClause.append(" AND");
+                LocalDate localDate = LocalDate.parse(date);
+                whereClause.append(" DATE(s.stockDate) = :filterDate");
+                parameters.put("filterDate", localDate);
             }
 
-            // Nối mệnh đề WHERE vào câu truy vấn chính nếu có
-            if (whereClause.length() > 0) {
-                queryString.append(" WHERE").append(whereClause);
+            // Chỉ thêm WHERE một lần duy nhất nếu có điều kiện
+            if (!whereClause.isEmpty()) {
+                queryString.append(" WHERE ").append(whereClause);
             }
-
-            // Luôn sắp xếp để kết quả nhất quán
             queryString.append(" ORDER BY s.stockDate DESC");
 
-            // 2. TẠO QUERY VÀ GÁN THAM SỐ
             TypedQuery<Stock> query = session.createQuery(queryString.toString(), Stock.class);
-
-            // Gán các tham số từ Map vào câu truy vấn
-            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
-                query.setParameter(entry.getKey(), entry.getValue());
-            }
-
-            // 3. THỰC HIỆN PHÂN TRANG
+            parameters.forEach(query::setParameter);
             query.setFirstResult((page - 1) * pageSize);
             query.setMaxResults(pageSize);
 
-            // 4. THỰC THI VÀ LẤY KẾT QUẢ
             stockList = query.getResultList();
-
         } catch (Exception e) {
-            // Ghi lại lỗi để debug
             e.printStackTrace();
         }
-
         return stockList;
     }
+
     @Override
     public int countFilteredStocks(String searchTerm, String status, String date) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            // Sử dụng LEFT JOIN để không làm thay đổi kết quả đếm
-            StringBuilder queryString = new StringBuilder("SELECT COUNT(s.id) FROM Stock s LEFT JOIN s.supplier s_sup");
+
+            // Bắt đầu với câu truy vấn cơ bản, sẽ thêm JOIN nếu cần
+            StringBuilder queryString = new StringBuilder("SELECT COUNT(s.id) FROM Stock s");
             Map<String, Object> parameters = new HashMap<>();
             StringBuilder whereClause = new StringBuilder();
 
-            // Xây dựng mệnh đề WHERE giống hệt như trong hàm searchAndFilterStock
             if (searchTerm != null && !searchTerm.trim().isEmpty()) {
-                whereClause.append(" (LOWER(s.formattedStockCode) LIKE LOWER(:searchTerm) OR LOWER(s_sup.name) LIKE LOWER(:searchTerm))");
+                // SỬA LẠI: Thêm JOIN vào câu truy vấn và dùng alias cho supplier
+                queryString = new StringBuilder("SELECT COUNT(s.id) FROM Stock s JOIN s.supplier sup");
+                whereClause.append(" (LOWER(s.id) LIKE LOWER(:searchTerm) OR LOWER(sup.name) LIKE LOWER(:searchTerm))");
                 parameters.put("searchTerm", "%" + searchTerm + "%");
             }
 
             if (status != null && !status.trim().isEmpty()) {
-                if (!whereClause.isEmpty()) {
-                    whereClause.append(" AND");
-                }
+                if (!whereClause.isEmpty()) whereClause.append(" AND");
                 whereClause.append(" s.status = :status");
-                // ==========================================================
-                // === ĐÂY LÀ DÒNG SỬA LỖI CHÍNH ===
-                // Chuyển đổi chuỗi thành Enum trước khi gán vào tham số
                 parameters.put("status", StockStatus.valueOf(status));
-                // ==========================================================
             }
 
             if (date != null && !date.trim().isEmpty()) {
-                if (!whereClause.isEmpty()) {
-                    whereClause.append(" AND");
-                }
-                LocalDate localDate = LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE);
-                LocalDateTime startOfDay = localDate.atStartOfDay();
-                LocalDateTime endOfDay = localDate.plusDays(1).atStartOfDay();
-
-                whereClause.append(" s.stockDate >= :startDate AND s.stockDate < :endDate");
-                parameters.put("startDate", startOfDay);
-                parameters.put("endDate", endOfDay);
+                if (!whereClause.isEmpty()) whereClause.append(" AND");
+                LocalDate localDate = LocalDate.parse(date);
+                whereClause.append(" DATE(s.stockDate) = :filterDate");
+                parameters.put("filterDate", localDate);
             }
 
             if (!whereClause.isEmpty()) {
-                queryString.append(" WHERE").append(whereClause);
+                queryString.append(" WHERE ").append(whereClause);
             }
 
             TypedQuery<Long> query = session.createQuery(queryString.toString(), Long.class);
-
-            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
-                query.setParameter(entry.getKey(), entry.getValue());
-            }
+            parameters.forEach(query::setParameter);
 
             return query.getSingleResult().intValue();
-
         } catch (Exception e) {
             e.printStackTrace();
             return 0;

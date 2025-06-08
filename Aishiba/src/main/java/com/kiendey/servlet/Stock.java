@@ -60,6 +60,11 @@ public class Stock extends HttpServlet {
             // Xử lý tìm kiếm và lọc các phiếu nhập
             handleSearchAndFilter(req, resp);
             return;
+        } else if("displayStockListPage".equals(action)) {
+            // Hiển thị trang danh sách phiếu nhập
+            displayStockListPage(req, resp);
+
+            return;
         }
 
         // --- Hiển thị trang danh sách phiếu nhập mặc định ---
@@ -111,7 +116,7 @@ public class Stock extends HttpServlet {
                 if (stock != null) {
                     JsonObject stockJson = new JsonObject();
                     stockJson.addProperty("id", stock.getFormattedStockCode()); // VD: PN00001
-                    stockJson.addProperty("StockDate", stock.getStockDate() != null ?
+                    stockJson.addProperty("stockDate", stock.getStockDate() != null ?
                             stock.getStockDate().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : null);
                     stockJson.addProperty("address", stock.getSupplier().getAddress()); // Địa chỉ kho nhập
                     stockJson.addProperty("status", stock.getStatus() != null ?
@@ -173,6 +178,7 @@ public class Stock extends HttpServlet {
             obj.addProperty("label", supplier.getName() + " (ID: " + supplier.getFormattedSupplierCode() + ")");
             obj.addProperty("value", supplier.getId());
             obj.addProperty("name", supplier.getName());
+            obj.addProperty("address", supplier.getAddress());
             result.add(obj);
         }
         resp.getWriter().write(gson.toJson(result));
@@ -205,10 +211,10 @@ public class Stock extends HttpServlet {
             stockJson.addProperty("id", stock.getId());
             stockJson.addProperty("formattedId", stock.getFormattedStockCode());
             stockJson.addProperty("supplierName", stock.getSupplier() != null ? stock.getSupplier().getName() : "N/A");
-            stockJson.addProperty("StockDate", stock.getStockDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
-            stockJson.addProperty("totalAmount", stockDAO.getTotalAmount(stock.getId()));
+            stockJson.addProperty("stockDate", stock.getStockDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")));
+            stockJson.addProperty("totalAmount", stockDAO.getFinalAmount(stock.getId()));
             stockJson.addProperty("status", stock.getStatus().name());
-            stockJson.addProperty("statusDisplay", stock.getStatus().name());
+            stockJson.addProperty("statusDisplay", stock.getStatus().getDisplayName());
             jsonStocks.add(stockJson);
         }
 
@@ -230,11 +236,13 @@ public class Stock extends HttpServlet {
             JsonObject stockData = gson.fromJson(reader, JsonObject.class);
 
             com.kiendey.model.Stock newStock = new com.kiendey.model.Stock();
-            newStock.setStockDate(LocalDateTime.parse(stockData.get("StockDate").getAsString() + "T00:00:00"));
-            newStock.setStatus(StockStatus.valueOf(stockData.get("status").getAsString()));
+            // Gán các thông tin từ JSON
+            newStock.setStockDate(LocalDateTime.parse(stockData.get("stockDate").getAsString() + "T00:00:00"));
+            // Gán trạng thái mặc định
+            newStock.setStatus(StockStatus.CHO_XU_LY);
 
-            // Quan trọng: Thay đổi từ Customer sang Supplier
-            com.kiendey.model.Supplier supplier = new com.kiendey.model.Supplier();
+            // Gán nhà cung cấp
+            Supplier supplier = new Supplier();
             supplier.setId(stockData.get("supplierId").getAsString());
             newStock.setSupplier(supplier);
 
@@ -292,10 +300,15 @@ public class Stock extends HttpServlet {
                     resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 }
             } else {
-                // ... xử lý lỗi
+                jsonResponse.addProperty("success", false);
+                jsonResponse.addProperty("error", "ID phiếu nhập hoặc trạng thái không hợp lệ.");
+                resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             }
         } catch (Exception e) {
-            // ... xử lý lỗi
+            jsonResponse.addProperty("success", false);
+            jsonResponse.addProperty("error", "Lỗi khi cập nhật trạng thái phiếu nhập: " + e.getMessage());
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            e.printStackTrace();
         }
     }
 
