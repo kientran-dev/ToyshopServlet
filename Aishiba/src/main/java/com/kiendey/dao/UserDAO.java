@@ -14,5 +14,4 @@ public interface UserDAO {
     List<User> searchUsersByName(String name);
     List<User> getUsersByPage(int pageNumber, int pageSize);
     long getTotalUserCount();
-
 }

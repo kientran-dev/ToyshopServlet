@@ -1,8 +1,8 @@
 package com.kiendey.model;
 
 import jakarta.persistence.*;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+        import lombok.*;
+        import lombok.experimental.FieldDefaults;
 
 import java.util.Set;
 

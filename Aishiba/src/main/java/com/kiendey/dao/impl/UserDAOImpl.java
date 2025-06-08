@@ -7,23 +7,31 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
-import java.util.ArrayList;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 public class UserDAOImpl implements UserDAO {
 
     @Override
     public void createUser(User user) {
+        Session session = null;
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try {
+            session = HibernateUtil.getSessionFactory().openSession();
             transaction = session.beginTransaction();
             session.persist(user);
             transaction.commit();
+            session.refresh(user); // Ensure the ID is populated
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
             }
             throw new RuntimeException("Error creating User: " + e.getMessage(), e);
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
     }
 
@@ -58,7 +66,8 @@ public class UserDAOImpl implements UserDAO {
             transaction = session.beginTransaction();
             User user = session.get(User.class, id);
             if (user != null) {
-                session.remove(user);
+                user.setDeleted(true);
+                session.merge(user);
             }
             transaction.commit();
         } catch (Exception e) {
@@ -80,35 +89,25 @@ public class UserDAOImpl implements UserDAO {
 
     @Override
     public List<User> searchUsersByName(String name) {
-        // Luôn trả về danh sách rỗng thay vì null để tránh lỗi
-        List<User> results = new ArrayList<>();
-        if (name == null || name.trim().isEmpty()) {
-            return results;
-        }
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            // Sử dụng hàm lower() trong HQL để không phân biệt hoa thường
-            String hql = "FROM User u WHERE lower(u.name) LIKE :name";
-            Query<User> query = session.createQuery(hql, User.class);
-            // Chuyển tham số tìm kiếm về chữ thường
-            query.setParameter("name", "%" + name.toLowerCase() + "%");
-            // Tối ưu: Giới hạn 10 kết quả cho autocomplete
-            query.setMaxResults(10);
-            results = query.list();
+            String hql = "FROM User u WHERE u.name LIKE :name";
+            return session.createQuery(hql, User.class)
+                    .setParameter("name", "%" + name + "%")
+                    .list();
         } catch (Exception e) {
-            // Ghi log lỗi thay vì chỉ ném ra ngoài sẽ tốt hơn trong thực tế
-            e.printStackTrace();
-            // throw new RuntimeException("Error searching Users by name: " + e.getMessage(), e);
+            throw new RuntimeException("Error searching Users by name: " + e.getMessage(), e);
         }
-        return results;
     }
 
     @Override
     public List<User> getUsersByPage(int pageNumber, int pageSize) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Query<User> query = session.createQuery("FROM User u WHERE u.isDeleted = false ORDER BY u.name ASC", User.class);
+            Query<User> query = session.createQuery("FROM User u WHERE u.isDeleted = false", User.class);
             query.setFirstResult((pageNumber - 1) * pageSize);
             query.setMaxResults(pageSize);
-            return query.list();
+            List<User> users = query.list();
+            System.out.println("Fetched " + users.size() + " users for page " + pageNumber);
+            return users;
         } catch (Exception e) {
             throw new RuntimeException("Error retrieving Users by page: " + e.getMessage(), e);
         }
