@@ -98,28 +98,35 @@
         <li class="nav-heading">Pages</li>
 
         <li class="nav-item">
-            <a class="nav-link collapsed" href="users-profile.html">
+            <a class="nav-link collapsed" href="info">
                 <i class="bi bi-person fs-5"></i>
                 <span>Thông tin cá nhân</span>
             </a>
         </li><!-- End Profile Page Nav -->
 
         <li class="nav-item">
-            <a class="nav-link collapsed" href="pages-faq.html">
+            <a class="nav-link collapsed" href="faq">
                 <i class="bi bi-question-circle fs-5"></i>
                 <span>F.A.Q</span>
             </a>
         </li><!-- End F.A.Q Page Nav -->
 
         <li class="nav-item">
-            <a class="nav-link collapsed" href="pages-contact.html">
+            <a class="nav-link collapsed" href="contact">
                 <i class="bi bi-envelope fs-5"></i>
                 <span>Liên hệ</span>
             </a>
         </li><!-- End Contact Page Nav -->
 
         <li class="nav-item">
-            <a class="nav-link collapsed" href="pages-register.html">
+            <a class="nav-link collapsed" href="error404">
+                <i class="bi bi-envelope fs-5"></i>
+                <span>Error 404</span>
+            </a>
+        </li><!-- End Error 404 Page Nav -->
+
+        <li class="nav-item">
+            <a class="nav-link collapsed" href="register">
                 <i class="bi bi-person-plus fs-5"></i>
                 <span>Đăng ký</span>
             </a>
