@@ -1,20 +1,22 @@
-// File: src/main/java/com/kiendey/dao/impl/OrderDAOImpl.java
 package com.kiendey.dao.impl;
 
 import com.kiendey.common.OrderStatus;
 import com.kiendey.dao.OrderDAO;
 import com.kiendey.model.Order;
-import com.kiendey.model.OrderItem;
-import com.kiendey.model.Toy;
+import com.kiendey.model.OrderItem; // Thêm import cho OrderItem
+import com.kiendey.model.Toy; // Thêm import cho Toy
 import com.kiendey.utils.HibernateUtil;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.LinkedHashMap; // Để giữ thứ tự kết quả
 import java.util.*;
-import java.util.stream.Collectors; // Import Collectors
 
-import com.kiendey.dto.ProductSaleStat;
+import com.kiendey.dto.ProductSaleStat; // Thêm import cho ProductSaleStat
 
 public class OrderDAOImpl implements OrderDAO {
 
@@ -23,18 +25,33 @@ public class OrderDAOImpl implements OrderDAO {
         Session session = null;
         Transaction transaction = null;
         try {
+            // Mở Session một cách thủ công
             session = HibernateUtil.getSessionFactory().openSession();
+            // Bắt đầu một Transaction
             transaction = session.beginTransaction();
+
+            // Thực hiện các thao tác với CSDL
+            // Khi bạn lưu Order, Hibernate sẽ tự động lưu các OrderItem liên quan
+            // nhờ vào cơ chế cascade (nếu bạn đã cấu hình trong file mapping).
             session.persist(order);
+
+            // Nếu không có lỗi nào xảy ra, commit transaction
             transaction.commit();
             return true;
+
         } catch (Exception e) {
+            // Nếu có bất kỳ lỗi nào xảy ra trong khối try...
             if (transaction != null) {
+                // ...thì rollback transaction.
+                // Lúc này Session vẫn còn mở nên rollback sẽ thành công.
                 transaction.rollback();
             }
+            // In ra lỗi GỐC thực sự để chúng ta biết vấn đề là gì
             e.printStackTrace();
             return false;
+
         } finally {
+            // Dù thành công hay thất bại, luôn luôn đóng Session trong khối finally
             if (session != null) {
                 session.close();
             }
@@ -43,26 +60,14 @@ public class OrderDAOImpl implements OrderDAO {
 
     @Override
     public boolean createOrderWithItems(Order order, List<OrderItem> orderItems) {
-        Session session = null;
         Transaction transaction = null;
-        try {
-            session = HibernateUtil.getSessionFactory().openSession();
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-
-            session.persist(order); // Lưu Order trước
-
+            session.persist(order);
             for (OrderItem item : orderItems) {
-                // Thiết lập mối quan hệ với Order
                 item.setOrder(order);
-                // Lấy lại đối tượng Toy từ session để đảm bảo nó ở trạng thái managed
-                Toy toy = session.get(Toy.class, item.getToy().getId());
-                if (toy == null) {
-                    throw new RuntimeException("Toy not found with ID: " + item.getToy().getId());
-                }
-                item.setToy(toy);
-                session.persist(item); // Lưu từng OrderItem
+                session.persist(item);
             }
-
             transaction.commit();
             return true;
         } catch (Exception e) {
@@ -71,20 +76,30 @@ public class OrderDAOImpl implements OrderDAO {
             }
             e.printStackTrace();
             return false;
-        } finally {
-            if (session != null) {
-                session.close();
-            }
         }
     }
 
     @Override
-    public Order readOrder(String id) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.get(Order.class, id);
+    public Order readOrder(String orderId) {
+        Session session = HibernateUtil.getSessionFactory().openSession();
+        try {
+            // Sử dụng JOIN FETCH để tải trước User, OrderItems và Toy
+            String hql = "FROM Order o " +
+                    "LEFT JOIN FETCH o.user " +
+                    "LEFT JOIN FETCH o.orderItems oi " +
+                    "LEFT JOIN FETCH oi.toy " +
+                    "LEFT JOIN FETCH o.coupon " +
+                    "LEFT JOIN FETCH o.paymentMethod " +
+                    "LEFT JOIN FETCH o.deliveryMethod " +
+                    "WHERE o.id = :orderId";
+            Query<com.kiendey.model.Order> query = session.createQuery(hql, com.kiendey.model.Order.class);
+            query.setParameter("orderId", orderId);
+            return query.uniqueResult();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        } finally {
+            session.close();
         }
     }
 
@@ -93,13 +108,13 @@ public class OrderDAOImpl implements OrderDAO {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            session.merge(order);
+            session.merge(order); // Use merge for updating detached instances
             transaction.commit();
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
             }
-            e.printStackTrace();
+            throw new RuntimeException("Error updating Order: " + e.getMessage(), e);
         }
     }
 
@@ -117,54 +132,41 @@ public class OrderDAOImpl implements OrderDAO {
             if (transaction != null) {
                 transaction.rollback();
             }
-            e.printStackTrace();
+            throw new RuntimeException("Error deleting Order: " + e.getMessage(), e);
         }
     }
 
     @Override
     public List<Order> getAllOrders() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM Order", Order.class).list();
+            String hql = "FROM Order o LEFT JOIN FETCH o.user LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.toy";
+            return session.createQuery(hql, Order.class).list();
         } catch (Exception e) {
-            e.printStackTrace();
-            return Collections.emptyList();
+            throw new RuntimeException("Error getting all Orders: " + e.getMessage(), e);
         }
     }
 
     @Override
     public List<Order> getOrdersByUserId(String userId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Query<Order> query = session.createQuery("FROM Order o WHERE o.user.id = :userId", Order.class);
-            query.setParameter("userId", userId);
-            return query.list();
+            String hql = "FROM Order o WHERE o.user.id = :userId";
+            return session.createQuery(hql, Order.class)
+                    .setParameter("userId", userId)
+                    .list();
         } catch (Exception e) {
-            e.printStackTrace();
-            return Collections.emptyList();
+            throw new RuntimeException("Error getting Orders by user ID: " + e.getMessage(), e);
         }
     }
 
     @Override
     public List<Order> searchOrdersByStatus(String status) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Query<Order> query = session.createQuery("FROM Order o WHERE o.status = :status", Order.class);
-            query.setParameter("status", OrderStatus.valueOf(status));
-            return query.list();
+            String hql = "FROM Order o WHERE o.status = :status";
+            return session.createQuery(hql, Order.class)
+                    .setParameter("status", status)
+                    .list();
         } catch (Exception e) {
-            e.printStackTrace();
-            return Collections.emptyList();
-        }
-    }
-
-    @Override
-    public List<Order> getOrdersByDate(LocalDateTime startDate, LocalDateTime endDate) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Query<Order> query = session.createQuery("FROM Order o WHERE o.orderDate BETWEEN :startDate AND :endDate", Order.class);
-            query.setParameter("startDate", startDate);
-            query.setParameter("endDate", endDate);
-            return query.list();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return Collections.emptyList();
+            throw new RuntimeException("Error searching Orders by status: " + e.getMessage(), e);
         }
     }
 
@@ -173,186 +175,365 @@ public class OrderDAOImpl implements OrderDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.get(Order.class, id);
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException("Error getting Order by ID: " + e.getMessage(), e);
         }
     }
 
     @Override
     public double getTotalOrderAmount(String userId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Query<Double> query = session.createQuery(
-                    "SELECT SUM(oi.quantity * t.price) FROM OrderItem oi JOIN oi.toy t JOIN oi.order o WHERE o.user.id = :userId AND o.status = :completedStatus",
-                    Double.class
-            );
-            query.setParameter("userId", userId);
-            query.setParameter("completedStatus", OrderStatus.HOAN_THANH);
-            Double result = query.uniqueResult();
-            return result != null ? result : 0.0;
+            String hql = "SELECT SUM(oi.quantity * oi.toy.price) FROM Order o JOIN o.orderItems oi WHERE o.user.id = :userId";
+            Double totalAmount = session.createQuery(hql, Double.class)
+                    .setParameter("userId", userId)
+                    .uniqueResult();
+            return totalAmount != null ? totalAmount : 0.0;
         } catch (Exception e) {
-            e.printStackTrace();
-            return 0.0;
+            throw new RuntimeException("Error getting total order amount for User: " + e.getMessage(), e);
         }
     }
 
     @Override
     public double getFinalAmount(String orderId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Query<Double> query = session.createQuery(
-                    "SELECT SUM(oi.quantity * oi.toy.price) FROM OrderItem oi WHERE oi.order.id = :orderId",
-                    Double.class
-            );
-            query.setParameter("orderId", orderId);
-            Double result = query.uniqueResult();
-            return result != null ? result : 0.0;
+            String hql = "SELECT SUM(oi.quantity * oi.toy.price) FROM OrderItem oi WHERE oi.order.id = :orderId";
+            Double finalAmount = session.createQuery(hql, Double.class)
+                    .setParameter("orderId", orderId)
+                    .uniqueResult();
+            return finalAmount != null ? finalAmount : 0.0;
         } catch (Exception e) {
-            e.printStackTrace();
-            return 0.0;
+            throw new RuntimeException("Error getting final amount for Order: " + e.getMessage(), e);
         }
     }
 
     @Override
     public List<Order> getOrdersByPage(int pageNumber, int pageSize) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Query<Order> query = session.createQuery("FROM Order o ORDER BY o.orderDate DESC", Order.class);
+            String hql = "FROM Order o LEFT JOIN FETCH o.user LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.toy";
+            Query<Order> query = session.createQuery(hql, Order.class);
             query.setFirstResult((pageNumber - 1) * pageSize);
             query.setMaxResults(pageSize);
             return query.list();
         } catch (Exception e) {
-            e.printStackTrace();
-            return Collections.emptyList();
+            throw new RuntimeException("Error getting Orders by page: " + e.getMessage(), e);
         }
     }
 
     @Override
     public int getTotalOrderCount() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Long count = session.createQuery("SELECT COUNT(o.id) FROM Order o", Long.class).uniqueResult();
+            String hql = "SELECT COUNT(o.id) FROM Order o";
+            Long count = session.createQuery(hql, Long.class).uniqueResult();
             return count != null ? count.intValue() : 0;
         } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
+            throw new RuntimeException("Error getting total order count: " + e.getMessage(), e);
         }
     }
 
     @Override
     public boolean updateOrderStatus(String orderId, OrderStatus status) {
-        Transaction transaction = null;
+        Transaction tx = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            transaction = session.beginTransaction();
+            tx = session.beginTransaction();
             Order order = session.get(Order.class, orderId);
             if (order != null) {
                 order.setStatus(status);
                 session.merge(order);
-                transaction.commit();
+                tx.commit();
                 return true;
             }
             return false;
         } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
+            if (tx != null) tx.rollback();
             e.printStackTrace();
             return false;
         }
     }
 
+    // Phương thức này sẽ tìm kiếm và lọc các đơn hàng theo các điều kiện đã cho
     @Override
     public List<Order> searchAndFilterOrders(String searchTerm, String status, String dateStr, int page, int pageSize) {
-        // Implement searchAndFilterOrders if not already done
-        // This is a complex method, likely needs to be copied from your existing implementation
-        // For brevity, I'm not including its full body here.
-        return Collections.emptyList(); // Placeholder
+        List<Order> orders = new ArrayList<>();
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Xây dựng câu truy vấn HQL động
+            // Trong phương thức searchAndFilterOrders()
+            StringBuilder hql = new StringBuilder("FROM Order o " +
+                    "LEFT JOIN FETCH o.user " +
+                    "LEFT JOIN FETCH o.paymentMethod " +
+                    "LEFT JOIN FETCH o.deliveryMethod " +
+                    "WHERE 1=1");
+            Map<String, Object> parameters = new HashMap<>();
+
+            // 1. Thêm điều kiện tìm kiếm theo mã đơn hoặc tên khách hàng
+            if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+                hql.append(" AND (LOWER(o.id) LIKE LOWER(:searchTerm) OR LOWER(o.user.name) LIKE LOWER(:searchTerm))");
+                parameters.put("searchTerm", "%" + searchTerm + "%");
+            }
+
+            // 2. Thêm điều kiện lọc theo trạng thái
+            if (status != null && !status.trim().isEmpty()) {
+                hql.append(" AND o.status = :status");
+                parameters.put("status", OrderStatus.valueOf(status));
+            }
+
+            // 3. Thêm điều kiện lọc theo ngày
+            if (dateStr != null && !dateStr.trim().isEmpty()) {
+                // Chỉ so sánh phần DATE của cột orderDate (kiểu DATETIME)
+                hql.append(" AND FUNCTION('DATE', o.orderDate) = :orderDate");
+                parameters.put("orderDate", java.sql.Date.valueOf(dateStr));
+            }
+
+            hql.append(" ORDER BY o.orderDate DESC");
+
+            Query<Order> query = session.createQuery(hql.toString(), Order.class);
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                query.setParameter(entry.getKey(), entry.getValue());
+            }
+
+            // Phân trang
+            query.setFirstResult((page - 1) * pageSize);
+            query.setMaxResults(pageSize);
+
+            orders = query.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return orders;
+    }
+
+    // Bạn cũng cần một phương thức để đếm tổng số kết quả khớp điều kiện để phân trang
+    @Override
+    public int countFilteredOrders(String searchTerm, String status, String dateStr) {
+        long count = 0;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            StringBuilder hql = new StringBuilder("SELECT COUNT(o.id) FROM Order o WHERE 1=1");
+            Map<String, Object> parameters = new HashMap<>();
+
+            if (searchTerm != null && !searchTerm.trim().isEmpty()) {
+                hql.append(" AND (LOWER(o.id) LIKE LOWER(:searchTerm) OR LOWER(o.user.name) LIKE LOWER(:searchTerm))");
+                parameters.put("searchTerm", "%" + searchTerm + "%");
+            }
+            if (status != null && !status.trim().isEmpty()) {
+                hql.append(" AND o.status = :status");
+                parameters.put("status", OrderStatus.valueOf(status));
+            }
+            if (dateStr != null && !dateStr.trim().isEmpty()) {
+                hql.append(" AND FUNCTION('DATE', o.orderDate) = :orderDate");
+                parameters.put("orderDate", java.sql.Date.valueOf(dateStr));
+            }
+
+            Query<Long> query = session.createQuery(hql.toString(), Long.class);
+            for (Map.Entry<String, Object> entry : parameters.entrySet()) {
+                query.setParameter(entry.getKey(), entry.getValue());
+            }
+            count = query.uniqueResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return (int) count;
     }
 
     @Override
-    public int countFilteredOrders(String searchTerm, String status, String dateStr) {
-        // Implement countFilteredOrders if not already done
-        // For brevity, I'm not including its full body here.
-        return 0; // Placeholder
+    public List<Order> getOrdersByDate(LocalDateTime startDate, LocalDateTime endDate) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "FROM Order o LEFT JOIN FETCH o.user LEFT JOIN FETCH o.orderItems oi LEFT JOIN FETCH oi.toy " +
+                    "WHERE o.orderDate BETWEEN :startDate AND :endDate ORDER BY o.orderDate ASC";
+
+            Query<Order> query = session.createQuery(hql, Order.class);
+            query.setParameter("startDate", startDate);
+            query.setParameter("endDate", endDate);
+
+            return query.list();
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting Orders by date range: " + e.getMessage(), e);
+        }
     }
 
     @Override
     public Map<String, Long> getCustomerOrderCounts() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "SELECT o.user.id, COUNT(o.id) FROM Order o GROUP BY o.user.id ORDER BY COUNT(o.id) DESC";
-            Query<Object[]> query = session.createQuery(hql, Object[].class);
-            return query.list().stream()
-                    .collect(Collectors.toMap(
-                            arr -> (String) arr[0],
-                            arr -> (Long) arr[1]
-                    ));
+            // Thay đổi o.user.id thành o.user.name để lấy tên khách hàng
+            String hql = "SELECT o.user.name, COUNT(o.id) FROM Order o GROUP BY o.user.name ORDER BY COUNT(o.id) DESC";
+            List<Object[]> results = session.createQuery(hql, Object[].class).list();
+
+            Map<String, Long> customerOrderCounts = new LinkedHashMap<>();
+            for (Object[] result : results) {
+                customerOrderCounts.put((String) result[0], (Long) result[1]);
+            }
+            return customerOrderCounts;
         } catch (Exception e) {
-            e.printStackTrace();
-            return Collections.emptyMap();
+            throw new RuntimeException("Error getting customer order counts: " + e.getMessage(), e);
         }
     }
 
     @Override
     public Map<String, Double> getCustomerTotalPurchaseValues() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "SELECT o.user.id, SUM(oi.quantity * oi.toy.price) " +
-                    "FROM OrderItem oi JOIN oi.order o " +
-                    "GROUP BY o.user.id " +
+            // Thay đổi o.user.id thành o.user.name để lấy tên khách hàng
+            String hql = "SELECT o.user.name, SUM(oi.quantity * oi.toy.price) " +
+                    "FROM Order o JOIN o.orderItems oi " +
+                    "GROUP BY o.user.name " +
                     "ORDER BY SUM(oi.quantity * oi.toy.price) DESC";
-            Query<Object[]> query = session.createQuery(hql, Object[].class);
-            return query.list().stream()
-                    .collect(Collectors.toMap(
-                            arr -> (String) arr[0],
-                            arr -> (Double) arr[1]
-                    ));
+
+            List<Object[]> results = session.createQuery(hql, Object[].class).list();
+
+            Map<String, Double> customerTotalPurchaseValues = new LinkedHashMap<>();
+            for (Object[] result : results) {
+                customerTotalPurchaseValues.put((String) result[0], (Double) result[1]);
+            }
+            return customerTotalPurchaseValues;
         } catch (Exception e) {
-            e.printStackTrace();
-            return Collections.emptyMap();
+            throw new RuntimeException("Error getting customer total purchase values: " + e.getMessage(), e);
         }
     }
+
+    // **************************** NEW METHODS FOR FINANCIAL REPORT ****************************
 
     @Override
     public double getTotalSalesRevenue(LocalDateTime startDate, LocalDateTime endDate) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "SELECT SUM(oi.quantity * oi.toy.price) " +
-                    "FROM OrderItem oi JOIN oi.order o " +
-                    "WHERE o.status = :completedStatus AND o.orderDate BETWEEN :startDate AND :endDate";
-            Query<Double> query = session.createQuery(hql, Double.class);
-            query.setParameter("completedStatus", OrderStatus.HOAN_THANH);
-            query.setParameter("startDate", startDate);
-            query.setParameter("endDate", endDate);
-            Double result = query.uniqueResult();
-            return result != null ? result : 0.0;
+            // Only count orders with status 'completed'
+            String hql = "SELECT SUM(oi.quantity * oi.toy.price) FROM Order o JOIN o.orderItems oi " +
+                    "WHERE o.orderDate BETWEEN :startDate AND :endDate AND o.status = 'HOAN_THANH'"; //
+            Double totalRevenue = session.createQuery(hql, Double.class)
+                    .setParameter("startDate", startDate)
+                    .setParameter("endDate", endDate)
+                    .uniqueResult();
+            return totalRevenue != null ? totalRevenue : 0.0;
         } catch (Exception e) {
-            e.printStackTrace();
-            return 0.0;
+            throw new RuntimeException("Error getting total sales revenue: " + e.getMessage(), e);
         }
     }
 
     @Override
     public double getTotalCancelledOrRefundedAmount(LocalDateTime startDate, LocalDateTime endDate) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "SELECT SUM(oi.quantity * oi.toy.price) " +
-                    "FROM OrderItem oi JOIN oi.order o " +
-                    "WHERE (o.status = :cancelledStatus OR o.status = :refundedStatus) AND o.orderDate BETWEEN :startDate AND :endDate";
-            Query<Double> query = session.createQuery(hql, Double.class);
-            query.setParameter("cancelledStatus", OrderStatus.DA_HUY);
-            query.setParameter("refundedStatus", OrderStatus.DA_XAC_NHAN); // Assuming you have a REFUNDED status
-            query.setParameter("startDate", startDate);
-            query.setParameter("endDate", endDate);
-            Double result = query.uniqueResult();
-            return result != null ? result : 0.0;
+            // Assuming 'cancelled' or 'refunded' are statuses for returned/cancelled orders
+            String hql = "SELECT SUM(oi.quantity * oi.toy.price) FROM Order o JOIN o.orderItems oi " +
+                    "WHERE o.orderDate BETWEEN :startDate AND :endDate AND (o.status = 'DA_HUY' OR o.status = 'CHO_XU_LY')"; //
+            Double totalAmount = session.createQuery(hql, Double.class)
+                    .setParameter("startDate", startDate)
+                    .setParameter("endDate", endDate)
+                    .uniqueResult();
+            return totalAmount != null ? totalAmount : 0.0;
         } catch (Exception e) {
-            e.printStackTrace();
-            return 0.0;
+            throw new RuntimeException("Error getting total cancelled or refunded amount: " + e.getMessage(), e);
         }
     }
 
     @Override
     public double getTotalCurrentStockQuantity() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "SELECT SUM(t.stock) FROM Toy t WHERE t.isDeleted = false";
-            Double result = session.createQuery(hql, Double.class).uniqueResult();
-            return result != null ? result : 0.0;
+            // Assuming Toy model has a 'stock' field directly, if not, adjust based on stock_items.
+            // Based on screenshot, 'toys' table has 'stock' (int4) column.
+            String hql = "SELECT SUM(t.stock) FROM Toy t WHERE t.isDeleted = false"; //
+            Long totalStock = session.createQuery(hql, Long.class).uniqueResult();
+            return totalStock != null ? totalStock.doubleValue() : 0.0;
+        } catch (Exception e) {
+            throw new RuntimeException("Error getting total current stock quantity: " + e.getMessage(), e);
+        }
+    }
+
+    // Các phương thức OrderItemDAOImpl (nếu có)
+    // Các phương thức này không liên quan trực tiếp đến yêu cầu chuyển từ ID sang tên khách hàng trên biểu đồ,
+    // nhưng chúng được bao gồm để hoàn thiện lớp OrderDAOImpl dựa trên ngữ cảnh ban đầu.
+    // Đảm bảo rằng OrderDAO interface của bạn cũng có các phương thức này.
+    // Hiện tại OrderDAOImpl đang triển khai OrderDAO, nhưng các phương thức này thường thuộc về OrderItemDAO.
+    // Nếu bạn muốn giữ chúng trong OrderDAOImpl, hãy đảm bảo interface OrderDAO cũng định nghĩa chúng.
+    // Tôi sẽ thêm chúng vào đây với giả định rằng chúng là một phần của OrderDAO.
+
+    public void createOrderItem(String orderId, String toyId, int quantity) {
+        Transaction transaction = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+
+            Toy toy = session.get(Toy.class, toyId);
+            if (toy == null) {
+                throw new RuntimeException("Toy not found with ID: " + toyId);
+            }
+            Order order = session.get(Order.class, orderId);
+            if (order == null) {
+                throw new RuntimeException("Order not found with ID: " + orderId);
+            }
+            OrderItem orderItem = new OrderItem();
+            orderItem.setToy(toy);
+            orderItem.setOrder(order);
+            orderItem.setQuantity(quantity);
+            session.persist(orderItem);
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new RuntimeException("Error creating OrderItem: " + e.getMessage(), e);
+        }
+    }
+
+    public OrderItem readOrderItem(String orderId, String toyId) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "FROM OrderItem oi WHERE oi.order.id = :orderId AND oi.toy.id = :toyId";
+            Query<OrderItem> query = session.createQuery(hql, OrderItem.class);
+            query.setParameter("orderId", orderId);
+            query.setParameter("toyId", toyId);
+            return query.uniqueResult();
         } catch (Exception e) {
             e.printStackTrace();
-            return 0.0;
+            return null;
+        }
+    }
+
+    public void updateOrderItem(String orderId, String toyId, int quantity) {
+        Transaction transaction = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+
+            OrderItem orderItem = readOrderItem(orderId, toyId);
+            if (orderItem == null) {
+                throw new RuntimeException("OrderItem not found for Order ID: " + orderId + " and Toy ID: " + toyId);
+            }
+            orderItem.setQuantity(quantity);
+            session.merge(orderItem);
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new RuntimeException("Error updating OrderItem: " + e.getMessage(), e);
+        }
+    }
+
+    public void deleteOrderItem(String orderId, String toyId) {
+        Transaction transaction = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+
+            OrderItem orderItem = readOrderItem(orderId, toyId);
+            if (orderItem == null) {
+                throw new RuntimeException("OrderItem not found for Order ID: " + orderId + " and Toy ID: " + toyId);
+            }
+            session.remove(orderItem);
+
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new RuntimeException("Error deleting OrderItem: " + e.getMessage(), e);
+        }
+    }
+
+    public List<ProductSaleStat> getProductSalesStatistics() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT new com.kiendey.dto.ProductSaleStat(oi.toy.id, oi.toy.name, SUM(oi.quantity)) " +
+                    "FROM OrderItem oi " +
+                    "GROUP BY oi.toy.id, oi.toy.name " +
+                    "ORDER BY SUM(oi.quantity) DESC";
+            Query<ProductSaleStat> query = session.createQuery(hql, ProductSaleStat.class);
+            return query.list();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Collections.emptyList();
         }
     }
 

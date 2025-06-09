@@ -236,16 +236,18 @@
                     <td>${orderItem.toy.name}</td>
                     <td>${orderItem.quantity}</td>
                     <td>$<fmt:formatNumber value="${orderItem.toy.price * orderItem.quantity}" pattern="#,##0.00"/></td>
-                    <td><fmt:formatDate value="${order.orderDate}" pattern="dd-MM-yyyy HH:mm:ss"/></td>
+                    <td>${order.orderDate.format(myFormatter)}</td>
                     <td>${order.user.name}</td> <%-- Giả định User có thuộc tính 'name' --%>
                     <td>
                           <span class="badge
-                            <c:choose>
-                              <c:when test="${order.status eq 'HOAN_THANH'}">bg-success</c:when>
-                              <c:when test="${order.status eq 'DANG_CHO'}">bg-warning text-dark</c:when>
-                              <c:when test="${order.status eq 'DA_HUY'}">bg-danger</c:when>
-                              <c:otherwise>bg-secondary</c:otherwise>
-                            </c:choose>
+<c:choose>
+    <c:when test="${order.status.toString() eq 'HOAN_THANH'}">bg-success</c:when>
+    <c:when test="${order.status.toString() eq 'DANG_CHO'}">bg-warning text-dark</c:when>
+    <c:when test="${order.status.toString() eq 'DA_HUY'}">bg-danger</c:when>
+    <c:when test="${order.status.toString() eq 'DANG_XU_LY'}">bg-info text-dark</c:when>
+    <c:when test="${order.status.toString() eq 'DA_GIAO'}">bg-primary</c:when>
+    <c:otherwise>bg-secondary</c:otherwise>
+</c:choose>
                           ">${order.status}</span>
                     </td>
                   </tr>

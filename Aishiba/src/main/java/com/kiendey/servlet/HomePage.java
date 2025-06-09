@@ -17,6 +17,7 @@ import jakarta.servlet.http.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.Year; // Import Year
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -115,6 +116,10 @@ public class HomePage extends HttpServlet {
         req.setAttribute("productLabelsJson", labelsJsonBuilder.toString());
         req.setAttribute("productQuantities", productQuantities);
 
+        // Tạo một formatter để gửi sang JSP
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
+        req.setAttribute("myFormatter", formatter);
+        
         // 4. Get data for "Đơn Hàng Gần Đây" table
         int page = 1;
         int pageSize = 10;
