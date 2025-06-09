@@ -177,13 +177,16 @@
                 style: {
                     fontSize: '14px',
                     colors: '#333'
-                },
-                formatter: function (val) {
-                    if (val.length > 25) {
-                        return val.substring(0, 22) + '...';
-                    }
-                    return val;
                 }
+                // HÀM FORMATTER ĐÃ BỊ XÓA HOẶC KHÔNG CÓ Ở ĐÂY NỮA
+                // Để hiển thị tên khách hàng đầy đủ, bạn chỉ cần xóa hàm formatter
+                // Hoặc nếu muốn kiểm soát độ dài, bạn có thể điều chỉnh nó:
+                // formatter: function (val) {
+                //     if (val.length > 50) { // Ví dụ: cắt nếu dài hơn 50 ký tự
+                //         return val.substring(0, 47) + '...';
+                //     }
+                //     return val;
+                // }
             }
         }
     };
@@ -242,13 +245,16 @@
                 style: {
                     fontSize: '14px',
                     colors: '#333'
-                },
-                formatter: function (val) {
-                    if (val.length > 25) {
-                        return val.substring(0, 22) + '...';
-                    }
-                    return val;
                 }
+                // HÀM FORMATTER ĐÃ BỊ XÓA HOẶC KHÔNG CÓ Ở ĐÂY NỮA
+                // Để hiển thị tên khách hàng đầy đủ, bạn chỉ cần xóa hàm formatter
+                // Hoặc nếu muốn kiểm soát độ dài, bạn có thể điều chỉnh nó:
+                // formatter: function (val) {
+                //     if (val.length > 50) { // Ví dụ: cắt nếu dài hơn 50 ký tự
+                //         return val.substring(0, 47) + '...';
+                //     }
+                //     return val;
+                // }
             }
         }
     };
