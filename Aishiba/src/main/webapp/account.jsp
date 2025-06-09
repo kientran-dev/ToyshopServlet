@@ -92,8 +92,7 @@
                                                         <td>${user.getFormattedUserCode()}</td>
                                                         <td>${not empty user.name ? user.name : 'Chưa có'}</td>
                                                         <td>${not empty user.phone ? user.phone : 'Chưa có'}</td>
-                                                        <td>${not empty user.gender ? user.gender.displayName : 'Chưa
-                                                            có'}</td>
+                                                        <td>${not empty user.gender ? user.gender.displayName : 'Chưa có'}</td>
                                                         <td>${not empty user.address ? user.address : 'Chưa có'}</td>
                                                         <td>${not empty user.email ? user.email : 'Chưa có'}</td>
                                                         <td>

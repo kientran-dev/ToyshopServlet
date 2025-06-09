@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@WebServlet("/homepage")
+@WebServlet("/homepagess")
 public class HomePage extends HttpServlet {
     private OrderDAO orderDAO;
     private OrderItemDAO orderItemDAO;
