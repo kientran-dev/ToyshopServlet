@@ -275,12 +275,14 @@ public class OrderDAOImpl implements OrderDAO {
     @Override
     public Map<String, Long> getCustomerOrderCounts() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "SELECT o.user.id, COUNT(o.id) FROM Order o GROUP BY o.user.id ORDER BY COUNT(o.id) DESC";
+            String hql = "SELECT o.user.name, COUNT(o.id) FROM Order o GROUP BY o.user.name ORDER BY COUNT(o.id) DESC";
             Query<Object[]> query = session.createQuery(hql, Object[].class);
             return query.list().stream()
                     .collect(Collectors.toMap(
                             arr -> (String) arr[0],
-                            arr -> (Long) arr[1]
+                            arr -> (Long) arr[1],
+                            (a, b) -> a, // merge function (should not happen)
+                            LinkedHashMap::new // preserve order
                     ));
         } catch (Exception e) {
             e.printStackTrace();
@@ -291,15 +293,17 @@ public class OrderDAOImpl implements OrderDAO {
     @Override
     public Map<String, Double> getCustomerTotalPurchaseValues() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "SELECT o.user.id, SUM(oi.quantity * oi.toy.price) " +
+            String hql = "SELECT o.user.name, SUM(oi.quantity * oi.toy.price) " +
                     "FROM OrderItem oi JOIN oi.order o " +
-                    "GROUP BY o.user.id " +
+                    "GROUP BY o.user.name " +
                     "ORDER BY SUM(oi.quantity * oi.toy.price) DESC";
             Query<Object[]> query = session.createQuery(hql, Object[].class);
             return query.list().stream()
                     .collect(Collectors.toMap(
                             arr -> (String) arr[0],
-                            arr -> (Double) arr[1]
+                            arr -> (Double) arr[1],
+                            (a, b) -> a,
+                            LinkedHashMap::new
                     ));
         } catch (Exception e) {
             e.printStackTrace();
