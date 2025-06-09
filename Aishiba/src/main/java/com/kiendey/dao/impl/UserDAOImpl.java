@@ -7,9 +7,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 public class UserDAOImpl implements UserDAO {
 
@@ -66,8 +64,7 @@ public class UserDAOImpl implements UserDAO {
             transaction = session.beginTransaction();
             User user = session.get(User.class, id);
             if (user != null) {
-                user.setDeleted(true);
-                session.merge(user);
+                session.remove(user); // Physically delete the user
             }
             transaction.commit();
         } catch (Exception e) {
@@ -79,30 +76,69 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
+    public void softDeleteUser(String id) {
+        Transaction transaction = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            User user = session.get(User.class, id);
+            if (user != null) {
+                user.setDeleted(true);
+                session.merge(user);
+            }
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new RuntimeException("Error soft deleting User: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void restoreUser(String id) {
+        Transaction transaction = null;
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            transaction = session.beginTransaction();
+            User user = session.get(User.class, id);
+            if (user != null) {
+                user.setDeleted(false);
+                session.merge(user);
+            }
+            transaction.commit();
+        } catch (Exception e) {
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            throw new RuntimeException("Error restoring User: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     public List<User> getAllUsers() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM User", User.class).list();
+            return session.createQuery("FROM User u WHERE u.isDeleted = false", User.class).list();
         } catch (Exception e) {
-            throw new RuntimeException("Error getting all Users: " + e.getMessage(), e);
+            throw new RuntimeException("Error getting all active Users: " + e.getMessage(), e);
         }
     }
 
     @Override
     public List<User> searchUsersByName(String name) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "FROM User u WHERE u.name LIKE :name";
+            String hql = "FROM User u WHERE u.name LIKE :name AND u.isDeleted = false";
             return session.createQuery(hql, User.class)
                     .setParameter("name", "%" + name + "%")
                     .list();
         } catch (Exception e) {
-            throw new RuntimeException("Error searching Users by name: " + e.getMessage(), e);
+            throw new RuntimeException("Error searching active Users by name: " + e.getMessage(), e);
         }
     }
 
     @Override
     public List<User> getUsersByPage(int pageNumber, int pageSize) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            Query<User> query = session.createQuery("FROM User u WHERE u.isDeleted = false", User.class);
+            Query<User> query = session.createQuery("FROM User u WHERE u.isDeleted = false ORDER BY u.id DESC",
+                    User.class);
             query.setFirstResult((pageNumber - 1) * pageSize);
             query.setMaxResults(pageSize);
             List<User> users = query.list();
@@ -114,12 +150,37 @@ public class UserDAOImpl implements UserDAO {
     }
 
     @Override
+    public List<User> getDeletedUsersByPage(int pageNumber, int pageSize) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            Query<User> query = session.createQuery("FROM User u WHERE u.isDeleted = true",
+                    User.class);
+            query.setFirstResult((pageNumber - 1) * pageSize);
+            query.setMaxResults(pageSize);
+            List<User> users = query.list();
+            System.out.println("Fetched " + users.size() + " deleted users for page " + pageNumber);
+            return users;
+        } catch (Exception e) {
+            throw new RuntimeException("Error retrieving deleted Users by page: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
     public long getTotalUserCount() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             return session.createQuery("SELECT COUNT(u.id) FROM User u WHERE u.isDeleted = false", Long.class)
                     .uniqueResult();
         } catch (Exception e) {
-            throw new RuntimeException("Error counting Users: " + e.getMessage(), e);
+            throw new RuntimeException("Error counting active Users: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public long getTotalDeletedUserCount() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            return session.createQuery("SELECT COUNT(u.id) FROM User u WHERE u.isDeleted = true", Long.class)
+                    .uniqueResult();
+        } catch (Exception e) {
+            throw new RuntimeException("Error counting deleted Users: " + e.getMessage(), e);
         }
     }
 }

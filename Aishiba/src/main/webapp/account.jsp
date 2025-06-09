@@ -1,478 +1,374 @@
-
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<main id="main" class="main">
+    <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+        <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-    <div class="pagetitle">
-        <h1>Quản lý tài khoản Khách hàng</h1>
-        <nav>
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="index.html">Màn hình chính</a></li>
-                <li class="breadcrumb-item">Khách hàng</li>
-                <li class="breadcrumb-item active">Khóa/Mở tài khoản</li>
-            </ol>
-        </nav>
-    </div><!-- End Page Title -->
+            <main id="main" class="main">
 
-    <section class="section dashboard">
-        <div class="row justify-content-center align-items-stretch g-4">
-            <!-- Tổng số tài khoản -->
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="stat-modern-card stat-total h-100">
-                    <div class="stat-modern-icon-bg">
-                        <i class="bi bi-people"></i>
-                    </div>
-                    <div class="stat-modern-content">
-                        <div class="stat-modern-title">Tổng số tài khoản</div>
-                        <div class="stat-modern-number" id="stat-total">250</div>
-                        <div class="stat-modern-desc">Tài khoản</div>
-                    </div>
-                </div>
-            </div>
-            <!-- Tài khoản hoạt động -->
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="stat-modern-card stat-active h-100">
-                    <div class="stat-modern-icon-bg">
-                        <i class="bi bi-person-check-fill"></i>
-                    </div>
-                    <div class="stat-modern-content">
-                        <div class="stat-modern-title">Tài khoản hoạt động</div>
-                        <div class="stat-modern-number" id="stat-active">180</div>
-                        <div class="stat-modern-desc">Đang hoạt động</div>
-                    </div>
-                </div>
-            </div>
-            <!-- Tài khoản bị khóa -->
-            <div class="col-lg-4 col-md-6 mb-4">
-                <div class="stat-modern-card stat-locked h-100">
-                    <div class="stat-modern-icon-bg">
-                        <i class="bi bi-person-x-fill"></i>
-                    </div>
-                    <div class="stat-modern-content">
-                        <div class="stat-modern-title">Tài khoản bị khóa</div>
-                        <div class="stat-modern-number" id="stat-locked">70</div>
-                        <div class="stat-modern-desc">Bị khóa</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+                <div class="pagetitle">
+                    <h1>Khách hàng đã xóa</h1>
+                    <nav>
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a href="homepage">Trang chủ</a></li>
+                            <li class="breadcrumb-item">Khách hàng</li>
+                            <li class="breadcrumb-item active">Khách hàng đã xóa</li>
+                        </ol>
+                    </nav>
+                </div><!-- End Page Title -->
 
-    <section class="section">
-        <div class="row">
-            <div class="col-lg-12">
-
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">Danh sách tài khoản khách hàng</h5>
-                        <hr>
-
-                        <!-- Filter Dropdown and Search Bar Wrapper -->
-                        <div class="table-controls-wrapper d-flex justify-content-end align-items-center mb-3">
-                            <div class="dropdown me-2" id="statusFilterDropdownContainer">
-                                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button"
-                                        id="statusFilterButton" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Tất cả
-                                </button>
-                                <ul class="dropdown-menu" aria-labelledby="statusFilterButton">
-                                    <li><a class="dropdown-item filter-link active" href="#"
-                                           data-status="all">Tất
-                                        cả</a></li>
-                                    <li><a class="dropdown-item filter-link" href="#" data-status="active">Hoạt
-                                        động</a></li>
-                                    <li><a class="dropdown-item filter-link" href="#" data-status="locked">Đã
-                                        khóa</a></li>
-                                </ul>
+                <section class="section dashboard">
+                    <div class="row justify-content-center align-items-stretch g-4">
+                        <!-- Tổng số khách hàng đã xóa -->
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="stat-modern-card stat-total h-100">
+                                <div class="stat-modern-icon-bg">
+                                    <i class="bi bi-trash"></i>
+                                </div>
+                                <div class="stat-modern-content">
+                                    <div class="stat-modern-title">Tổng số khách hàng đã xóa</div>
+                                    <div class="stat-modern-number" id="stat-total-deleted">${totalDeletedUsers}</div>
+                                    <div class="stat-modern-desc">Khách hàng</div>
+                                </div>
                             </div>
                         </div>
-
-                        <!-- Table with stripped rows -->
-                        <table class="table datatable">
-                            <thead>
-                            <tr>
-                                <th scope="col" data-sortable="false"></th>
-                                <th scope="col" data-sortable="false">Tên Khách Hàng</th>
-                                <th scope="col" data-sortable="false">Email</th>
-                                <th scope="col" data-sortable="false">Trạng thái</th>
-                                <th scope="col" data-sortable="false">Hành động</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <th scope="row">1</th>
-                                <td>Nguyễn Văn A</td>
-                                <td>nguyenvana@example.com</td>
-                                <td><i class="bi bi-unlock-fill text-success fs-5 status-icon"
-                                       title="Hoạt động"></i> <span class="status-text">Hoạt động</span>
-                                </td>
-                                <td>
-                                    <button type="button"
-                                            class="btn btn-danger btn-sm action-button action-lock"
-                                            title="Khóa tài khoản"><i class="bi bi-key-fill"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row">2</th>
-                                <td>Trần Thị B</td>
-                                <td>tranthib@example.com</td>
-                                <td><i class="bi bi-lock-fill text-danger fs-5 status-icon"
-                                       title="Đã khóa"></i>
-                                    <span class="status-text">Đã khóa</span>
-                                </td>
-                                <td>
-                                    <button type="button"
-                                            class="btn btn-success btn-sm action-button action-unlock"
-                                            title="Mở khóa tài khoản"><i class="bi bi-key-fill"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row">3</th>
-                                <td>Lê Văn C</td>
-                                <td>levanc@example.com</td>
-                                <td><i class="bi bi-unlock-fill text-success fs-5 status-icon"
-                                       title="Hoạt động"></i> <span class="status-text">Hoạt động</span>
-                                </td>
-                                <td>
-                                    <button type="button"
-                                            class="btn btn-danger btn-sm action-button action-lock"
-                                            title="Khóa tài khoản"><i class="bi bi-key-fill"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row">4</th>
-                                <td>Phạm Thị D</td>
-                                <td>phamthid@example.com</td>
-                                <td><i class="bi bi-unlock-fill text-success fs-5 status-icon"
-                                       title="Hoạt động"></i> <span class="status-text">Hoạt động</span>
-                                </td>
-                                <td>
-                                    <button type="button"
-                                            class="btn btn-danger btn-sm action-button action-lock"
-                                            title="Khóa tài khoản"><i class="bi bi-key-fill"></i></button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th scope="row">5</th>
-                                <td>Hoàng Văn E</td>
-                                <td>hoangvane@example.com</td>
-                                <td><i class="bi bi-lock-fill text-danger fs-5 status-icon"
-                                       title="Đã khóa"></i>
-                                    <span class="status-text">Đã khóa</span>
-                                </td>
-                                <td>
-                                    <button type="button"
-                                            class="btn btn-success btn-sm action-button action-unlock"
-                                            title="Mở khóa tài khoản"><i class="bi bi-key-fill"></i></button>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                        <!-- End Table with stripped rows -->
-
+                        <!-- Khách hàng có thể khôi phục -->
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="stat-modern-card stat-active h-100">
+                                <div class="stat-modern-icon-bg">
+                                    <i class="bi bi-person-fill-up"></i>
+                                </div>
+                                <div class="stat-modern-content">
+                                    <div class="stat-modern-title">Khách hàng có thể khôi phục</div>
+                                    <div class="stat-modern-number" id="stat-recoverable">${totalDeletedUsers}</div>
+                                    <div class="stat-modern-desc">Có thể khôi phục</div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Khách hàng đã xóa vĩnh viễn -->
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="stat-modern-card stat-locked h-100">
+                                <div class="stat-modern-icon-bg">
+                                    <i class="bi bi-person-slash"></i>
+                                </div>
+                                <div class="stat-modern-content">
+                                    <div class="stat-modern-title">Khách hàng đã xóa vĩnh viễn</div>
+                                    <div class="stat-modern-number" id="stat-permanently-deleted">0</div>
+                                    <div class="stat-modern-desc">Đã xóa vĩnh viễn</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
+                </section>
 
-            </div>
-        </div>
-    </section>
+                <section class="section">
+                    <div class="row">
+                        <div class="col-lg-12">
 
-</main><!-- End #main -->
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Danh sách khách hàng đã xóa</h5>
+                                    <hr>
 
+                                    <!-- Filter Dropdown and Search Bar Wrapper -->
+                                    <div
+                                        class="table-controls-wrapper d-flex justify-content-end align-items-center mb-3">
+                                        <!-- Removed the filter dropdown as it's not directly applicable here unless we filter by deletion date/type -->
+                                        <div class="search-bar-container">
+                                            <input type="text" class="form-control search-input"
+                                                placeholder="Tìm kiếm...">
+                                            <button class="btn btn-outline-secondary search-button" type="button"><i
+                                                    class="bi bi-search"></i></button>
+                                        </div>
+                                    </div>
 
-<style>
-    /* Căn lề trái cho nội dung trong các ô của bảng quản lý tài khoản */
-    .datatable td,
-    .datatable th {
-        text-align: left;
-        vertical-align: middle;
-        /* Giữ căn giữa theo chiều dọc */
-    }
+                                    <!-- Table with stripped rows -->
+                                    <table class="table datatable">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col" data-sortable="false">Mã khách hàng</th>
+                                                <th scope="col" data-sortable="false">Tên khách hàng</th>
+                                                <th scope="col" data-sortable="false">Điện thoại</th>
+                                                <th scope="col" data-sortable="false">Giới tính</th>
+                                                <th scope="col" data-sortable="false">Địa chỉ</th>
+                                                <th scope="col" data-sortable="false">Email</th>
+                                                <th scope="col" data-sortable="false">Ngày sinh</th>
+                                                <th scope="col" data-sortable="false">Hành động</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="deleted-customer-table-body">
+                                            <c:if test="${not empty deletedUserList}">
+                                                <c:forEach var="user" items="${deletedUserList}" varStatus="loop">
+                                                    <tr data-id="${user.id}">
+                                                        <td>${user.getFormattedUserCode()}</td>
+                                                        <td>${not empty user.name ? user.name : 'Chưa có'}</td>
+                                                        <td>${not empty user.phone ? user.phone : 'Chưa có'}</td>
+                                                        <td>${not empty user.gender ? user.gender.displayName : 'Chưa
+                                                            có'}</td>
+                                                        <td>${not empty user.address ? user.address : 'Chưa có'}</td>
+                                                        <td>${not empty user.email ? user.email : 'Chưa có'}</td>
+                                                        <td>
+                                                            <c:if test="${not empty user.dob}">
+                                                                <fmt:formatDate value="${user.dobAsDate}"
+                                                                    pattern="yyyy-MM-dd" />
+                                                            </c:if>
+                                                            <c:if test="${empty user.dob}">
+                                                                Chưa có
+                                                            </c:if>
+                                                        </td>
+                                                        <td>
+                                                            <button type="button"
+                                                                class="btn btn-success btn-sm restore-customer-btn"
+                                                                data-id="${user.id}" title="Khôi phục khách hàng"><i
+                                                                    class="bi bi-arrow-clockwise"></i></button>
+                                                        </td>
+                                                    </tr>
+                                                </c:forEach>
+                                            </c:if>
+                                            <c:if test="${empty deletedUserList or deletedUserList.size() == 0}">
+                                                <tr>
+                                                    <td colspan="8" class="text-center">Không có khách hàng đã xóa nào.
+                                                    </td>
+                                                </tr>
+                                            </c:if>
+                                        </tbody>
+                                    </table>
+                                    <!-- End Table with stripped rows -->
 
-    /* Căn giữa cho cột Hành động nếu muốn */
-    .datatable th:last-child,
-    .datatable td:last-child {
-        text-align: center;
-    }
+                                    <!-- Pagination -->
+                                    <c:if test="${totalPages > 1}">
+                                        <nav aria-label="Page navigation">
+                                            <ul class="pagination-container">
+                                                <c:set var="startPage" value="${currentPage - 1}" />
+                                                <c:set var="endPage" value="${currentPage + 1}" />
 
-    /* Stat Modern Card Style */
-    .stat-modern-card {
-        background: #fff;
-        border-radius: 1.2rem;
-        box-shadow: 0 4px 24px 0 rgba(60, 72, 100, .10);
-        padding: 1.2rem 0.7rem 1rem 0.7rem;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        min-height: 120px;
-        transition: box-shadow 0.2s, transform 0.2s;
-    }
+                                                <c:if test="${startPage < 1}">
+                                                    <c:set var="endPage" value="${endPage + (1 - startPage)}" />
+                                                    <c:set var="startPage" value="1" />
+                                                </c:if>
+                                                <c:if test="${endPage > totalPages}">
+                                                    <c:set var="startPage"
+                                                        value="${startPage - (endPage - totalPages)}" />
+                                                    <c:set var="endPage" value="${totalPages}" />
+                                                    <c:if test="${startPage < 1}">
+                                                        <c:set var="startPage" value="1" />
+                                                    </c:if>
+                                                </c:if>
 
-    .stat-modern-card:hover {
-        box-shadow: 0 8px 32px 0 rgba(60, 72, 100, .18);
-        transform: translateY(-6px) scale(1.03);
-    }
+                                                <c:if test="${startPage > 1}">
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="account?page=1">1</a>
+                                                    </li>
+                                                    <c:if test="${startPage > 2}">
+                                                        <li class="page-item disabled"><span
+                                                                class="page-link">...</span></li>
+                                                    </c:if>
+                                                </c:if>
 
-    .stat-modern-icon-bg {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        margin-bottom: 0.7rem;
-        background: linear-gradient(135deg, #e3eafe 0%, #f5f7fa 100%);
-        box-shadow: 0 2px 12px 0 rgba(60, 72, 100, .10);
-        color: #4154f1;
-    }
+                                                <c:forEach begin="${startPage}" end="${endPage}" var="i">
+                                                    <li
+                                                        class="page-item <c:if test='${currentPage == i}'>active</c:if>">
+                                                        <a class="page-link" href="account?page=${i}">${i}</a>
+                                                    </li>
+                                                </c:forEach>
 
-    .stat-total .stat-modern-icon-bg {
-        background: linear-gradient(135deg, #e3eafe 0%, #f5f7fa 100%);
-        color: #4154f1;
-    }
+                                                <c:if test="${endPage < totalPages}">
+                                                    <c:if test="${endPage < totalPages - 1}">
+                                                        <li class="page-item disabled"><span
+                                                                class="page-link">...</span></li>
+                                                    </c:if>
+                                                    <li class="page-item">
+                                                        <a class="page-link"
+                                                            href="account?page=${totalPages}">${totalPages}</a>
+                                                    </li>
+                                                </c:if>
+                                            </ul>
+                                        </nav>
+                                    </c:if>
+                                    <!-- End Pagination -->
 
-    .stat-active .stat-modern-icon-bg {
-        background: linear-gradient(135deg, #d0f5e8 0%, #f5f7fa 100%);
-        color: #009688;
-    }
+                                </div>
+                            </div>
 
-    .stat-locked .stat-modern-icon-bg {
-        background: linear-gradient(135deg, #ffe0b2 0%, #f5f7fa 100%);
-        color: #ff9800;
-    }
+                        </div>
+                    </div>
+                </section>
 
-    .stat-modern-title {
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: #1a237e;
-        margin-bottom: 0.3rem;
-        text-align: center;
-    }
+            </main><!-- End #main -->
 
-    .stat-modern-number {
-        font-size: 1.5rem;
-        font-weight: 800;
-        color: #222;
-        margin-bottom: 0.1rem;
-        text-align: center;
-    }
-
-    .stat-modern-desc {
-        font-size: 0.85rem;
-        color: #888;
-        text-align: center;
-    }
-
-    @media (max-width: 991px) {
-        .stat-modern-card {
-            min-height: 90px;
-        }
-
-        .stat-modern-icon-bg {
-            width: 28px;
-            height: 28px;
-            font-size: 0.9rem;
-        }
-    }
-
-    /* End Stat Modern Card Style */
-
-    .status-circle {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        font-size: 0.9rem;
-    }
-</style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const actionButtons = document.querySelectorAll('.action-button');
-        const tableInstance = document.querySelector('.datatable');
-
-        // Hàm cập nhật số liệu thống kê và biểu đồ
-        function updateStatsAndChart() {
-            const rows = tableInstance ? tableInstance.querySelectorAll('tbody tr') : [];
-            let total = 0, active = 0, locked = 0;
-            rows.forEach(row => {
-                const statusIcon = row.querySelector('.status-icon');
-                if (!statusIcon) return;
-                total++;
-                if (statusIcon.classList.contains('text-success')) active++;
-                else if (statusIcon.classList.contains('text-danger')) locked++;
-            });
-            // Cập nhật số liệu trên thẻ
-            document.getElementById('stat-total').textContent = total;
-            document.getElementById('stat-active').textContent = active;
-            document.getElementById('stat-locked').textContent = locked;
-            // Cập nhật biểu đồ donut nếu có
-            if (window.donutChart) {
-                window.donutChart.updateSeries([active, locked]);
-            }
-        }
-
-        actionButtons.forEach(button => {
-            button.addEventListener('click', function () {
-                const row = this.closest('tr');
-                const statusIcon = row.querySelector('.status-icon');
-                const statusText = row.querySelector('.status-text');
-
-                if (this.classList.contains('action-lock')) {
-                    statusIcon.classList.remove('bi-unlock-fill', 'text-success');
-                    statusIcon.classList.add('bi-lock-fill', 'text-danger');
-                    statusIcon.title = 'Đã khóa';
-                    if (statusText) statusText.textContent = 'Đã khóa';
-
-                    this.classList.remove('btn-danger', 'action-lock');
-                    this.classList.add('btn-success', 'action-unlock');
-                    this.title = 'Mở khóa tài khoản';
-                    this.innerHTML = '<i class="bi bi-key-fill"></i>';
-                } else if (this.classList.contains('action-unlock')) {
-                    statusIcon.classList.remove('bi-lock-fill', 'text-danger');
-                    statusIcon.classList.add('bi-unlock-fill', 'text-success');
-                    statusIcon.title = 'Hoạt động';
-                    if (statusText) statusText.textContent = 'Hoạt động';
-
-                    this.classList.remove('btn-success', 'action-unlock');
-                    this.classList.add('btn-danger', 'action-lock');
-                    this.title = 'Khóa tài khoản';
-                    this.innerHTML = '<i class="bi bi-key-fill"></i>';
+            <style>
+                /* Căn lề trái cho nội dung trong các ô của bảng quản lý tài khoản */
+                .datatable td,
+                .datatable th {
+                    text-align: left;
+                    vertical-align: middle;
+                    /* Giữ căn giữa theo chiều dọc */
                 }
-                // Sau khi đổi trạng thái, cập nhật lại số liệu và biểu đồ
-                updateStatsAndChart();
-            });
-        });
 
-        // Filter Dropdown Logic
-        const filterDropdownButton = document.getElementById('statusFilterButton');
-        const filterLinks = document.querySelectorAll('#statusFilterDropdownContainer .filter-link');
+                /* Căn giữa cho cột Hành động nếu muốn */
+                .datatable th:last-child,
+                .datatable td:last-child {
+                    text-align: center;
+                }
 
-        function applyFilters() {
-            const activeFilterLink = document.querySelector('#statusFilterDropdownContainer .filter-link.active');
-            if (!activeFilterLink) return;
+                /* Stat Modern Card Style */
+                .stat-modern-card {
+                    background: #fff;
+                    border-radius: 1.2rem;
+                    box-shadow: 0 4px 24px 0 rgba(60, 72, 100, .10);
+                    padding: 1.2rem 0.7rem 1rem 0.7rem;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    position: relative;
+                    min-height: 120px;
+                    transition: box-shadow 0.2s, transform 0.2s;
+                }
 
-            const filterStatus = activeFilterLink.getAttribute('data-status');
-            const tableRows = tableInstance ? tableInstance.querySelectorAll('tbody tr') : [];
+                .stat-modern-card:hover {
+                    box-shadow: 0 8px 32px 0 rgba(60, 72, 100, .18);
+                    transform: translateY(-6px) scale(1.03);
+                }
 
-            tableRows.forEach(row => {
-                const statusIcon = row.querySelector('.status-icon');
-                let rowVisible = false;
+                .stat-modern-icon-bg {
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.2rem;
+                    margin-bottom: 0.7rem;
+                    background: linear-gradient(135deg, #e3eafe 0%, #f5f7fa 100%);
+                    box-shadow: 0 2px 12px 0 rgba(60, 72, 100, .10);
+                    color: #4154f1;
+                }
 
-                if (filterStatus === 'all') {
-                    rowVisible = true;
-                } else if (statusIcon) {
-                    if (filterStatus === 'active' && statusIcon.classList.contains('text-success')) {
-                        rowVisible = true;
-                    } else if (filterStatus === 'locked' && statusIcon.classList.contains('text-danger')) {
-                        rowVisible = true;
+                .stat-total .stat-modern-icon-bg {
+                    background: linear-gradient(135deg, #e3eafe 0%, #f5f7fa 100%);
+                    color: #4154f1;
+                }
+
+                .stat-active .stat-modern-icon-bg {
+                    background: linear-gradient(135deg, #d0f5e8 0%, #f5f7fa 100%);
+                    color: #009688;
+                }
+
+                .stat-locked .stat-modern-icon-bg {
+                    background: linear-gradient(135deg, #ffe0b2 0%, #f5f7fa 100%);
+                    color: #ff9800;
+                }
+
+                .stat-modern-title {
+                    font-size: 0.95rem;
+                    font-weight: 600;
+                    color: #1a237e;
+                    margin-bottom: 0.3rem;
+                    text-align: center;
+                }
+
+                .stat-modern-number {
+                    font-size: 1.5rem;
+                    font-weight: 800;
+                    color: #222;
+                    margin-bottom: 0.1rem;
+                    text-align: center;
+                }
+
+                .stat-modern-desc {
+                    font-size: 0.85rem;
+                    color: #888;
+                    text-align: center;
+                }
+
+                @media (max-width: 991px) {
+                    .stat-modern-card {
+                        min-height: 90px;
+                    }
+
+                    .stat-modern-icon-bg {
+                        width: 28px;
+                        height: 28px;
+                        font-size: 0.9rem;
                     }
                 }
-                row.style.display = rowVisible ? '' : 'none';
-            });
-        }
 
-        filterLinks.forEach(link => {
-            link.addEventListener('click', function (e) {
-                e.preventDefault();
-                filterLinks.forEach(l => l.classList.remove('active'));
-                this.classList.add('active');
-                if (filterDropdownButton) filterDropdownButton.textContent = this.textContent;
-                applyFilters();
-            });
-        });
+                /* End Stat Modern Card Style */
 
-        // ApexCharts - Donut Chart for Account Status
-        window.donutChart = new ApexCharts(document.querySelector("#reportsChart"), {
-            series: [180, 70], // Dữ liệu mẫu: 180 Hoạt động, 70 Bị khóa
-            chart: {
-                height: 350,
-                type: 'donut',
-                toolbar: {
-                    show: true
+                .status-circle {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 20px;
+                    height: 20px;
+                    border-radius: 50%;
+                    font-size: 0.9rem;
                 }
-            },
-            labels: ['Hoạt động', 'Bị khóa'],
-            colors: ['#2eca6a', '#ff771d'],
-            legend: {
-                position: 'bottom'
-            },
-            plotOptions: {
-                pie: {
-                    donut: {
-                        size: '65%', // Kích thước của lỗ donut
-                        labels: {
-                            show: true,
-                            name: {
-                                show: true,
-                                fontSize: '22px',
-                                fontFamily: 'Nunito, sans-serif',
-                                color: '#444444',
-                                offsetY: -10
-                            },
-                            value: {
-                                show: true,
-                                fontSize: '16px',
-                                fontFamily: 'Nunito, sans-serif',
-                                color: '#111111',
-                                offsetY: 16,
-                                formatter: function (val) {
-                                    return val + " KH"; // KH = Khách hàng/Tài khoản
-                                }
-                            },
-                            total: {
-                                show: true,
-                                showAlways: true,
-                                label: 'Tổng số',
-                                fontSize: '20px',
-                                fontFamily: 'Nunito, sans-serif',
-                                color: '#373d3f',
-                                formatter: function (w) {
-                                    return w.globals.seriesTotals.reduce((a, b) => {
-                                        return a + b
-                                    }, 0) + ' KH';
+            </style>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    // Updated stat IDs
+                    const statTotalDeleted = document.getElementById('stat-total-deleted');
+                    const statRecoverable = document.getElementById('stat-recoverable');
+                    const statPermanentlyDeleted = document.getElementById('stat-permanently-deleted');
+
+                    // Function to update statistics (simplified for now)
+                    function updateDeletedCustomerStats() {
+                        // Use values from JSP attributes
+                        const totalDeleted = parseInt(statTotalDeleted.textContent);
+                        const recoverable = parseInt(statRecoverable.textContent);
+                        const permanentlyDeleted = parseInt(statPermanentlyDeleted.textContent);
+
+                        // Update stats from the server on page load (assuming the servlet populates them)
+                        // For dynamic updates after restore, you might need to re-fetch data or update counts manually.
+                    }
+
+                    const tableBody = document.getElementById('deleted-customer-table-body'); // Use the new ID for deleted customer table
+
+                    // Add event listener for restore buttons
+                    if (tableBody) {
+                        tableBody.addEventListener('click', async (e) => {
+                            if (e.target.closest('.restore-customer-btn')) {
+                                const button = e.target.closest('.restore-customer-btn');
+                                const customerId = button.dataset.id;
+
+                                if (confirm('Bạn có chắc chắn muốn khôi phục khách hàng này không?')) {
+                                    try {
+                                        const response = await fetch('account', {
+                                            method: 'POST',
+                                            headers: {
+                                                'Content-Type': 'application/x-www-form-urlencoded',
+                                            },
+                                            body: `action=restore&customerId=${customerId}`,
+                                        });
+
+                                        const result = await response.json();
+
+                                        if (response.ok) {
+                                            alert(result.message);
+                                            // Remove the row from the table
+                                            button.closest('tr').remove();
+                                            // Decrement total deleted users count and increment active users count
+                                            if (statTotalDeleted) statTotalDeleted.textContent = parseInt(statTotalDeleted.textContent) - 1;
+                                            if (statRecoverable) statRecoverable.textContent = parseInt(statRecoverable.textContent) - 1;
+                                            // You might need to trigger a refresh of the customer.jsp table or update its stats as well
+                                        } else {
+                                            alert('Lỗi: ' + result.error);
+                                        }
+                                    } catch (error) {
+                                        console.error('Lỗi khi khôi phục khách hàng:', error);
+                                        alert('Đã xảy ra lỗi khi khôi phục khách hàng.');
+                                    }
                                 }
                             }
-                        }
+                        });
                     }
-                }
-            },
-            dataLabels: {
-                enabled: true,
-                formatter: function (val, opts) {
-                    return opts.w.globals.labels[opts.seriesIndex] + ": " + val.toFixed(1) + '%'
-                },
-                style: {
-                    fontSize: '12px',
-                    colors: ["#fff"]
-                },
-                dropShadow: {
-                    enabled: true,
-                    top: 1,
-                    left: 1,
-                    blur: 1,
-                    color: '#000',
-                    opacity: 0.45
-                }
-            },
-            responsive: [{
-                breakpoint: 480,
-                options: {
-                    chart: {
-                        width: 200
-                    },
-                    legend: {
-                        position: 'bottom'
-                    }
-                }
-            }]
-        });
-        window.donutChart.render();
 
-        // Khi trang load xong, cập nhật số liệu lần đầu
-        updateStatsAndChart();
-    });
-</script>
+                    // Initial update of stats when the page loads
+                    updateDeletedCustomerStats();
+
+                    // Removed filter dropdown logic as it's not applicable for deleted customers in this context
+
+                    // Removed ApexCharts donut chart as it's not directly applicable for deleted customers in this context
+                });
+            </script>

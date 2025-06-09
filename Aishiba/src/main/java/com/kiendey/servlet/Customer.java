@@ -39,7 +39,8 @@ public class Customer extends HttpServlet {
         if (pageParam != null) {
             try {
                 currentPage = Integer.parseInt(pageParam);
-                if (currentPage < 1) currentPage = 1;
+                if (currentPage < 1)
+                    currentPage = 1;
             } catch (NumberFormatException e) {
                 currentPage = 1;
             }
@@ -47,8 +48,10 @@ public class Customer extends HttpServlet {
 
         long totalUsers = userDAO.getTotalUserCount();
         int totalPages = (int) Math.ceil((double) totalUsers / DEFAULT_PAGE_SIZE);
-        if (currentPage > totalPages && totalPages > 0) currentPage = totalPages;
-        if (totalPages == 0 && currentPage > 1) currentPage = 1;
+        if (currentPage > totalPages && totalPages > 0)
+            currentPage = totalPages;
+        if (totalPages == 0 && currentPage > 1)
+            currentPage = 1;
 
         List<User> userList = userDAO.getUsersByPage(currentPage, DEFAULT_PAGE_SIZE);
         req.setAttribute("userList", userList);
@@ -90,7 +93,16 @@ public class Customer extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json;charset=UTF-8");
+        // Log all request parameters for debugging
+        System.out.println("All request parameters in doPost:");
+        req.getParameterMap().forEach((key, values) -> {
+            System.out.println("  " + key + ": " + String.join(", ", values));
+        });
+
         String action = req.getParameter("action");
+        String customerId = req.getParameter("customerId");
+
+        System.out.println("Received POST request. Action: " + action + ", Customer ID: " + customerId);
 
         try {
             if ("add".equals(action)) {
@@ -130,7 +142,8 @@ public class Customer extends HttpServlet {
                         user.setGender(null);
                     }
 
-                    if (user.getName() == null || user.getName().trim().isEmpty() || user.getPhone() == null || user.getPhone().trim().isEmpty()) {
+                    if (user.getName() == null || user.getName().trim().isEmpty() || user.getPhone() == null
+                            || user.getPhone().trim().isEmpty()) {
                         resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                         resp.getWriter().write("{\"error\": \"Customer name and phone are required\"}");
                         return;
@@ -138,7 +151,6 @@ public class Customer extends HttpServlet {
 
                     user.setDeleted(false);
 
-                    // Fetch or create the default role within the same session
                     RoleDAO roleDAO = new RoleDAOImpl();
                     Role defaultRole = session.createQuery("FROM Role r WHERE r.name = :name", Role.class)
                             .setParameter("name", "USER")
@@ -156,7 +168,8 @@ public class Customer extends HttpServlet {
                     transaction.commit();
 
                     resp.setStatus(HttpServletResponse.SC_OK);
-                    resp.getWriter().write("{\"message\": \"Thêm khách hàng thành công \", \"id\": \"" + user.getFormattedUserCode() + "\"}");
+                    resp.getWriter().write("{\"message\": \"Thêm khách hàng thành công \", \"id\": \""
+                            + user.getFormattedUserCode() + "\"}");
                 } catch (Exception e) {
                     if (transaction != null) {
                         transaction.rollback();
@@ -168,9 +181,7 @@ public class Customer extends HttpServlet {
                         session.close();
                     }
                 }
-            }
-            else if ("update".equals(action)) {
-                String customerId = req.getParameter("customerId");
+            } else if ("update".equals(action)) {
                 User user = userDAO.readUser(customerId);
                 if (user == null) {
                     resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -213,15 +224,15 @@ public class Customer extends HttpServlet {
                 resp.setStatus(HttpServletResponse.SC_OK);
                 resp.getWriter().write("{\"message\": \"Cập nhật khách hàng thành công\"}");
             } else if ("delete".equals(action)) {
-                String customerId = req.getParameter("customerId");
+                System.out.println("Attempting to soft delete customer with ID: " + customerId);
                 User user = userDAO.readUser(customerId);
                 if (user != null) {
-                    userDAO.deleteUser(user.getId());
+                    userDAO.softDeleteUser(user.getId());
                     resp.setStatus(HttpServletResponse.SC_OK);
-                    resp.getWriter().write("{\"message\": \"Customer deleted successfully\"}");
+                    resp.getWriter().write("{\"message\": \"Customer soft deleted successfully\"}");
                 } else {
                     resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    resp.getWriter().write("{\"error\": \"Customer not found\"}");
+                    resp.getWriter().write("{\"error\": \"Customer not found for ID: " + customerId + "\"}");
                 }
             } else {
                 resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
