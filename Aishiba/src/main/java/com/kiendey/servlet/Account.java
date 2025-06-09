@@ -54,6 +54,7 @@ public class Account extends HttpServlet {
         req.setAttribute("currentPage", currentPage);
         req.setAttribute("totalPages", totalPages);
         req.setAttribute("pageSize", DEFAULT_PAGE_SIZE);
+        req.setAttribute("totalDeletedUsers", totalDeletedUsers);
         req.setAttribute("pageTitle", "Khách hàng đã xóa");
         req.setAttribute("contentPage", "/account.jsp");
 

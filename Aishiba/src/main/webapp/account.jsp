@@ -69,16 +69,7 @@
                                     <hr>
 
                                     <!-- Filter Dropdown and Search Bar Wrapper -->
-                                    <div
-                                        class="table-controls-wrapper d-flex justify-content-end align-items-center mb-3">
-                                        <!-- Removed the filter dropdown as it's not directly applicable here unless we filter by deletion date/type -->
-                                        <div class="search-bar-container">
-                                            <input type="text" class="form-control search-input"
-                                                placeholder="Tìm kiếm...">
-                                            <button class="btn btn-outline-secondary search-button" type="button"><i
-                                                    class="bi bi-search"></i></button>
-                                        </div>
-                                    </div>
+
 
                                     <!-- Table with stripped rows -->
                                     <table class="table datatable">
@@ -306,11 +297,16 @@
             </style>
 
             <script>
+                console.log('account.jsp script loaded and running!');
+
                 document.addEventListener('DOMContentLoaded', () => {
+                    console.log('DOMContentLoaded event fired!');
+
                     // Updated stat IDs
                     const statTotalDeleted = document.getElementById('stat-total-deleted');
                     const statRecoverable = document.getElementById('stat-recoverable');
                     const statPermanentlyDeleted = document.getElementById('stat-permanently-deleted');
+                    console.log('statTotalDeleted element:', statTotalDeleted);
 
                     // Function to update statistics (simplified for now)
                     function updateDeletedCustomerStats() {
@@ -323,46 +319,63 @@
                         // For dynamic updates after restore, you might need to re-fetch data or update counts manually.
                     }
 
-                    const tableBody = document.getElementById('deleted-customer-table-body'); // Use the new ID for deleted customer table
-
                     // Add event listener for restore buttons
-                    if (tableBody) {
-                        tableBody.addEventListener('click', async (e) => {
-                            if (e.target.closest('.restore-customer-btn')) {
-                                const button = e.target.closest('.restore-customer-btn');
-                                const customerId = button.dataset.id;
+                    document.addEventListener('click', async (e) => {
+                        console.log('Click event detected on document. Target:', e.target);
+                        if (e.target.closest('.restore-customer-btn')) {
+                            console.log('Restore button clicked!');
+                            const button = e.target.closest('.restore-customer-btn');
+                            const customerId = button.dataset.id;
 
-                                if (confirm('Bạn có chắc chắn muốn khôi phục khách hàng này không?')) {
-                                    try {
-                                        const response = await fetch('account', {
-                                            method: 'POST',
-                                            headers: {
-                                                'Content-Type': 'application/x-www-form-urlencoded',
-                                            },
-                                            body: `action=restore&customerId=${customerId}`,
-                                        });
+                            console.log('Customer ID to restore:', customerId);
 
-                                        const result = await response.json();
+                            if (confirm('Bạn có chắc chắn muốn khôi phục khách hàng này không?')) {
+                                try {
+                                    const response = await fetch('account', {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/x-www-form-urlencoded',
+                                        },
+                                        body: 'action=restore&customerId=' + encodeURIComponent(customerId),
+                                    });
 
-                                        if (response.ok) {
-                                            alert(result.message);
-                                            // Remove the row from the table
-                                            button.closest('tr').remove();
-                                            // Decrement total deleted users count and increment active users count
-                                            if (statTotalDeleted) statTotalDeleted.textContent = parseInt(statTotalDeleted.textContent) - 1;
-                                            if (statRecoverable) statRecoverable.textContent = parseInt(statRecoverable.textContent) - 1;
-                                            // You might need to trigger a refresh of the customer.jsp table or update its stats as well
-                                        } else {
-                                            alert('Lỗi: ' + result.error);
+                                    const result = await response.json();
+
+                                    if (response.ok) {
+                                        alert(result.message);
+                                        // Remove the row from the table
+                                        const rowToRemove = button.closest('tr');
+                                        if (rowToRemove) {
+                                            rowToRemove.remove();
                                         }
-                                    } catch (error) {
-                                        console.error('Lỗi khi khôi phục khách hàng:', error);
-                                        alert('Đã xảy ra lỗi khi khôi phục khách hàng.');
+
+                                        // Update statistics
+                                        const statTotalDeleted = document.getElementById('stat-total-deleted');
+                                        const statRecoverable = document.getElementById('stat-recoverable');
+
+                                        if (statTotalDeleted && parseInt(statTotalDeleted.textContent) > 0) {
+                                            statTotalDeleted.textContent = parseInt(statTotalDeleted.textContent) - 1;
+                                        }
+                                        if (statRecoverable && parseInt(statRecoverable.textContent) > 0) {
+                                            statRecoverable.textContent = parseInt(statRecoverable.textContent) - 1;
+                                        }
+
+                                        // Check if the table is empty and show the "No data" row
+                                        const currentTableBody = document.getElementById('deleted-customer-table-body');
+                                        if (currentTableBody && currentTableBody.children.length === 0) {
+                                            const noDataRow = `<tr><td colspan="8" class="text-center">Không có khách hàng đã xóa nào.</td></tr>`;
+                                            currentTableBody.innerHTML = noDataRow;
+                                        }
+                                    } else {
+                                        alert('Lỗi: ' + result.error);
                                     }
+                                } catch (error) {
+                                    console.error('Lỗi khi khôi phục khách hàng:', error);
+                                    alert('Đã xảy ra lỗi khi khôi phục khách hàng.');
                                 }
                             }
-                        });
-                    }
+                        }
+                    });
 
                     // Initial update of stats when the page loads
                     updateDeletedCustomerStats();

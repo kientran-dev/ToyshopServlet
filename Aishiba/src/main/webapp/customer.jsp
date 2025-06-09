@@ -44,10 +44,7 @@
                           data-bs-toggle="dropdown" aria-expanded="false">
                           <i class="bi bi-file-earmark"></i> File
                         </button>
-                        <ul class="dropdown-menu">
-                          <li><a class="dropdown-item" href="#" id="exportCustomerCsvBtn">Xuất CSV</a></li>
-                          <li><a class="dropdown-item" href="#" id="importCustomerCsvBtn">Nhập CSV</a></li>
-                        </ul>
+
                       </div>
                       <div class="btn-group">
                         <button class="btn btn-secondary action-btn dropdown-toggle" type="button" id="columnToggler"
