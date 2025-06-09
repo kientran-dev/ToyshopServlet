@@ -140,4 +140,21 @@ public class OrderItemDAOImpl implements OrderItemDAO {
             return Collections.emptyList();
         }
     }
+    // --- NEW METHOD FOR YEARLY REPORTS ---
+
+    @Override
+    public long getTotalQuantitySoldByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT SUM(oi.quantity) FROM OrderItem oi JOIN oi.order o " +
+                    "WHERE o.orderDate BETWEEN :startDate AND :endDate";
+            Query<Long> query = session.createQuery(hql, Long.class);
+            query.setParameter("startDate", startDate);
+            query.setParameter("endDate", endDate);
+            Long result = query.uniqueResult();
+            return result != null ? result : 0L;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0L;
+        }
+    }
 }

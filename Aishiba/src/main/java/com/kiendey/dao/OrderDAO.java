@@ -1,3 +1,4 @@
+// File: src/main/java/com/kiendey/dao/OrderDAO.java
 package com.kiendey.dao;
 
 import com.kiendey.common.OrderStatus;
@@ -64,5 +65,31 @@ public interface OrderDAO {
      * @return Tổng số lượng tồn kho.
      */
     double getTotalCurrentStockQuantity();
-    // ******************************************************************************************
+
+    // **************************** NEW METHODS FOR YEARLY REPORTS ****************************
+
+    /**
+     * Lấy tổng số đơn hàng trong một khoảng thời gian cụ thể (theo năm).
+     * @param startDate Thời gian bắt đầu.
+     * @param endDate Thời gian kết thúc.
+     * @return Tổng số đơn hàng.
+     */
+    long getTotalOrderCountByDateRange(LocalDateTime startDate, LocalDateTime endDate);
+
+    /**
+     * Lấy tổng doanh thu liên kết trong một khoảng thời gian cụ thể (theo năm).
+     * Bạn cần định nghĩa rõ logic này dựa trên nghiệp vụ của mình (ví dụ: liên kết với mã giảm giá/coupon, hoặc loại khách hàng).
+     * @param startDate Thời gian bắt đầu.
+     * @param endDate Thời gian kết thúc.
+     * @return Tổng doanh thu liên kết.
+     */
+    double getTotalAffiliateRevenue(LocalDateTime startDate, LocalDateTime endDate);
+
+    /**
+     * Lấy dữ liệu doanh thu theo từng tháng trong một năm cụ thể.
+     * Key là tháng (1-12), Value là tổng doanh thu của tháng đó.
+     * @param year Năm cần lấy dữ liệu.
+     * @return Map chứa doanh thu theo tháng.
+     */
+    Map<Integer, Double> getMonthlySalesData(int year);
 }
