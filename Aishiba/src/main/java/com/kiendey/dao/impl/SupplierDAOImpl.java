@@ -17,12 +17,11 @@ public class SupplierDAOImpl implements SupplierDAO {
         Transaction transaction = null;
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
+            supplier.setIsDeleted(false);
             session.persist(supplier);
             transaction.commit();
         } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
+            if (transaction != null) transaction.rollback();
             e.printStackTrace();
         }
     }
@@ -45,10 +44,9 @@ public class SupplierDAOImpl implements SupplierDAO {
             session.merge(supplier);
             transaction.commit();
         } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
+            if (transaction != null) transaction.rollback();
             e.printStackTrace();
+            // Có thể ném exception lên để servlet bắt và trả về lỗi
         }
     }
 
@@ -58,14 +56,13 @@ public class SupplierDAOImpl implements SupplierDAO {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
             Supplier supplier = session.get(Supplier.class, id);
-            if (supplier != null) {
-                session.remove(supplier);
+            if (supplier != null && !supplier.isDeleted()) {
+                supplier.setIsDeleted(true);
+                session.merge(supplier);
             }
             transaction.commit();
         } catch (Exception e) {
-            if (transaction != null) {
-                transaction.rollback();
-            }
+            if (transaction != null) transaction.rollback();
             e.printStackTrace();
         }
     }
@@ -73,49 +70,46 @@ public class SupplierDAOImpl implements SupplierDAO {
     @Override
     public List<Supplier> getAllSuppliers() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("FROM Supplier", Supplier.class).list();
+            return session.createQuery("FROM Supplier s WHERE s.isDeleted = false", Supplier.class).list();
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return Collections.emptyList();
         }
     }
 
     @Override
     public List<Supplier> searchSuppliersByName(String name) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            String hql = "FROM Supplier s WHERE s.name LIKE :name";
+            String hql = "FROM Supplier s WHERE s.name LIKE :name AND s.isDeleted = false";
             return session.createQuery(hql, Supplier.class)
                     .setParameter("name", "%" + name + "%")
                     .list();
         } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return Collections.emptyList();
         }
     }
 
-    // Triển khai phương thức lấy nhà cung cấp theo trang
     @Override
     public List<Supplier> getSuppliersByPage(int pageNumber, int pageSize) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            // Sắp xếp theo tên để đảm bảo thứ tự nhất quán giữa các trang
-            Query<Supplier> query = session.createQuery("FROM Supplier s ORDER BY s.name ASC", Supplier.class);
+            Query<Supplier> query = session.createQuery("FROM Supplier s WHERE s.isDeleted = false ORDER BY s.name ASC", Supplier.class);
             query.setFirstResult((pageNumber - 1) * pageSize);
             query.setMaxResults(pageSize);
             return query.list();
         } catch (Exception e) {
             e.printStackTrace();
-            return Collections.emptyList(); // Trả về danh sách rỗng nếu có lỗi
+            return Collections.emptyList();
         }
     }
 
-    // Triển khai phương thức đếm tổng số nhà cung cấp
     @Override
     public long getTotalSupplierCount() {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
-            return session.createQuery("SELECT COUNT(s.id) FROM Supplier s", Long.class).uniqueResult();
+            return session.createQuery("SELECT COUNT(s.id) FROM Supplier s WHERE s.isDeleted = false", Long.class).uniqueResult();
         } catch (Exception e) {
             e.printStackTrace();
-            return 0L; // Trả về 0 nếu có lỗi
+            return 0L;
         }
     }
 }

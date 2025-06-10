@@ -13,7 +13,7 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Supplier extends AbstractEntity<String>{
+public class Supplier extends AbstractEntity<String> {
     @Column(name = "name", nullable = false)
     String name;
 
@@ -35,17 +35,20 @@ public class Supplier extends AbstractEntity<String>{
     @OneToMany(mappedBy = "supplier")
     List<Stock> stocks = new ArrayList<>();
 
-    @OneToMany (mappedBy = "supplier")
+    @OneToMany(mappedBy = "supplier")
     List<Toy> toys = new ArrayList<>();
 
     @Column(name = "is_deleted")
-    boolean isDeleted ; // Trạng thái xóa mềm, mặc định là false (không bị xóa)
+    private boolean isDeleted = false;
 
-    // Phương thức mới để định dạng mã nhà cung cấp
     public String getFormattedSupplierCode() {
         if (this.getId() != null && this.getId().length() >= 8) {
             return "NCC" + this.getId().substring(0, 4).toUpperCase();
         }
-        return "NCC-N/A"; // Hoặc một giá trị mặc định khác nếu id không hợp lệ
+        return "NCC-N/A";
+    }
+
+    public void setIsDeleted(boolean b) {
+        this.isDeleted = b;
     }
 }

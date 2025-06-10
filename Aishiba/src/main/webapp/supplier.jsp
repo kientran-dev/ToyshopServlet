@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 
 <style>
     .card {
@@ -85,7 +86,7 @@
         box-shadow: 0 0 0 3px #2563eb55;
     }
     .btn-group-header > * {
-        margin-right: 4px;
+        margin-right: 12px;
     }
     .btn-group-header > *:last-child {
         margin-right: 0;
@@ -145,6 +146,16 @@
         text-decoration: none;
         list-style: none; /* Loại bỏ dấu đầu dòng nếu có */
     }
+    .supplier-detail-row {
+        transition: height 0.3s cubic-bezier(.4,0,.2,1), opacity 0.3s;
+        overflow: hidden;
+        height: 0;
+        opacity: 0;
+    }
+    .supplier-detail-row.show {
+        height: auto !important;
+        opacity: 1;
+    }
 </style>
 
 <main id="main" class="main">
@@ -158,65 +169,28 @@
             </ol>
         </nav>
     </div>
+
     <section class="section">
         <div class="container-fluid px-0">
             <div class="card shadow-sm rounded-4 p-4" style="border: none;">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap flex-row-reverse">
-                    <div class="d-flex flex-row align-items-center btn-group-header">
-                        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addSupplierModal">
+                    <div class="d-flex flex-row align-items-center btn-group-header mb-3">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newSupplierModal">
                             <i class="bi bi-plus-lg me-1"></i> Thêm mới
                         </button>
                         <div class="dropdown">
-                            <button class="btn btn-success btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-file-earmark me-1"></i> Xuất/Nhập
+                            <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-file-earmark-arrow-down me-1"></i> Xuất/Nhập
                             </button>
                             <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" href="#" onclick="exportSuppliers()">
-                                        <i class="bi bi-file-earmark-excel me-2"></i>Xuất Excel
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="#" onclick="importSuppliers()">
-                                        <i class="bi bi-file-earmark-arrow-up me-2"></i>Nhập Excel
-                                    </a>
-                                </li>
+                                <li><a class="dropdown-item" href="#" onclick="exportSuppliers()">Xuất Excel</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="importSuppliers()">Nhập Excel</a></li>
                             </ul>
                         </div>
-                        <div class="dropdown">
-                            <button class="btn btn-danger btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-file-earmark me-1"></i> Xóa
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item" href="#" onclick="deleteSelectedSuppliersTemp()">
-                                        <i class="bi bi-trash me-2"></i>Chuyển vô thùng rác
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item" href="#" onclick="deleteSelectedSuppliersForever()">
-                                        <i class="bi bi-file-trash me-2"></i>Xóa hoàn toàn
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="dropdown">
-                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                <i class="bi bi-arrow-repeat me-1"></i> Trạng thái hợp tác
-                            </button>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a class="dropdown-item text-warning" href="#" onclick="bulkChangeSupplierStatus('Ngừng hợp tác')">
-                                        <i class="bi bi-x-octagon me-1"></i> Hủy hợp tác
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item text-success" href="#" onclick="bulkChangeSupplierStatus('Đang hợp tác')">
-                                        <i class="bi bi-check2-circle me-1"></i> Hợp tác lại
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
+                        <!-- Nút Xóa chỉ 1 cấp -->
+                        <button class="btn btn-danger" type="button" onclick="deleteSelectedSuppliersTemp()">
+                            <i class="bi bi-file-earmark-x me-1"></i> Xóa
+                        </button>
                     </div>
                     <h2 class="fw-bold text-primary mb-0 ms-2">Danh sách nhà cung cấp</h2>
                 </div>
@@ -237,7 +211,6 @@
                             </th>
                             <th>Mã NCC</th>
                             <th>Tên nhà cung cấp</th>
-                            <th>Trạng thái</th>
                             <th>Số điện thoại</th>
                             <th>Email</th>
                             <th>Địa chỉ</th>
@@ -245,24 +218,50 @@
                         </thead>
                         <tbody id="supplierTableBody">
                         <c:if test="${not empty supplierList}">
-                            <c:forEach var="supplier" items="${supplierList}" varStatus="loop">
-                                <tr data-supplier-id="${supplier.formattedSupplierCode}" data-description="${supplier.description}">
-                                    <td><input type="checkbox" class="form-check-input supplier-checkbox" value="${supplier.formattedSupplierCode}" title="Chọn nhà cung cấp này" onclick="event.stopPropagation();"></td>
-                                    <td style="color: #0D6EFD"><c:out value="${supplier.formattedSupplierCode}" /></td>
-                                    <td><c:out value="${supplier.name}" /></td>
+                            <c:forEach var="supplier" items="${supplierList}">
+                                <tr
+                                        data-supplier-id="${supplier.id}"
+                                        data-formatted-code="${supplier.formattedSupplierCode}"
+                                        style="cursor:pointer"
+                                        onclick="toggleSupplierDetail('${supplier.id}')">
                                     <td>
-                                        <c:choose>
-                                            <c:when test="${supplier.status == 'true'}">
-                                                <span class="badge bg-success">Đang hợp tác</span>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <span class="badge bg-danger">Ngừng hợp tác</span>
-                                            </c:otherwise>
-                                        </c:choose>
+                                        <input type="checkbox" class="form-check-input supplier-checkbox"
+                                               value="${supplier.id}"
+                                               onclick="event.stopPropagation();">
                                     </td>
-                                    <td><c:out value="${supplier.phoneNumber}" /></td>
-                                    <td><c:out value="${supplier.email}" /></td>
-                                    <td><c:out value="${supplier.address}" /></td>
+                                    <td style="color: #0D6EFD">
+                                        <c:out value="${supplier.formattedSupplierCode}" />
+                                    </td>
+                                    <td>${supplier.name}</td>
+                                    <td>${supplier.phoneNumber}</td>
+                                    <td>${supplier.email}</td>
+                                    <td>${supplier.address}</td>
+                                </tr>
+                                <!-- Dòng chi tiết (ẩn/hiện bằng JS) -->
+                                <tr class="supplier-detail-row" style="display:none;" id="detail-${supplier.id}">
+                                    <td colspan="6">
+                                        <div class="supplier-detail-card p-4 mt-0">
+                                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                                <h2 class="fw-bold text-primary mb-0">${supplier.name}</h2>
+                                                <button class="btn btn-outline-secondary btn-sm" onclick="closeDetailRow('${supplier.id}');event.stopPropagation();"><i class="bi bi-x-lg"></i> Đóng</button>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-2"><strong>Mã NCC:</strong> <span>${supplier.formattedSupplierCode}</span></div>
+                                                    <div class="mb-2"><strong>Số điện thoại:</strong> <span>${supplier.phoneNumber}</span></div>
+                                                    <div class="mb-2"><strong>Email:</strong> <span>${supplier.email}</span></div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-2"><strong>Địa chỉ:</strong> <span>${supplier.address}</span></div>
+                                                    <div class="mb-2"><strong>Ghi chú:</strong> <span>${supplier.description}</span></div>
+                                                </div>
+                                            </div>
+                                            <div class="d-flex justify-content-end mt-3">
+                                                <button class="btn btn-primary btn-sm" onclick="openEditSupplierModal('${supplier.id}');event.stopPropagation();" data-bs-toggle="modal" data-bs-target="#editSupplierModal"><i class="bi bi-pencil-square me-1"></i> Sửa</button>
+                                                <button class="btn btn-danger btn-sm" onclick="deleteSupplier('${supplier.id}');event.stopPropagation();"><i class="bi bi-trash me-1"></i> Xóa</button>
+                                            </div>
+                                        </div>
+                                    </td>
                                 </tr>
                             </c:forEach>
                         </c:if>
@@ -272,6 +271,7 @@
                             </tr>
                         </c:if>
                         </tbody>
+
                     </table>
                 </div>
 
@@ -346,52 +346,98 @@
             </div>
         </div>
     </section>
-    <!-- Modal Thêm/Sửa Nhà Cung Cấp -->
-    <div class="modal fade" id="addSupplierModal" tabindex="-1" aria-labelledby="addSupplierModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title" id="addSupplierModalLabel">Thêm / Sửa Nhà Cung Cấp</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- Modal Thêm Nhà Cung Cấp= -->
+    <div class="modal fade" id="newSupplierModal" tabindex="-1" aria-labelledby="newSupplierModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <form id="newSupplierForm" action="/supplier" method="post">
+                <input type="hidden" name="action" value="create">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newSupplierModalLabel">Thêm nhà cung cấp mới</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="supplierCode" class="form-label">Mã NCC</label>
+                                    <input type="text" class="form-control" id="supplierCode" placeholder="[Sẽ được tạo tự động sau khi lưu]" readonly>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="supplierName" class="form-label">Tên nhà cung cấp <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="supplierName" name="supplierName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="supplierPhone" class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="supplierPhone" name="supplierPhone" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="supplierEmail" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="supplierEmail" name="supplierEmail">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="supplierAddress" class="form-label">Địa chỉ <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="supplierAddress" name="supplierAddress" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="supplierNote" class="form-label">Ghi chú</label>
+                                    <textarea class="form-control" id="supplierNote" name="supplierNote" rows="2" placeholder="Nhập ghi chú..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-primary">Thêm</button>
+                    </div>
                 </div>
-                <div class="modal-body">
-                    <form id="supplierForm">
-                        <input type="hidden" id="supplierAction" name="action" value="add">
-                        <div class="mb-3">
-                            <label for="supplierCode" class="form-label">Mã NCC</label>
-                            <input type="text" class="form-control" id="supplierCode" name="formattedSupplierCode" required>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Sửa Nhà Cung Cấp -->
+    <div class="modal fade" id="editSupplierModal" tabindex="-1" aria-labelledby="editSupplierModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <form id="editSupplierForm" action="${pageContext.request.contextPath}/supplier" method="post">
+                <input type="hidden" name="action" value="update">
+                <input type="hidden" name="supplierCode" id="editSupplierCode">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editSupplierModalLabel">Sửa nhà cung cấp</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Tên nhà cung cấp <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="supplierName" id="editSupplierName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="supplierEmail" id="editSupplierEmail">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Số điện thoại <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="supplierPhone" id="editSupplierPhone" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Địa chỉ <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" name="supplierAddress" id="editSupplierAddress" required>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Ghi chú</label>
+                                <textarea class="form-control" name="supplierNote" id="editSupplierNote" rows="2"></textarea>
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="supplierName" class="form-label">Tên nhà cung cấp</label>
-                            <input type="text" class="form-control" id="supplierName" name="name" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="supplierPhone" class="form-label">Số điện thoại</label>
-                            <input type="text" class="form-control" id="supplierPhone" name="phoneNumber" required>
-                        </div>
-                        <div class="mb-3">
-                            <label for="supplierEmail" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="supplierEmail" name="email">
-                        </div>
-                        <div class="mb-3">
-                            <label for="supplierAddress" class="form-label">Địa chỉ</label>
-                            <input type="text" class="form-control" id="supplierAddress" name="address">
-                        </div>
-                        <div class="mb-3">
-                            <label for="supplierStatus" class="form-label">Trạng thái</label>
-                            <select class="form-select" id="supplierStatus" name="status">
-                                <option value="true">Đang hợp tác</option>
-                                <option value="false">Ngừng hợp tác</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label for="supplierNote" class="form-label">Ghi chú</label>
-                            <textarea class="form-control" id="supplierNote" name="description"></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-success">Lưu</button>
-                    </form>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="submit" class="btn btn-primary">Lưu</button>
+                    </div>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
     <!-- Hidden Form for Server Actions -->
@@ -406,70 +452,7 @@
     let currentSupplier = null;
 
     // Hiển thị chi tiết khi click vào dòng (trượt mở ngay dưới dòng được chọn)
-    (function() {
-        const supplierTable = document.getElementById('supplierTableBody');
-        let currentDetailRow = null;
-        let currentRow = null;
-        if (supplierTable) {
-            supplierTable.querySelectorAll('tr').forEach(row => {
-                row.onclick = function(event) {
-                    if (event.target.type === 'checkbox') return;
 
-                    if (currentRow === this && currentDetailRow) {
-                        currentDetailRow.remove();
-                        currentDetailRow = null;
-                        currentRow = null;
-                        return;
-                    }
-
-                    if (currentDetailRow) {
-                        currentDetailRow.remove();
-                    }
-
-                    const tds = this.querySelectorAll('td');
-                    const supplierId = this.dataset.supplierId;
-                    const supplierName = tds[2].textContent;
-                    const supplierCode = tds[1].textContent;
-                    const status = tds[3].querySelector('.badge').textContent;
-                    const phoneNumber = tds[4].textContent;
-                    const email = tds[5].textContent;
-                    const address = tds[6].textContent;
-                    const description = this.dataset.description || 'Không có ghi chú';
-
-                    const detailTr = document.createElement('tr');
-                    detailTr.className = 'supplier-detail-row';
-                    detailTr.innerHTML = `
-                        <td colspan="7">
-                          <div class="supplier-detail-card p-4 mt-0" style="animation: slideDown .3s;">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                              <h2 class="fw-bold text-primary mb-0">${supplierName}</h2>
-                              <button class="btn btn-outline-secondary btn-sm" onclick="this.closest('tr').remove();currentDetailRow=null;currentRow=null;event.stopPropagation();"><i class="bi bi-x-lg"></i> Đóng</button>
-                            </div>
-                            <div class="row">
-                              <div class="col-md-6">
-                                <div class="mb-2"><strong>Mã NCC:</strong> <span>${supplierCode}</span></div>
-                                <div class="mb-2"><strong>Số điện thoại:</strong> <span>${phoneNumber}</span></div>
-                                <div class="mb-2"><strong>Email:</strong> <span>${email}</span></div>
-                              </div>
-                              <div class="col-md-6">
-                                <div class="mb-2"><strong>Địa chỉ:</strong> <span>${address}</span></div>
-                                <div class="mb-2"><strong>Trạng thái:</strong> <span class="badge bg-${status == 'Đang hợp tác' ? 'success' : 'danger'}">${status}</span></div>
-                                <div class="mb-2"><strong>Ghi chú:</strong> <span>${description}</span></div>
-                              </div>
-                            </div>
-                            <div class="d-flex justify-content-end mt-3">
-                              <button class="btn btn-primary btn-sm" onclick="editSupplier('${supplierId}');event.stopPropagation();" data-bs-toggle="modal" data-bs-target="#addSupplierModal"><i class="bi bi-pencil-square me-1"></i> Sửa</button>
-                              <button class="btn btn-danger btn-sm" onclick="deleteSupplier('${supplierId}');event.stopPropagation();"><i class="bi bi-trash me-1"></i> Xóa</button>
-                            </div>
-                          </div>
-                        </td>`;
-                    this.parentNode.insertBefore(detailTr, this.nextSibling);
-                    currentDetailRow = detailTr;
-                    currentRow = this;
-                }
-            });
-        }
-    })();
 
     // CSS hiệu ứng trượt
     const style = document.createElement('style');
@@ -500,26 +483,8 @@
         });
     }
 
-    function bulkChangeSupplierStatus(status) {
-        const checked = document.querySelectorAll('.supplier-checkbox:checked');
-        if (checked.length === 0) {
-            alert('Vui lòng chọn nhà cung cấp!');
-            return;
-        }
-        const supplierIds = Array.from(checked).map(cb => cb.value).join(',');
-        const form = document.getElementById('serverActionForm');
-        document.getElementById('serverAction').value = 'updateStatus';
-        document.getElementById('serverSupplierIds').value = supplierIds;
-        const statusInput = document.createElement('input');
-        statusInput.type = 'hidden';
-        statusInput.name = 'status';
-        statusInput.value = status === 'Đang hợp tác' ? 'true' : 'false';
-        form.appendChild(statusInput);
-        form.submit();
-    }
-
     function exportSuppliers() {
-        window.location.href = '/supplier?action=export';
+        window.location.href = '${pageContext.request.contextPath}/supplier?action=export';
     }
 
     function importSuppliers() {
@@ -534,34 +499,68 @@
         fileInput.click();
     }
 
+    function hideSupplierRows(ids) {
+        ids.forEach(id => {
+            const row = document.querySelector(`tr[data-supplier-id="${id}"]`);
+            if (row) row.style.display = 'none';
+            const detailRow = document.getElementById('detail-' + id);
+            if (detailRow) detailRow.style.display = 'none';
+        });
+    }
+
+    function deleteSupplier(supplierId) {
+        if (!supplierId) return;
+        if (!confirm('Bạn có chắc muốn xóa nhà cung cấp này?')) return;
+        fetch('${pageContext.request.contextPath}/supplier', {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' },
+            body: new URLSearchParams({
+                action: 'delete',
+                supplierIds: supplierId
+            })
+        })
+            .then(res => {
+                if (!res.ok) throw new Error('Lỗi server');
+                return res.json();
+            })
+            .then(json => {
+                if (json.status === "success") {
+                    hideSupplierRows([supplierId]);
+                } else {
+                    alert('Xóa thất bại!');
+                }
+            })
+            .catch(() => alert('Có lỗi xảy ra khi xóa!'));
+    }
+
     function deleteSelectedSuppliersTemp() {
         const checked = document.querySelectorAll('.supplier-checkbox:checked');
         if (checked.length === 0) {
             alert('Vui lòng chọn nhà cung cấp!');
             return;
         }
-        if (confirm('Bạn có chắc muốn chuyển các nhà cung cấp này vào thùng rác?')) {
-            const supplierIds = Array.from(checked).map(cb => cb.value).join(',');
-            const form = document.getElementById('serverActionForm');
-            document.getElementById('serverAction').value = 'softDelete';
-            document.getElementById('serverSupplierIds').value = supplierIds;
-            form.submit();
-        }
-    }
-
-    function deleteSelectedSuppliersForever() {
-        const checked = document.querySelectorAll('.supplier-checkbox:checked');
-        if (checked.length === 0) {
-            alert('Vui lòng chọn nhà cung cấp!');
-            return;
-        }
-        if (confirm('Bạn có chắc muốn xóa hoàn toàn các nhà cung cấp này?')) {
-            const supplierIds = Array.from(checked).map(cb => cb.value).join(',');
-            const form = document.getElementById('serverActionForm');
-            document.getElementById('serverAction').value = 'hardDelete';
-            document.getElementById('serverSupplierIds').value = supplierIds;
-            form.submit();
-        }
+        const supplierIds = Array.from(checked).map(cb => cb.value);
+        if (!confirm(`Bạn có chắc muốn chuyển ${supplierIds.length} nhà cung cấp vào thùng rác?`)) return;
+        fetch('${pageContext.request.contextPath}/supplier', {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' },
+            body: new URLSearchParams({
+                action: 'delete',
+                supplierIds: supplierIds.join(',')
+            })
+        })
+            .then(res => {
+                if (!res.ok) throw new Error('Lỗi server');
+                return res.json();
+            })
+            .then(json => {
+                if (json.status === "success") {
+                    hideSupplierRows(supplierIds);
+                } else {
+                    alert('Xóa thất bại!');
+                }
+            })
+            .catch(() => alert('Có lỗi xảy ra khi xóa!'));
     }
 
     function editSupplier(supplierId) {
@@ -574,26 +573,138 @@
         document.getElementById('supplierPhone').value = tds[4].textContent;
         document.getElementById('supplierEmail').value = tds[5].textContent;
         document.getElementById('supplierAddress').value = tds[6].textContent;
-        document.getElementById('supplierStatus').value = tds[3].querySelector('.badge').textContent === 'Đang hợp tác' ? 'true' : 'false';
         document.getElementById('supplierNote').value = row.dataset.description || '';
-        document.getElementById('addSupplierModalLabel').textContent = 'Sửa Nhà Cung Cấp';
+        document.getElementById('editSupplierModalLabel').textContent = 'Sửa Nhà Cung Cấp';
     }
 
-    function deleteSupplier(supplierId) {
-        if (confirm('Bạn có chắc muốn xóa nhà cung cấp này?')) {
-            const form = document.getElementById('serverActionForm');
-            document.getElementById('serverAction').value = 'softDelete';
-            document.getElementById('serverSupplierIds').value = supplierId;
-            form.submit();
+    // Tạo object lưu thông tin supplier theo mã
+    var supplierMap = {};
+    <c:forEach var="supplier" items="${supplierList}">
+    supplierMap["${supplier.id}"] = {
+        id: "${supplier.id}",
+        formattedSupplierCode: "${supplier.formattedSupplierCode}",
+        name: "${supplier.name}",
+        phoneNumber: "${supplier.phoneNumber}",
+        email: "${supplier.email}",
+        address: "${supplier.address}",
+        description: "${supplier.description}"
+    };
+    </c:forEach>
+    function openEditSupplierModal(supplierId) {
+        var supplier = supplierMap[supplierId];
+        if (!supplier) return;
+        document.getElementById('editSupplierCode').value = supplier.id; // id thực
+        document.getElementById('editSupplierName').value = supplier.name;
+        document.getElementById('editSupplierPhone').value = supplier.phoneNumber;
+        document.getElementById('editSupplierEmail').value = supplier.email;
+        document.getElementById('editSupplierAddress').value = supplier.address;
+        document.getElementById('editSupplierNote').value = supplier.description || '';
+    }
+
+    document.getElementById('editSupplierForm').onsubmit = function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const data = new FormData(form);
+
+        fetch(form.action, {
+            method: 'POST',
+            body: data
+        })
+            .then(res => {
+                if (!res.ok) throw new Error('Lỗi cập nhật');
+                return res.json();
+            })
+            .then(json => {
+                if (json.status === "success") {
+                    // Cập nhật UI như bạn đã làm
+                    // ...
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('editSupplierModal'));
+                    if (modal) modal.hide();
+                } else {
+                    alert('Cập nhật thất bại!');
+                }
+            })
+            .catch(() => {
+                alert('Có lỗi xảy ra khi cập nhật!');
+            });
+    };
+
+    document.getElementById('newSupplierForm').onsubmit = function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const data = new FormData(form);
+        fetch(form.action, {
+            method: 'POST',
+            body: data
+        })
+            .then(res => res.json())
+            .then(json => {
+                if (json.status === "success") {
+                    // Reload hoặc thêm dòng mới vào bảng bằng JS
+                    location.reload();
+                } else {
+                    alert('Thêm thất bại!');
+                }
+            });
+    };
+
+    function toggleSupplierDetail(supplierId) {
+        var detailRow = document.getElementById('detail-' + supplierId);
+        if (!detailRow) return;
+
+        // Nếu đang mở thì đóng lại
+        if (detailRow.classList.contains('show')) {
+            detailRow.style.height = detailRow.scrollHeight + 'px'; // Đảm bảo có giá trị height trước khi đóng
+            // Bắt buộc reflow để transition hoạt động
+            void detailRow.offsetHeight;
+            detailRow.style.height = '0';
+            detailRow.style.opacity = '0';
+            detailRow.classList.remove('show');
+            setTimeout(function() {
+                detailRow.style.display = 'none';
+            }, 300);
+        } else {
+            // Đóng tất cả dòng chi tiết khác
+            document.querySelectorAll('.supplier-detail-row.show').forEach(row => {
+                row.style.height = '0';
+                row.style.opacity = '0';
+                row.classList.remove('show');
+                setTimeout(function(r) {
+                    r.style.display = 'none';
+                }, 300, row);
+            });
+
+            // Mở dòng chi tiết này
+            detailRow.style.display = 'table-row';
+            let content = detailRow.querySelector('.supplier-detail-card');
+            detailRow.style.height = '0';
+            detailRow.style.opacity = '0';
+            // Bắt buộc reflow để transition hoạt động
+            void detailRow.offsetHeight;
+            if (content) {
+                detailRow.style.height = content.offsetHeight + 'px';
+            }
+            detailRow.classList.add('show');
+            detailRow.style.opacity = '1';
+            // Sau khi transition xong, set height về auto để không bị lỗi khi resize nội dung
+            setTimeout(function() {
+                if (detailRow.classList.contains('show')) {
+                    detailRow.style.height = 'auto';
+                }
+            }, 300);
         }
     }
 
-    // Handle form submission
-    document.getElementById('supplierForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const form = this;
-        form.action = '/supplier';
-        form.method = 'post';
-        form.submit();
-    });
+    function closeDetailRow(supplierId) {
+        var detailRow = document.getElementById('detail-' + supplierId);
+        if (detailRow) {
+            detailRow.classList.remove('show');
+            detailRow.style.height = '0';
+            detailRow.style.opacity = '0';
+            setTimeout(function() {
+                detailRow.style.display = 'none';
+            }, 300); // 300ms khớp với transition CSS
+        }
+    }
+
 </script>
