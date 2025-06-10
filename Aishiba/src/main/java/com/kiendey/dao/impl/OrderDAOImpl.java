@@ -596,4 +596,108 @@ public class OrderDAOImpl implements OrderDAO {
             return Collections.emptyMap();
         }
     }
+
+
+    @Override
+    public double getTotalRevenueBetweenDates(LocalDateTime startDate, LocalDateTime endDate) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT SUM(oi.toy.price * oi.quantity) " +
+                    "FROM OrderItem oi JOIN oi.order o " +
+                    "WHERE o.status = 'HOAN_THANH' " +
+                    "AND o.orderDate >= :startDate " +
+                    "AND o.orderDate < :endDate";
+
+            Query<Double> query = session.createQuery(hql, Double.class);
+            query.setParameter("startDate", startDate);
+            query.setParameter("endDate", endDate);
+
+            Double totalRevenue = query.uniqueResult(); // Dùng uniqueResult() cho truy vấn trả về 1 giá trị
+
+            return (totalRevenue == null) ? 0.0 : totalRevenue;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0.0;
+        }
+    }
+
+    @Override
+    public long countOrdersBetweenDates(LocalDateTime startDate, LocalDateTime endDate) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT COUNT(o.id) FROM Order o " +
+                    "WHERE o.status = 'HOAN_THANH' " +
+                    "AND o.orderDate >= :startDate " +
+                    "AND o.orderDate < :endDate";
+
+            Query<Long> query = session.createQuery(hql, Long.class);
+            query.setParameter("startDate", startDate);
+            query.setParameter("endDate", endDate);
+
+            Long count = query.uniqueResult();
+            return (count == null) ? 0L : count;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0L;
+        }
+    }
+
+    @Override
+    public long sumSoldProductsBetweenDates(LocalDateTime startDate, LocalDateTime endDate) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT SUM(oi.quantity) FROM OrderItem oi JOIN oi.order o " +
+                    "WHERE o.status = 'HOAN_THANH' " +
+                    "AND o.orderDate >= :startDate " +
+                    "AND o.orderDate < :endDate";
+
+            Query<Long> query = session.createQuery(hql, Long.class);
+            query.setParameter("startDate", startDate);
+            query.setParameter("endDate", endDate);
+
+            Long sum = query.uniqueResult();
+            return (sum == null) ? 0L : sum;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0L;
+        }
+    }
+
+    @Override
+    public long countTotalDistinctCustomers() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT COUNT(DISTINCT o.user.id) FROM Order o WHERE o.status = 'HOAN_THANH'";
+            Query<Long> query = session.createQuery(hql, Long.class);
+            Long count = query.uniqueResult();
+            return (count == null) ? 0L : count;
+        } catch (Exception e) { e.printStackTrace(); return 0L; }
+    }
+
+    @Override
+    public long countDistinctCustomersBetweenDates(LocalDateTime startDate, LocalDateTime endDate) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT COUNT(DISTINCT o.user.id) FROM Order o " +
+                    "WHERE o.status = 'HOAN_THANH' " +
+                    "AND o.orderDate >= :startDate " +
+                    "AND o.orderDate < :endDate";
+            Query<Long> query = session.createQuery(hql, Long.class);
+            query.setParameter("startDate", startDate);
+            query.setParameter("endDate", endDate);
+            Long count = query.uniqueResult();
+            return (count == null) ? 0L : count;
+        } catch (Exception e) { e.printStackTrace(); return 0L; }
+    }
+
+    @Override
+    public long sumTotalSoldProducts() {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT SUM(oi.quantity) FROM OrderItem oi JOIN oi.order o WHERE o.status = 'HOAN_THANH'";
+
+            Query<Long> query = session.createQuery(hql, Long.class);
+            Long sum = query.uniqueResult();
+
+            // Nếu chưa có sản phẩm nào được bán, SUM sẽ trả về null
+            return (sum == null) ? 0L : sum;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0L;
+        }
+    }
 }

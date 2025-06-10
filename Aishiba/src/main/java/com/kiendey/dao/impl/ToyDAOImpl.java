@@ -157,4 +157,25 @@ public class ToyDAOImpl implements ToyDAO {
             return 0L;
         }
     }
+
+
+    @Override
+    public List<Object[]> countToysByCategory() {
+        // Sử dụng try-with-resources để session tự động được đóng sau khi kết thúc
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "SELECT c.categoryName, COUNT(t.id) " +
+                    "FROM Toy t JOIN t.category c " +
+                    "GROUP BY c.categoryName " +
+                    "ORDER BY COUNT(t.id) DESC";
+
+            Query<Object[]> query = session.createQuery(hql, Object[].class);
+
+            return query.list();
+        } catch (Exception e) {
+            // In lỗi ra để dễ dàng debug
+            e.printStackTrace();
+            // Trả về một danh sách rỗng để tránh lỗi NullPointerException ở Servlet
+            return new ArrayList<>();
+        }
+    }
 }

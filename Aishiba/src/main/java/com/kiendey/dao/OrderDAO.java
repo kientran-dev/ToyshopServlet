@@ -92,4 +92,22 @@ public interface OrderDAO {
      * @return Map chứa doanh thu theo tháng.
      */
     Map<Integer, Double> getMonthlySalesData(int year);
+
+    /**
+     * HÀM MỚI: Tính tổng doanh thu từ các đơn hàng đã hoàn thành
+     * trong một khoảng thời gian cho trước.
+     * @param startDate Ngày bắt đầu (bao gồm).
+     * @param endDate Ngày kết thúc (không bao gồm).
+     * @return Tổng doanh thu dưới dạng double.
+     */
+    double getTotalRevenueBetweenDates(LocalDateTime startDate, LocalDateTime endDate);
+    long countOrdersBetweenDates(LocalDateTime startDate, LocalDateTime endDate);
+    long sumSoldProductsBetweenDates(LocalDateTime startDate, LocalDateTime endDate);
+    long countTotalDistinctCustomers();
+    long countDistinctCustomersBetweenDates(LocalDateTime startDate, LocalDateTime endDate);
+    /**
+     * Tính tổng số lượng của tất cả các sản phẩm đã được bán ra từ trước đến nay.
+     * Chỉ tính các đơn hàng đã hoàn thành.
+     */
+    long sumTotalSoldProducts();
 }

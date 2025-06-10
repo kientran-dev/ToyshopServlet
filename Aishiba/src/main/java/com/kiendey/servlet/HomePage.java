@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-@WebServlet("/homepagess")
+@WebServlet("/homepage")
 public class HomePage extends HttpServlet {
     private OrderDAO orderDAO;
     private OrderItemDAO orderItemDAO;
@@ -56,19 +56,14 @@ public class HomePage extends HttpServlet {
 
         // 1. Calculate dashboard metrics from DAOs
         double totalSalesRevenue = orderDAO.getTotalSalesRevenue(startOfCurrentYear, endOfCurrentYear);
-        long totalOrders = orderDAO.getTotalOrderCountByDateRange(startOfCurrentYear, endOfCurrentYear);
-        long totalProductsSold = orderItemDAO.getTotalQuantitySoldByDateRange(startOfCurrentYear, endOfCurrentYear);
-
         // Lấy tổng số khách hàng:
         // Sử dụng phương thức getCustomerOrderCounts() từ OrderDAO để lấy số lượng khách hàng duy nhất đã đặt hàng.
         // Nếu bạn có UserDAO với phương thức getTotalUserCount(), bạn có thể dùng nó thay thế.
-        long totalCustomers = orderDAO.getCustomerOrderCounts().size();
+
 
         // Set metrics as request attributes
         req.setAttribute("totalSalesRevenue", totalSalesRevenue);
-        req.setAttribute("totalOrders", totalOrders);
-        req.setAttribute("totalProductsSold", totalProductsSold);
-        req.setAttribute("totalCustomers", totalCustomers); // Giá trị này giờ sẽ được cập nhật từ DB
+
 
         // 2. Get data for "Mức độ tăng trưởng bán hàng từng năm" chart
         Map<Integer, Double> monthlySales2025Data = orderDAO.getMonthlySalesData(currentYear);
@@ -89,31 +84,59 @@ public class HomePage extends HttpServlet {
         });
         req.setAttribute("monthlySales2024", monthlySales2024);
 
-        // 3. Get data for "Tỷ lệ phần trăm sản phẩm theo danh mục" chart
-        List<ProductSaleStat> productSaleStats = orderItemDAO.getProductSalesStatistics();
-        List<String> productLabels = productSaleStats.stream()
-                .map(ProductSaleStat::getFormattedToyName)
-                .collect(Collectors.toList());
-        List<Long> productQuantities = productSaleStats.stream()
-                .map(ProductSaleStat::getQuantitySold)
-                .collect(Collectors.toList());
+        // 1. Gọi hàm MỚI từ ToyDAO để lấy dữ liệu thống kê
+        List<Object[]> productStats = toyDAO.countToysByCategory();
 
-        // Manually serialize productLabels to a JSON string for JavaScript consumption
-        StringBuilder labelsJsonBuilder = new StringBuilder("[");
-        for (int i = 0; i < productLabels.size(); i++) {
-            String label = productLabels.get(i);
-            String escapedLabel = label.replace("\\", "\\\\")
-                    .replace("\"", "\\\"")
-                    .replace("\n", "\\n")
-                    .replace("\r", "\\r");
-            labelsJsonBuilder.append("\"").append(escapedLabel).append("\"");
-            if (i < productLabels.size() - 1) {
-                labelsJsonBuilder.append(",");
-            }
+// 2. Chuẩn bị 2 danh sách để truyền cho biểu đồ (giữ nguyên)
+        List<String> productLabels = new ArrayList<>();
+        List<Long> productQuantities = new ArrayList<>();
+
+// 3. Lặp qua kết quả và đưa vào 2 danh sách trên (giữ nguyên)
+        for (Object[] result : productStats) {
+            String categoryName = (String) result[0];
+            Long productCount = (Long) result[1]; // Đây là số lượng sản phẩm, không phải số lượng bán
+
+            productLabels.add(categoryName);
+            productQuantities.add(productCount);
         }
-        labelsJsonBuilder.append("]");
+// Xác định khoảng thời gian (giữ nguyên)
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime startOfThisMonth = now.withDayOfMonth(1).toLocalDate().atStartOfDay();
+        LocalDateTime startOfNextMonth = startOfThisMonth.plusMonths(1);
+        LocalDateTime startOfLastMonth = startOfThisMonth.minusMonths(1);
 
-        req.setAttribute("productLabelsJson", labelsJsonBuilder.toString());
+// --- Tính toán cho thẻ Tổng Đơn Hàng ---
+        long totalOrders = orderDAO.getTotalOrderCount();
+        long totalOrdersLastMonth = orderDAO.countOrdersBetweenDates(startOfLastMonth, startOfThisMonth);
+        double totalOrdersChange = calculatePercentageChange(totalOrders, totalOrdersLastMonth);
+        req.setAttribute("totalOrders", totalOrders); // Gửi tổng số hiển thị chính
+        req.setAttribute("totalOrdersChange", totalOrdersChange);
+
+// --- Tính toán cho thẻ Tổng Sản Phẩm Bán Ra ---
+        long totalProductsSold = orderDAO.sumTotalSoldProducts();
+        long totalProductsSoldLastMonth = orderDAO.sumSoldProductsBetweenDates(startOfLastMonth, startOfThisMonth);
+        double totalProductsSoldChange = calculatePercentageChange(totalProductsSold, totalProductsSoldLastMonth);
+        req.setAttribute("totalProductsSold", totalProductsSold);
+        req.setAttribute("totalProductsSoldChange", totalProductsSoldChange);
+
+// --- Tính toán cho thẻ Tổng Khách Hàng ---
+        long totalCustomers = orderDAO.countTotalDistinctCustomers(); // Tổng từ trước đến nay
+        long customersThisMonth = orderDAO.countDistinctCustomersBetweenDates(startOfThisMonth, startOfNextMonth);
+        long customersLastMonth = orderDAO.countDistinctCustomersBetweenDates(startOfLastMonth, startOfThisMonth);
+        double customersChange = calculatePercentageChange(customersThisMonth, customersLastMonth);
+
+        double totalRevenueThisMonth = orderDAO.getTotalRevenueBetweenDates(startOfThisMonth, startOfNextMonth);
+        double totalRevenueLastMonth = orderDAO.getTotalRevenueBetweenDates(startOfLastMonth, startOfThisMonth);
+
+// 5. Tính toán tỷ lệ phần trăm thay đổi
+        double totalRevenueChange = calculatePercentageChange(totalRevenueThisMonth, totalRevenueLastMonth);
+
+// 6. Đặt thuộc tính để gửi sang JSP
+        req.setAttribute("totalRevenueChange", totalRevenueChange);
+        req.setAttribute("totalCustomers", totalCustomers);
+        req.setAttribute("customersChange", customersChange);
+// 4. Đặt thuộc tính cho request để JSP có thể đọc được (giữ nguyên)
+        req.setAttribute("productLabels", productLabels);
         req.setAttribute("productQuantities", productQuantities);
 
         // Tạo một formatter để gửi sang JSP
@@ -151,5 +174,23 @@ public class HomePage extends HttpServlet {
         if (end != null){
             end.include(req, resp);
         }
+    }
+
+    /**
+     * Hàm trợ giúp (helper method) để tính toán tỷ lệ phần trăm thay đổi.
+     * @param currentValue Giá trị của kỳ hiện tại (ví dụ: doanh thu tháng này).
+     * @param previousValue Giá trị của kỳ trước đó (ví dụ: doanh thu tháng trước).
+     * @return Tỷ lệ phần trăm thay đổi.
+     */
+    private double calculatePercentageChange(double currentValue, double previousValue) {
+        // --- Xử lý trường hợp đặc biệt để tránh lỗi chia cho 0 ---
+        if (previousValue == 0) {
+            // Nếu giá trị cũ là 0 và giá trị mới lớn hơn 0, coi như tăng 100%
+            return (currentValue > 0) ? 100.0 : 0.0;
+        }
+
+        // --- Công thức tính toán chính ---
+        // ((Giá trị mới - Giá trị cũ) / Giá trị cũ) * 100
+        return ((currentValue - previousValue) / previousValue) * 100.0;
     }
 }
