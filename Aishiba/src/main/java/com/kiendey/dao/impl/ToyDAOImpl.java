@@ -178,4 +178,63 @@ public class ToyDAOImpl implements ToyDAO {
             return new ArrayList<>();
         }
     }
+
+    @Override
+    public Toy findById(String id) {
+        Toy toy = null;
+        // Sử dụng try-with-resources để đảm bảo session được đóng tự động
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Dùng hàm session.get() để lấy đối tượng theo khóa chính
+            // Hibernate sẽ tự động tạo câu lệnh SELECT và ánh xạ kết quả
+            toy = session.get(Toy.class, id);
+        } catch (Exception e) {
+            // In lỗi ra console nếu có vấn đề xảy ra
+            e.printStackTrace();
+        }
+        // Trả về đối tượng tìm được hoặc null nếu không có
+        return toy;
+    }
+
+    @Override
+    public boolean softDeleteToys(List<Integer> idsToDelete) {
+        // Nếu danh sách ID rỗng hoặc null, không cần làm gì cả
+        if (idsToDelete == null || idsToDelete.isEmpty()) {
+            return true; // Coi như thành công vì không có gì để xóa
+        }
+
+        Transaction transaction = null;
+        // Sử dụng try-with-resources để session được đóng tự động
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            // Bất kỳ thao tác ghi (create, update, delete) nào cũng cần một transaction
+            transaction = session.beginTransaction();
+
+            // Câu lệnh HQL để cập nhật hàng loạt.
+            // "Toy" ở đây là tên của Entity class, không phải tên bảng trong CSDL.
+            // "isDeleted" và "id" là tên các thuộc tính trong class Toy.
+            String hql = "UPDATE Toy SET isDeleted = true WHERE id IN (:ids)";
+
+            // Tạo query từ chuỗi HQL
+            Query query = session.createQuery(hql);
+
+            // Gán danh sách các ID vào tham số :ids của câu HQL
+            query.setParameter("ids", idsToDelete);
+
+            // Thực thi câu lệnh UPDATE và lấy số lượng hàng đã được cập nhật
+            int updatedCount = query.executeUpdate();
+
+            System.out.println("Đã xóa mềm " + updatedCount + " sản phẩm.");
+
+            // Hoàn tất transaction
+            transaction.commit();
+
+            return true; // Trả về true nếu transaction thành công
+        } catch (Exception e) {
+            // Nếu có lỗi xảy ra, hủy bỏ (rollback) transaction
+            if (transaction != null) {
+                transaction.rollback();
+            }
+            e.printStackTrace(); // In lỗi ra để debug
+            return false; // Trả về false nếu có lỗi
+        }
+    }
 }

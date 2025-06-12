@@ -1,3 +1,4 @@
+
 package com.kiendey.servlet;
 
 import com.kiendey.dao.ToyDAO;
@@ -21,7 +22,7 @@ public class Product extends HttpServlet {
     public void init() throws ServletException {
         super.init();
         toyDAO = new ToyDAOImpl();
-        }
+    }
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

@@ -23,4 +23,6 @@ public interface ToyDAO {
      * - Object[1]: Số lượng sản phẩm trong danh mục đó (Long)
      */
     List<Object[]> countToysByCategory();
+    Toy findById(String id);
+    boolean softDeleteToys(List<Integer> idsToDelete);
 }

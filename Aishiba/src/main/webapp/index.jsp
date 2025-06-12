@@ -38,7 +38,7 @@
               <i class="bi ${totalRevenueChange >= 0 ? 'bi-arrow-up' : 'bi-arrow-down'}"></i>
               <fmt:formatNumber value="${Math.abs(totalRevenueChange)}" type="percent" maxFractionDigits="2"/>
             </span>
-                <span class="text-muted small pt-2 ps-1">so với tháng trước</span>
+                <span class="text-muted small pt-2 ps-1">tháng trước</span>
               </c:if>
             </div>
           </div>
@@ -241,7 +241,7 @@
     <div class="col-lg-8 d-flex">
       <div class="card h-100 w-100">
         <div class="card-body">
-          <h5 class="card-title">Đơn Hàng Gần Đây <span>| Hôm nay</span></h5>
+          <h5 class="card-title">Sản phẩm bán được gần Đây <span>| Hôm nay</span></h5>
           <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
             <table class="table table-hover">
               <thead>
@@ -253,7 +253,6 @@
                 <th scope="col">Giá</th>
                 <th scope="col">Thời Gian Đặt</th>
                 <th scope="col">Khách Hàng</th>
-                <th scope="col">Trạng Thái</th>
               </tr>
               </thead>
               <tbody>
@@ -275,18 +274,7 @@
                     <td>$<fmt:formatNumber value="${orderItem.toy.price * orderItem.quantity}" pattern="#,##0.00"/></td>
                     <td>${order.orderDate.format(myFormatter)}</td>
                     <td>${order.user.name}</td> <%-- Giả định User có thuộc tính 'name' --%>
-                    <td>
-                          <span class="badge
-<c:choose>
-    <c:when test="${order.status.toString() eq 'HOAN_THANH'}">bg-success</c:when>
-    <c:when test="${order.status.toString() eq 'DANG_CHO'}">bg-warning text-dark</c:when>
-    <c:when test="${order.status.toString() eq 'DA_HUY'}">bg-danger</c:when>
-    <c:when test="${order.status.toString() eq 'DANG_XU_LY'}">bg-info text-dark</c:when>
-    <c:when test="${order.status.toString() eq 'DA_GIAO'}">bg-primary</c:when>
-    <c:otherwise>bg-secondary</c:otherwise>
-</c:choose>
-                          ">${order.status}</span>
-                    </td>
+
                   </tr>
                 </c:forEach>
               </c:forEach>
