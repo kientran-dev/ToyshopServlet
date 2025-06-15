@@ -82,7 +82,7 @@ public class ToyDAOImpl implements ToyDAO {
             return null;
         }
     }
-
+// Và các hàm khác
     @Override
     public List<Toy> getToysByCategory(String categoryId) {
         try (Session session = HibernateUtil.getSessionFactory().openSession()) {
