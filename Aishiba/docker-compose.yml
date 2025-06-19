@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: toyshop_db
+    environment:
+      POSTGRES_DB: toy_shop
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql # Tùy chọn: Để chạy script SQL khi khởi tạo DB
+      - pgdata:/var/lib/postgresql/data # Lưu trữ dữ liệu DB vĩnh viễn
+    ports:
+      - "5432:5432"
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: . # Docker Compose sẽ tìm Dockerfile trong thư mục hiện tại để xây dựng image
+    container_name: toyshop_app
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+
+# Định nghĩa các Docker volumes để lưu trữ dữ liệu vĩnh viễn
+volumes:
+  pgdata:
