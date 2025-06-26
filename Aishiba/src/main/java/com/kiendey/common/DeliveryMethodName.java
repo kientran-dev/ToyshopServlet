@@ -4,10 +4,6 @@ import lombok.Getter;
 
 @Getter
 public enum DeliveryMethodName {
-//    STANDARD("Tiêu chuẩn"),        // Giao hàng tiêu chuẩn
-//    EXPRESS("Nhanh"),              // Giao hàng nhanh
-//    SAME_DAY("Trong ngày"),        // Giao hàng trong ngày
-//    STORE_PICKUP("Lấy tại cửa hàng"); // Nhận hàng tại cửa hàng
 
     Tiêu_chuẩn("Tiêu chuẩn"),        // Giao hàng tiêu chuẩn
     Nhanh("Nhanh"),              // Giao hàng nhanh

@@ -2,34 +2,44 @@ version: '3.8'
 
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:17
     container_name: toyshop_db
     environment:
-      POSTGRES_DB: toy_shop
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql # Tùy chọn: Để chạy script SQL khi khởi tạo DB
-      - pgdata:/var/lib/postgresql/data # Lưu trữ dữ liệu DB vĩnh viễn
+      - postgres-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
-    restart: always
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - my-network
 
   app:
-    build: . # Docker Compose sẽ tìm Dockerfile trong thư mục hiện tại để xây dựng image
+    build: .
     container_name: toyshop_app
+    image: aishiba-app:latest
     ports:
       - "8080:8080"
+    volumes:
+      - ./target/Aishiba-1.0-SNAPSHOT.war:/usr/local/tomcat/webapps/Aishiba.war
     depends_on:
       db:
         condition: service_healthy
-    restart: always
+    restart: unless-stopped
+    networks:
+      - my-network
 
-# Định nghĩa các Docker volumes để lưu trữ dữ liệu vĩnh viễn
 volumes:
-  pgdata:
+  postgres-data:
+    driver: local
+
+networks:
+  my-network:
+    driver: bridge
