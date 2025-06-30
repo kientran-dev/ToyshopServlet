@@ -66,6 +66,12 @@
                                 <div class="col-12">
                                     <button class="btn btn-primary w-100" type="submit">Đăng nhập</button>
                                 </div>
+
+                                <div class="col-12">
+                                    <a href="${pageContext.request.contextPath}/googleLogin" class="btn btn-danger w-100">
+                                        <i class="fab fa-google me-2"></i> Đăng nhập với Google
+                                    </a>
+                                </div>
                                 <div class="col-12">
                                     <p class="small mb-0" style="color: black;">Chưa có tài khoản? <a href="register">Tạo tài khoản</a></p>
                                 </div>
@@ -85,6 +91,7 @@
         </section>
 
     </div>
-</main></body>
+</main>
+</body>
 
 <jsp:include page="end.jsp" />

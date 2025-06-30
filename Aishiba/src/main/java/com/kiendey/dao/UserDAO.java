@@ -29,4 +29,6 @@ public interface UserDAO {
     long getTotalUserCount();
 
     long getTotalDeletedUserCount();
+
+    User findByEmail(String googleEmail);
 }

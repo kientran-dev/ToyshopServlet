@@ -3,7 +3,6 @@ package com.kiendey.servlet;
 import com.kiendey.dao.UserDAO;
 import com.kiendey.dao.impl.UserDAOImpl;
 import com.kiendey.model.User;
-import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

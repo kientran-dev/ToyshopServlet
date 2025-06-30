@@ -5,6 +5,7 @@
 /work/
 /logs/
 /conf/
+/resources/client_secret.json
 metadata.sql
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

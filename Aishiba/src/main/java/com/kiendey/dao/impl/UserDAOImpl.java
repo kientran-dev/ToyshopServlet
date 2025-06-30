@@ -183,4 +183,16 @@ public class UserDAOImpl implements UserDAO {
             throw new RuntimeException("Error counting deleted Users: " + e.getMessage(), e);
         }
     }
+
+    @Override
+    public User findByEmail(String googleEmail) {
+        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+            String hql = "FROM User u WHERE u.email = :googleEmail";
+            return session.createQuery(hql, User.class)
+                    .setParameter("googleEmail", googleEmail)
+                    .uniqueResult();
+        } catch (Exception e) {
+            throw new RuntimeException("Error finding User by email: " + e.getMessage(), e);
+        }
+    }
 }

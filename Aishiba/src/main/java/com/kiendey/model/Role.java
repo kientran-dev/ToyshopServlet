@@ -27,4 +27,5 @@ public class Role extends AbstractEntity<String> {
 
     @ManyToMany
     Set<Permission> permissions;
+
 }

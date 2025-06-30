@@ -55,7 +55,7 @@ public class StockDAOImpl implements StockDAO {
             if (results.isEmpty()) {
                 return null; // Trả về null nếu không tìm thấy
             }
-            return results.getFirst(); // Trả về đối tượng đầu tiên tìm được
+            return results.get(0);// Trả về đối tượng đầu tiên tìm được
 
         } catch (Exception e) {
             // Ghi lại lỗi để tiện cho việc debug
