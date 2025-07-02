@@ -22,24 +22,28 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.InputStreamReader;
+// import java.io.InputStreamReader; // KHÔNG CẦN THIẾT NỮA
 import java.util.Collection;
 import java.util.Arrays;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.google.api.client.http.GenericUrl;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken; // Thêm import này
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier; // Thêm import này
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken.Payload; // Thêm import này
 
 
 @WebServlet("/oauth2callback_google")
 public class GoogleCallback extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(GoogleCallback.class.getName());
-    private static final String CLIENT_SECRET_FILE = "/WEB-INF/client_secret.json";
+    // KHÔNG CẦN DÒNG NÀY NỮA VÌ CHÚNG TA ĐỌC TỪ BIẾN MÔI TRƯỜNG
+    // private static final String CLIENT_SECRET_FILE = "/resources/client_secret.json";
 
     private static final Collection<String> SCOPES = Arrays.asList(
             "https://www.googleapis.com/auth/userinfo.email",
             "https://www.googleapis.com/auth/userinfo.profile"
+            // "openid" // Thường được thêm vào nếu bạn sử dụng ID Token
     );
 
     private static final JsonFactory JSON_FACTORY = GsonFactory.getDefaultInstance();
@@ -49,26 +53,50 @@ public class GoogleCallback extends HttpServlet {
         try {
             HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         } catch (Throwable t) {
-            LOGGER.log(Level.SEVERE, "Failed to initialize HTTP Transport", t);
+            LOGGER.log(Level.SEVERE, "Failed to initialize HTTP Transport in GoogleCallback", t);
             throw new ExceptionInInitializerError(t);
         }
     }
 
     private GoogleAuthorizationCodeFlow flow;
     private UserDAO userDAO;
+    private RoleDAOImpl roleDAO; // Khởi tạo RoleDAOImpl một lần
 
     @Override
     public void init() throws ServletException {
         super.init();
         try {
-            GoogleClientSecrets clientSecrets = GoogleClientSecrets.load(
-                    JSON_FACTORY, new InputStreamReader(getServletContext().getResourceAsStream(CLIENT_SECRET_FILE))
-            );
+            // --- THAY ĐỔI TẠI ĐÂY: Đọc Client ID và Client Secret từ biến môi trường ---
+            String googleClientId = System.getenv("GOOGLE_CLIENT_ID");
+            String googleClientSecret = System.getenv("GOOGLE_CLIENT_SECRET");
 
+            // --- DEBUG LOGS (Giữ lại để kiểm tra trên Railway Logs) ---
+            System.out.println("DEBUG: Google Client ID in GoogleCallback = " + googleClientId);
+            System.out.println("DEBUG: Google Client Secret in GoogleCallback = " + (googleClientSecret != null ? "********" : "null"));
+            // -------------------------------------------------------------------------
+
+            // Kiểm tra xem các biến môi trường có tồn tại không
+            if (googleClientId == null || googleClientId.isEmpty()) {
+                LOGGER.log(Level.SEVERE, "Biến môi trường GOOGLE_CLIENT_ID chưa được thiết lập trong GoogleCallback.");
+                throw new ServletException("Biến môi trường GOOGLE_CLIENT_ID chưa được thiết lập.");
+            }
+            if (googleClientSecret == null || googleClientSecret.isEmpty()) {
+                LOGGER.log(Level.SEVERE, "Biến môi trường GOOGLE_CLIENT_SECRET chưa được thiết lập trong GoogleCallback.");
+                throw new ServletException("Biến môi trường GOOGLE_CLIENT_SECRET chưa được thiết lập.");
+            }
+
+            // Tạo GoogleClientSecrets từ các biến môi trường
+            GoogleClientSecrets.Details details = new GoogleClientSecrets.Details();
+            details.setClientId(googleClientId);
+            details.setClientSecret(googleClientSecret);
+            GoogleClientSecrets clientSecrets = new GoogleClientSecrets();
+            clientSecrets.setWeb(details); // Sử dụng setWeb() cho ứng dụng web
+
+            // --- Phần còn lại của code khởi tạo flow vẫn giữ nguyên ---
             flow = new GoogleAuthorizationCodeFlow.Builder(
                     HTTP_TRANSPORT,
                     JSON_FACTORY,
-                    clientSecrets,
+                    clientSecrets, // Sử dụng clientSecrets đã tạo từ biến môi trường
                     SCOPES
             )
                     .setDataStoreFactory(new com.google.api.client.util.store.FileDataStoreFactory(
@@ -78,9 +106,10 @@ public class GoogleCallback extends HttpServlet {
                     .build();
 
             userDAO = new UserDAOImpl();
+            roleDAO = new RoleDAOImpl(); // Khởi tạo RoleDAOImpl ở đây
 
         } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Error initializing Google Authorization Code Flow or UserDAO", e);
+            LOGGER.log(Level.SEVERE, "Error initializing Google Authorization Code Flow or DAOs", e);
             throw new ServletException("Error initializing Google Callback Servlet", e);
         }
     }
@@ -90,77 +119,83 @@ public class GoogleCallback extends HttpServlet {
         String code = request.getParameter("code");
 
         if (code != null) {
-            String redirectUri = request.getScheme() + "://" +
-                    request.getServerName() +
-                    (request.getServerPort() == 80 || request.getServerPort() == 443 ? "" : ":" + request.getServerPort()) +
-                    request.getContextPath() + "/oauth2callback_google";
+            // Lấy redirect URI từ biến môi trường
+            String redirectUri = System.getenv("GOOGLE_REDIRECT_URI");
+            // --- DEBUG LOGS ---
+            System.out.println("DEBUG: Google Redirect URI in GoogleCallback (doGet) = " + redirectUri);
+            // ------------------
+
+            if (redirectUri == null || redirectUri.isEmpty()) {
+                LOGGER.log(Level.WARNING, "Biến môi trường GOOGLE_REDIRECT_URI chưa được thiết lập trong GoogleCallback. Sử dụng URI động.");
+                // Fallback: Xây dựng động nếu biến môi trường không có
+                redirectUri = request.getScheme() + "://" +
+                        request.getServerName() +
+                        (request.getServerPort() == 80 || request.getServerPort() == 443 ? "" : ":" + request.getServerPort()) +
+                        request.getContextPath() + "/oauth2callback_google";
+            }
 
             try {
                 GoogleTokenResponse tokenResponse = flow.newTokenRequest(code)
                         .setRedirectUri(redirectUri)
                         .execute();
 
-                // *** CHỈNH SỬA TẠI ĐÂY ***
-                // Tạo GenericUrl từ String token server URL
-                GenericUrl tokenServerUrl = new GenericUrl(flow.getTokenServerEncodedUrl());
+                // Lấy thông tin người dùng từ ID Token (khuyến nghị)
+                GoogleIdToken idToken = tokenResponse.parseIdToken();
+                if (idToken == null) {
+                    LOGGER.log(Level.WARNING, "Failed to parse ID Token from GoogleTokenResponse.");
+                    response.sendRedirect(request.getContextPath() + "/login?error=oauth_failed&details=id_token_missing");
+                    return;
+                }
+                Payload payload = idToken.getPayload();
 
-                Credential credential = new Credential.Builder(
-                        com.google.api.client.auth.oauth2.BearerToken.authorizationHeaderAccessMethod())
-                        .setTransport(HTTP_TRANSPORT)
-                        .setJsonFactory(JSON_FACTORY)
-                        .setTokenServerUrl(tokenServerUrl)
-                        .setClientAuthentication(flow.getClientAuthentication())
-                        .build(); // DỪNG Ở ĐÂY, HOÀN TẤT VIỆC BUILD ĐỐI TƯỢNG CREDENTIAL
-
-                // BÂY GIỜ GỌI CÁC PHƯƠNG THỨC SETTER TRÊN ĐỐI TƯỢNG CREDENTIAL ĐÃ ĐƯỢC TẠO
-                credential.setAccessToken(tokenResponse.getAccessToken());
-                credential.setRefreshToken(tokenResponse.getRefreshToken());
-                credential.setExpirationTimeMilliseconds(tokenResponse.getExpiresInSeconds() != null ?
-                        System.currentTimeMillis() + tokenResponse.getExpiresInSeconds() * 1000 : null);
-                // **************************
-
-                Oauth2 oauth2 = new Oauth2.Builder(
-                        HTTP_TRANSPORT,
-                        JSON_FACTORY,
-                        credential
-                ).setApplicationName("ToyshopServlet").build();
-
-                Userinfo userInfo = oauth2.userinfo().get().execute();
-
-                String googleEmail = userInfo.getEmail();
-                String googleFirstName = userInfo.getGivenName();
-                String googleLastName = userInfo.getFamilyName();
-                String googleId = userInfo.getId();
+                String googleEmail = payload.getEmail();
+                String googleFirstName = (String) payload.get("given_name");
+                String googleLastName = (String) payload.get("family_name");
+                String googleId = payload.getSubject(); // Google User ID
 
                 User existingUser = userDAO.findByEmail(googleEmail);
 
                 if (existingUser == null) {
-                    RoleDAOImpl roleDAO = new RoleDAOImpl();
-                    Role customerRole = roleDAO.getRoleByName("User");
+                    Role customerRole = roleDAO.getRoleByName("User"); // Sử dụng roleDAO đã khởi tạo
+                    if (customerRole == null) {
+                        LOGGER.log(Level.SEVERE, "Role 'User' not found in database. Cannot create new user.");
+                        response.sendRedirect(request.getContextPath() + "/login?error=role_not_found");
+                        return;
+                    }
+
                     User newUser = new User();
                     newUser.setEmail(googleEmail);
                     newUser.setName(googleFirstName + " " + googleLastName);
+                    // Mật khẩu có thể là một chuỗi ngẫu nhiên hoặc hash của googleId
+                    // Không nên dùng googleId trực tiếp làm mật khẩu, hãy hash nó.
                     newUser.setPassword(PasswordUtil.hashPassword(googleId));
                     newUser.setRole(customerRole);
                     newUser.setDeleted(false);
 
                     userDAO.createUser(newUser);
                     request.getSession().setAttribute("currentUser", newUser);
+                    LOGGER.log(Level.INFO, "New user registered via Google: " + googleEmail);
                     response.sendRedirect(request.getContextPath() + "/homepage");
                 } else {
                     request.getSession().setAttribute("currentUser", existingUser);
+                    LOGGER.log(Level.INFO, "Existing user logged in via Google: " + googleEmail);
                     response.sendRedirect(request.getContextPath() + "/homepage");
                 }
 
             } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Error during Google OAuth callback processing: " + e.getMessage(), e);
-                response.sendRedirect(request.getContextPath() + "/login?error=oauth_failed&details=" + e.getClass().getSimpleName());
+                LOGGER.log(Level.SEVERE, "Error during Google OAuth token exchange: " + e.getMessage(), e);
+                response.sendRedirect(request.getContextPath() + "/login?error=oauth_token_exchange_failed&details=" + e.getClass().getSimpleName());
             } catch (Exception e) {
+                // Bắt các ngoại lệ chung khác
                 LOGGER.log(Level.SEVERE, "Unexpected error during Google OAuth callback processing: " + e.getMessage(), e);
                 response.sendRedirect(request.getContextPath() + "/login?error=oauth_failed_unexpected&details=" + e.getClass().getSimpleName());
             }
         } else {
-            response.sendRedirect(request.getContextPath() + "/login?error=access_denied");
+            // Xử lý trường hợp không có 'code' (ví dụ: người dùng từ chối cấp quyền hoặc lỗi khác)
+            String error = request.getParameter("error");
+            String errorDescription = request.getParameter("error_description");
+            LOGGER.log(Level.WARNING, "Google OAuth access denied or error: " + error + " - " + errorDescription);
+            response.sendRedirect(request.getContextPath() + "/login?error=access_denied&details=" + (error != null ? error : "unknown"));
         }
     }
 }

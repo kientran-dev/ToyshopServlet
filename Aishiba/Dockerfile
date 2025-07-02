@@ -1,6 +1,6 @@
 # --- Giai đoạn 1: Build ứng dụng Java (Maven) ---
 # Sử dụng một image có sẵn Maven và JDK 21
-FROM maven:3.9-eclipse-temurin-17-alpine AS build
+FROM maven:3.9-eclipse-temurin-21-alpine AS build
 # Đặt thư mục làm việc bên trong container của giai đoạn build
 WORKDIR /app
 
