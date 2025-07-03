@@ -36,16 +36,22 @@ public class Login extends HttpServlet {
 
         if (errorMessage != null) {
             request.setAttribute("error", errorMessage);
-            request.getRequestDispatcher("login.jsp").forward(request, response); // Forward toàn bộ
+            request.getRequestDispatcher("login.jsp").forward(request, response);
             return;
         }
 
         // Kiểm tra thông tin đăng nhập
+        // Trong một ứng dụng thực tế, bạn sẽ dùng UserDAO để kiểm tra user/password trong database
         if ("admin".equals(username) && "password123".equals(password)) {
             HttpSession session = request.getSession();
-            session.setAttribute("username", username);
-            request.setAttribute("contentPage", "index.jsp");
-            request.getRequestDispatcher("layout.jsp").forward(request, response);
+            session.setAttribute("username", username); // Lưu username vào session
+            //session.setAttribute("currentUser", userObject); // Nếu bạn có đối tượng User
+
+            // --- THAY ĐỔI TẠI ĐÂY ---
+            // Sử dụng sendRedirect để chuyển hướng trình duyệt đến /homepage
+            response.sendRedirect(request.getContextPath() + "/homepage");
+            // ------------------------
+
         } else {
             request.setAttribute("error", "Tên người dùng hoặc mật khẩu không đúng!");
             request.getRequestDispatcher("login.jsp").forward(request, response);
